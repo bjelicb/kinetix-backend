@@ -1,0 +1,970 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1764902670651" clover="3.2.0">
+  <project timestamp="1764902670651" name="All files">
+    <metrics statements="835" coveredstatements="774" conditionals="566" coveredconditionals="400" methods="144" coveredmethods="138" elements="1545" coveredelements="1312" complexity="0" loc="835" ncloc="835" packages="15" files="28" classes="28"/>
+    <package name="src">
+      <metrics statements="9" coveredstatements="9" conditionals="4" coveredconditionals="3" methods="3" coveredmethods="3"/>
+      <file name="app.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\app.controller.ts">
+        <metrics statements="6" coveredstatements="6" conditionals="4" coveredconditionals="3" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+      </file>
+      <file name="app.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\app.service.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.auth">
+      <metrics statements="66" coveredstatements="66" conditionals="52" coveredconditionals="41" methods="12" coveredmethods="12"/>
+      <file name="auth.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\auth\auth.controller.ts">
+        <metrics statements="23" coveredstatements="23" conditionals="18" coveredconditionals="14" methods="6" coveredmethods="6"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="8" type="cond" truecount="3" falsecount="1"/>
+        <line num="28" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="36" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="41" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="51" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+      </file>
+      <file name="auth.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\auth\auth.service.ts">
+        <metrics statements="43" coveredstatements="43" conditionals="34" coveredconditionals="27" methods="6" coveredmethods="6"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="15" count="11" type="cond" truecount="6" falsecount="2"/>
+        <line num="16" count="11" type="cond" truecount="3" falsecount="1"/>
+        <line num="17" count="11" type="cond" truecount="3" falsecount="1"/>
+        <line num="18" count="11" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="41" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="44" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="48" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="58" count="2" type="stmt"/>
+        <line num="62" count="3" type="stmt"/>
+        <line num="63" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="71" count="1" type="stmt"/>
+        <line num="75" count="3" type="stmt"/>
+        <line num="76" count="3" type="stmt"/>
+        <line num="81" count="2" type="stmt"/>
+        <line num="82" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="83" count="1" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="93" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="94" count="1" type="stmt"/>
+        <line num="102" count="2" type="stmt"/>
+        <line num="107" count="4" type="stmt"/>
+        <line num="112" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="113" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.auth.strategies">
+      <metrics statements="7" coveredstatements="5" conditionals="6" coveredconditionals="3" methods="2" coveredmethods="0"/>
+      <file name="jwt.strategy.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\auth\strategies\jwt.strategy.ts">
+        <metrics statements="7" coveredstatements="5" conditionals="6" coveredconditionals="3" methods="2" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.checkins">
+      <metrics statements="81" coveredstatements="80" conditionals="54" coveredconditionals="43" methods="17" coveredmethods="17"/>
+      <file name="checkins.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\checkins\checkins.controller.ts">
+        <metrics statements="28" coveredstatements="28" conditionals="12" coveredconditionals="9" methods="8" coveredmethods="8"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="10" type="cond" truecount="3" falsecount="1"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="57" count="2" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="68" count="1" type="stmt"/>
+        <line num="84" count="1" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="89" count="1" type="stmt"/>
+      </file>
+      <file name="checkins.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\checkins\checkins.service.ts">
+        <metrics statements="53" coveredstatements="52" conditionals="42" coveredconditionals="34" methods="9" coveredmethods="9"/>
+        <line num="1" count="4" type="stmt"/>
+        <line num="2" count="4" type="stmt"/>
+        <line num="3" count="4" type="stmt"/>
+        <line num="4" count="4" type="stmt"/>
+        <line num="7" count="4" type="stmt"/>
+        <line num="8" count="4" type="stmt"/>
+        <line num="9" count="4" type="stmt"/>
+        <line num="12" count="4" type="stmt"/>
+        <line num="14" count="18" type="cond" truecount="6" falsecount="2"/>
+        <line num="15" count="18" type="cond" truecount="3" falsecount="1"/>
+        <line num="16" count="18" type="stmt"/>
+        <line num="17" count="18" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="40" count="2" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="45" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="59" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="60" count="0" type="stmt"/>
+        <line num="62" count="2" type="stmt"/>
+        <line num="63" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
+        <line num="74" count="4" type="stmt"/>
+        <line num="75" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="76" count="1" type="stmt"/>
+        <line num="80" count="3" type="stmt"/>
+        <line num="81" count="3" type="stmt"/>
+        <line num="84" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="89" count="2" type="stmt"/>
+        <line num="90" count="2" type="stmt"/>
+        <line num="91" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="95" count="2" type="stmt"/>
+        <line num="99" count="1" type="stmt"/>
+        <line num="116" count="2" type="stmt"/>
+        <line num="117" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="118" count="1" type="stmt"/>
+        <line num="121" count="1" type="stmt"/>
+        <line num="133" count="3" type="stmt"/>
+        <line num="134" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="135" count="1" type="stmt"/>
+        <line num="139" count="2" type="stmt"/>
+        <line num="140" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="143" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="144" count="1" type="stmt"/>
+        <line num="148" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.clients">
+      <metrics statements="68" coveredstatements="61" conditionals="40" coveredconditionals="29" methods="16" coveredmethods="15"/>
+      <file name="clients.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\clients\clients.controller.ts">
+        <metrics statements="31" coveredstatements="31" conditionals="16" coveredconditionals="12" methods="8" coveredmethods="8"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="26" count="10" type="cond" truecount="6" falsecount="2"/>
+        <line num="27" count="10" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="71" count="1" type="stmt"/>
+        <line num="80" count="1" type="stmt"/>
+        <line num="81" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="91" count="2" type="stmt"/>
+        <line num="93" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="98" count="2" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+      </file>
+      <file name="clients.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\clients\clients.service.ts">
+        <metrics statements="37" coveredstatements="30" conditionals="24" coveredconditionals="17" methods="8" coveredmethods="7"/>
+        <line num="1" count="16" type="stmt"/>
+        <line num="2" count="16" type="stmt"/>
+        <line num="3" count="16" type="stmt"/>
+        <line num="4" count="16" type="stmt"/>
+        <line num="10" count="16" type="stmt"/>
+        <line num="13" count="16" type="stmt"/>
+        <line num="16" count="8" type="cond" truecount="7" falsecount="1"/>
+        <line num="17" count="8" type="stmt"/>
+        <line num="18" count="8" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="36" count="5" type="stmt"/>
+        <line num="43" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="58" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="69" count="2" type="stmt"/>
+        <line num="72" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="73" count="0" type="stmt"/>
+        <line num="77" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="80" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="84" count="2" type="stmt"/>
+        <line num="92" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="96" count="1" type="stmt"/>
+        <line num="100" count="2" type="stmt"/>
+        <line num="101" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="105" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="112" count="1" type="stmt"/>
+        <line num="113" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.common.decorators">
+      <metrics statements="7" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="1"/>
+      <file name="current-user.decorator.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\decorators\current-user.decorator.ts">
+        <metrics statements="4" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <line num="1" count="9" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+      </file>
+      <file name="roles.decorator.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\decorators\roles.decorator.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="1" count="9" type="stmt"/>
+        <line num="3" count="9" type="stmt"/>
+        <line num="4" count="40" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.common.filters">
+      <metrics statements="24" coveredstatements="23" conditionals="15" coveredconditionals="10" methods="1" coveredmethods="1"/>
+      <file name="http-exception.filter.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\filters\http-exception.filter.ts">
+        <metrics statements="24" coveredstatements="23" conditionals="15" coveredconditionals="10" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="13" count="12" type="stmt"/>
+        <line num="14" count="12" type="stmt"/>
+        <line num="15" count="12" type="stmt"/>
+        <line num="17" count="12" type="stmt"/>
+        <line num="18" count="12" type="stmt"/>
+        <line num="19" count="12" type="stmt"/>
+        <line num="21" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="9" type="stmt"/>
+        <line num="23" count="9" type="stmt"/>
+        <line num="25" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="26" count="8" type="stmt"/>
+        <line num="27" count="8" type="stmt"/>
+        <line num="28" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="30" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="31" count="1" type="cond" truecount="1" falsecount="2"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="35" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="40" count="12" type="stmt"/>
+        <line num="51" count="12" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.common.guards">
+      <metrics statements="50" coveredstatements="42" conditionals="43" coveredconditionals="31" methods="5" coveredmethods="5"/>
+      <file name="jwt-auth.guard.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\guards\jwt-auth.guard.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="10" type="stmt"/>
+        <line num="2" count="10" type="stmt"/>
+        <line num="5" count="10" type="stmt"/>
+      </file>
+      <file name="roles.guard.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\guards\roles.guard.ts">
+        <metrics statements="11" coveredstatements="11" conditionals="6" coveredconditionals="5" methods="3" coveredmethods="3"/>
+        <line num="1" count="9" type="stmt"/>
+        <line num="2" count="9" type="stmt"/>
+        <line num="3" count="9" type="stmt"/>
+        <line num="6" count="9" type="stmt"/>
+        <line num="7" count="68" type="cond" truecount="3" falsecount="1"/>
+        <line num="10" count="6" type="stmt"/>
+        <line num="15" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="20" count="5" type="stmt"/>
+        <line num="22" count="6" type="stmt"/>
+      </file>
+      <file name="saas-killswitch.guard.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\guards\saas-killswitch.guard.ts">
+        <metrics statements="36" coveredstatements="28" conditionals="37" coveredconditionals="26" methods="2" coveredmethods="2"/>
+        <line num="1" count="7" type="stmt"/>
+        <line num="9" count="7" type="stmt"/>
+        <line num="10" count="7" type="stmt"/>
+        <line num="11" count="7" type="stmt"/>
+        <line num="14" count="7" type="stmt"/>
+        <line num="16" count="47" type="cond" truecount="6" falsecount="2"/>
+        <line num="17" count="47" type="stmt"/>
+        <line num="21" count="8" type="stmt"/>
+        <line num="22" count="8" type="stmt"/>
+        <line num="25" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="29" count="6" type="stmt"/>
+        <line num="31" count="6" type="stmt"/>
+        <line num="32" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="39" count="5" type="cond" truecount="4" falsecount="1"/>
+        <line num="41" count="5" type="stmt"/>
+        <line num="42" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="49" count="5" type="stmt"/>
+        <line num="50" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="55" count="4" type="cond" truecount="4" falsecount="0"/>
+        <line num="56" count="2" type="stmt"/>
+        <line num="62" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="82" count="5" type="cond" truecount="3" falsecount="1"/>
+        <line num="83" count="5" type="stmt"/>
+        <line num="86" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="87" count="0" type="stmt"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="91" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.common.interceptors">
+      <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+      <file name="transform.interceptor.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\common\interceptors\transform.interceptor.ts">
+        <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+        <line num="26" count="5" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.gamification">
+      <metrics statements="61" coveredstatements="61" conditionals="34" coveredconditionals="27" methods="14" coveredmethods="14"/>
+      <file name="gamification.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\gamification\gamification.controller.ts">
+        <metrics statements="19" coveredstatements="19" conditionals="4" coveredconditionals="3" methods="5" coveredmethods="5"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="6" type="cond" truecount="3" falsecount="1"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+      </file>
+      <file name="gamification.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\gamification\gamification.service.ts">
+        <metrics statements="42" coveredstatements="42" conditionals="30" coveredconditionals="24" methods="9" coveredmethods="9"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="4" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="13" count="11" type="cond" truecount="6" falsecount="2"/>
+        <line num="14" count="11" type="cond" truecount="3" falsecount="1"/>
+        <line num="15" count="11" type="cond" truecount="3" falsecount="1"/>
+        <line num="16" count="11" type="stmt"/>
+        <line num="17" count="11" type="stmt"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="48" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="60" count="3" type="stmt"/>
+        <line num="61" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="70" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="71" count="1" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="76" count="1" type="stmt"/>
+        <line num="81" count="2" type="stmt"/>
+        <line num="82" count="2" type="stmt"/>
+        <line num="85" count="2" type="stmt"/>
+        <line num="90" count="3" type="stmt"/>
+        <line num="99" count="2" type="stmt"/>
+        <line num="100" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="101" count="3" type="stmt"/>
+        <line num="103" count="1" type="stmt"/>
+        <line num="106" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.media">
+      <metrics statements="22" coveredstatements="22" conditionals="12" coveredconditionals="8" methods="3" coveredmethods="3"/>
+      <file name="media.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\media\media.controller.ts">
+        <metrics statements="13" coveredstatements="13" conditionals="4" coveredconditionals="3" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+      </file>
+      <file name="media.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\media\media.service.ts">
+        <metrics statements="9" coveredstatements="9" conditionals="8" coveredconditionals="5" methods="1" coveredmethods="1"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="8" count="5" type="stmt"/>
+        <line num="9" count="5" type="stmt"/>
+        <line num="10" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="19" count="5" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.plans">
+      <metrics statements="99" coveredstatements="94" conditionals="55" coveredconditionals="40" methods="19" coveredmethods="19"/>
+      <file name="plans.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\plans\plans.controller.ts">
+        <metrics statements="27" coveredstatements="27" conditionals="16" coveredconditionals="12" methods="8" coveredmethods="8"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="12" type="cond" truecount="3" falsecount="1"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="57" count="2" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="66" count="2" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="72" count="1" type="stmt"/>
+        <line num="77" count="2" type="stmt"/>
+        <line num="82" count="1" type="stmt"/>
+        <line num="86" count="2" type="stmt"/>
+      </file>
+      <file name="plans.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\plans\plans.service.ts">
+        <metrics statements="72" coveredstatements="67" conditionals="39" coveredconditionals="28" methods="11" coveredmethods="11"/>
+        <line num="1" count="16" type="stmt"/>
+        <line num="2" count="16" type="stmt"/>
+        <line num="3" count="16" type="stmt"/>
+        <line num="4" count="16" type="stmt"/>
+        <line num="11" count="16" type="stmt"/>
+        <line num="12" count="16" type="stmt"/>
+        <line num="13" count="16" type="stmt"/>
+        <line num="16" count="16" type="stmt"/>
+        <line num="19" count="10" type="cond" truecount="7" falsecount="1"/>
+        <line num="20" count="10" type="stmt"/>
+        <line num="21" count="10" type="cond" truecount="4" falsecount="0"/>
+        <line num="22" count="10" type="stmt"/>
+        <line num="23" count="10" type="cond" truecount="3" falsecount="1"/>
+        <line num="24" count="10" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+        <line num="30" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="38" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="55" count="8" type="stmt"/>
+        <line num="61" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="65" count="7" type="stmt"/>
+        <line num="74" count="2" type="stmt"/>
+        <line num="75" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="78" count="2" type="stmt"/>
+        <line num="79" count="2" type="stmt"/>
+        <line num="81" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="82" count="1" type="stmt"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="89" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="98" count="1" type="stmt"/>
+        <line num="99" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="103" count="1" type="stmt"/>
+        <line num="105" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="118" count="2" type="stmt"/>
+        <line num="119" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="122" count="2" type="stmt"/>
+        <line num="123" count="2" type="stmt"/>
+        <line num="125" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="129" count="1" type="stmt"/>
+        <line num="130" count="1" type="stmt"/>
+        <line num="131" count="1" type="stmt"/>
+        <line num="134" count="1" type="stmt"/>
+        <line num="136" count="1" type="stmt"/>
+        <line num="138" count="1" type="cond" truecount="1" falsecount="2"/>
+        <line num="140" count="1" type="stmt"/>
+        <line num="148" count="1" type="stmt"/>
+        <line num="149" count="1" type="stmt"/>
+        <line num="154" count="1" type="stmt"/>
+        <line num="155" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="159" count="1" type="stmt"/>
+        <line num="160" count="1" type="stmt"/>
+        <line num="161" count="1" type="stmt"/>
+        <line num="162" count="1" type="stmt"/>
+        <line num="164" count="0" type="stmt"/>
+        <line num="165" count="0" type="stmt"/>
+        <line num="169" count="1" type="stmt"/>
+        <line num="179" count="1" type="stmt"/>
+        <line num="182" count="1" type="stmt"/>
+        <line num="183" count="1" type="stmt"/>
+        <line num="186" count="1" type="stmt"/>
+        <line num="196" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.trainers">
+      <metrics statements="111" coveredstatements="108" conditionals="66" coveredconditionals="56" methods="20" coveredmethods="20"/>
+      <file name="trainers.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\trainers\trainers.controller.ts">
+        <metrics statements="29" coveredstatements="29" conditionals="16" coveredconditionals="12" methods="9" coveredmethods="9"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="11" type="cond" truecount="3" falsecount="1"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="71" count="1" type="stmt"/>
+        <line num="86" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="106" count="2" type="stmt"/>
+        <line num="117" count="1" type="stmt"/>
+        <line num="121" count="1" type="stmt"/>
+        <line num="131" count="1" type="stmt"/>
+        <line num="135" count="2" type="stmt"/>
+      </file>
+      <file name="trainers.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\trainers\trainers.service.ts">
+        <metrics statements="82" coveredstatements="79" conditionals="50" coveredconditionals="44" methods="11" coveredmethods="11"/>
+        <line num="1" count="18" type="stmt"/>
+        <line num="2" count="18" type="stmt"/>
+        <line num="3" count="18" type="stmt"/>
+        <line num="4" count="18" type="stmt"/>
+        <line num="8" count="18" type="stmt"/>
+        <line num="17" count="18" type="stmt"/>
+        <line num="20" count="18" type="stmt"/>
+        <line num="23" count="24" type="cond" truecount="6" falsecount="2"/>
+        <line num="25" count="24" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="48" count="15" type="stmt"/>
+        <line num="53" count="15" type="cond" truecount="2" falsecount="0"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="57" count="13" type="stmt"/>
+        <line num="61" count="2" type="stmt"/>
+        <line num="65" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="66" count="1" type="stmt"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="76" count="2" type="stmt"/>
+        <line num="84" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="88" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
+        <line num="96" count="1" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="119" count="3" type="stmt"/>
+        <line num="121" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="122" count="2" type="stmt"/>
+        <line num="125" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="129" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="130" count="1" type="stmt"/>
+        <line num="133" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="134" count="0" type="stmt"/>
+        <line num="137" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="138" count="0" type="stmt"/>
+        <line num="141" count="3" type="stmt"/>
+        <line num="149" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="150" count="1" type="stmt"/>
+        <line num="153" count="2" type="stmt"/>
+        <line num="161" count="5" type="stmt"/>
+        <line num="162" count="5" type="stmt"/>
+        <line num="165" count="5" type="stmt"/>
+        <line num="169" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="170" count="1" type="stmt"/>
+        <line num="176" count="4" type="stmt"/>
+        <line num="177" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="178" count="1" type="stmt"/>
+        <line num="182" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="183" count="1" type="stmt"/>
+        <line num="187" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="188" count="1" type="stmt"/>
+        <line num="195" count="1" type="stmt"/>
+        <line num="201" count="1" type="stmt"/>
+        <line num="206" count="1" type="stmt"/>
+        <line num="217" count="3" type="stmt"/>
+        <line num="218" count="3" type="stmt"/>
+        <line num="221" count="3" type="stmt"/>
+        <line num="222" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="223" count="1" type="stmt"/>
+        <line num="227" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="228" count="1" type="stmt"/>
+        <line num="232" count="1" type="stmt"/>
+        <line num="238" count="1" type="stmt"/>
+        <line num="243" count="1" type="stmt"/>
+        <line num="253" count="4" type="stmt"/>
+        <line num="254" count="3" type="stmt"/>
+        <line num="257" count="3" type="stmt"/>
+        <line num="263" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="264" count="3" type="stmt"/>
+        <line num="267" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="268" count="2" type="stmt"/>
+        <line num="274" count="1" type="stmt"/>
+        <line num="280" count="1" type="stmt"/>
+        <line num="283" count="1" type="stmt"/>
+        <line num="296" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="297" count="0" type="stmt"/>
+        <line num="300" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.training">
+      <metrics statements="85" coveredstatements="79" conditionals="78" coveredconditionals="48" methods="9" coveredmethods="8"/>
+      <file name="training.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\training\training.controller.ts">
+        <metrics statements="14" coveredstatements="14" conditionals="8" coveredconditionals="6" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="4" type="cond" truecount="3" falsecount="1"/>
+        <line num="26" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="27" count="4" type="stmt"/>
+      </file>
+      <file name="training.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\training\training.service.ts">
+        <metrics statements="71" coveredstatements="65" conditionals="70" coveredconditionals="42" methods="7" coveredmethods="6"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="5" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="26" count="9" type="cond" truecount="6" falsecount="2"/>
+        <line num="27" count="9" type="cond" truecount="3" falsecount="1"/>
+        <line num="28" count="9" type="cond" truecount="3" falsecount="1"/>
+        <line num="30" count="9" type="cond" truecount="3" falsecount="1"/>
+        <line num="32" count="9" type="stmt"/>
+        <line num="36" count="9" type="stmt"/>
+        <line num="37" count="8" type="cond" truecount="1" falsecount="1"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="41" count="8" type="stmt"/>
+        <line num="48" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="49" count="5" type="stmt"/>
+        <line num="51" count="5" type="stmt"/>
+        <line num="52" count="6" type="stmt"/>
+        <line num="53" count="6" type="stmt"/>
+        <line num="54" count="6" type="stmt"/>
+        <line num="57" count="6" type="stmt"/>
+        <line num="61" count="6" type="stmt"/>
+        <line num="63" count="5" type="stmt"/>
+        <line num="67" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="69" count="1" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+        <line num="78" count="5" type="stmt"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="89" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="90" count="0" type="stmt"/>
+        <line num="92" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="93" count="0" type="stmt"/>
+        <line num="95" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="96" count="0" type="stmt"/>
+        <line num="99" count="5" type="stmt"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="115" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="116" count="4" type="stmt"/>
+        <line num="117" count="4" type="stmt"/>
+        <line num="118" count="2" type="stmt"/>
+        <line num="121" count="2" type="stmt"/>
+        <line num="122" count="3" type="stmt"/>
+        <line num="123" count="3" type="stmt"/>
+        <line num="124" count="3" type="stmt"/>
+        <line num="125" count="3" type="stmt"/>
+        <line num="129" count="3" type="stmt"/>
+        <line num="131" count="3" type="stmt"/>
+        <line num="135" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="136" count="3" type="stmt"/>
+        <line num="137" count="0" type="stmt"/>
+        <line num="149" count="1" type="stmt"/>
+        <line num="152" count="2" type="stmt"/>
+        <line num="164" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="165" count="4" type="stmt"/>
+        <line num="166" count="4" type="stmt"/>
+        <line num="167" count="4" type="stmt"/>
+        <line num="169" count="4" type="stmt"/>
+        <line num="170" count="4" type="stmt"/>
+        <line num="176" count="4" type="stmt"/>
+        <line num="178" count="1" type="stmt"/>
+        <line num="182" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="184" count="1" type="stmt"/>
+        <line num="189" count="1" type="stmt"/>
+        <line num="193" count="3" type="stmt"/>
+        <line num="202" count="2" type="stmt"/>
+        <line num="204" count="1" type="stmt"/>
+        <line num="213" count="8" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.workouts">
+      <metrics statements="140" coveredstatements="114" conditionals="107" coveredconditionals="61" methods="19" coveredmethods="18"/>
+      <file name="workouts.controller.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\workouts\workouts.controller.ts">
+        <metrics statements="23" coveredstatements="23" conditionals="12" coveredconditionals="9" methods="6" coveredmethods="6"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="8" type="cond" truecount="3" falsecount="1"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="50" count="2" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="56" count="2" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
+      </file>
+      <file name="workouts.service.ts" path="C:\Users\bjeli\Documents\Kinetix-Backend\src\workouts\workouts.service.ts">
+        <metrics statements="117" coveredstatements="91" conditionals="95" coveredconditionals="52" methods="13" coveredmethods="12"/>
+        <line num="1" count="16" type="stmt"/>
+        <line num="2" count="16" type="stmt"/>
+        <line num="3" count="16" type="stmt"/>
+        <line num="4" count="16" type="stmt"/>
+        <line num="9" count="16" type="stmt"/>
+        <line num="12" count="16" type="stmt"/>
+        <line num="15" count="14" type="cond" truecount="7" falsecount="1"/>
+        <line num="16" count="14" type="stmt"/>
+        <line num="17" count="14" type="stmt"/>
+        <line num="25" count="3" type="stmt"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="27" count="3" type="stmt"/>
+        <line num="28" count="3" type="stmt"/>
+        <line num="31" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="32" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="37" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="38" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="43" count="3" type="stmt"/>
+        <line num="44" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="50" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="51" count="3" type="stmt"/>
+        <line num="52" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="61" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="66" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="67" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="72" count="3" type="stmt"/>
+        <line num="73" count="21" type="stmt"/>
+        <line num="74" count="21" type="stmt"/>
+        <line num="75" count="21" type="stmt"/>
+        <line num="77" count="21" type="stmt"/>
+        <line num="78" count="21" type="stmt"/>
+        <line num="82" count="21" type="stmt"/>
+        <line num="90" count="21" type="cond" truecount="1" falsecount="1"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="95" count="21" type="cond" truecount="2" falsecount="0"/>
+        <line num="98" count="39" type="cond" truecount="2" falsecount="0"/>
+        <line num="101" count="21" type="stmt"/>
+        <line num="102" count="21" type="cond" truecount="6" falsecount="0"/>
+        <line num="103" count="6" type="stmt"/>
+        <line num="112" count="21" type="stmt"/>
+        <line num="124" count="21" type="stmt"/>
+        <line num="128" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="129" count="3" type="stmt"/>
+        <line num="130" count="3" type="stmt"/>
+        <line num="134" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="136" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="138" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="139" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="141" count="0" type="stmt"/>
+        <line num="142" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="144" count="0" type="stmt"/>
+        <line num="150" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="156" count="0" type="stmt"/>
+        <line num="158" count="0" type="stmt"/>
+        <line num="159" count="0" type="stmt"/>
+        <line num="165" count="2" type="stmt"/>
+        <line num="166" count="2" type="stmt"/>
+        <line num="168" count="2" type="stmt"/>
+        <line num="171" count="2" type="stmt"/>
+        <line num="176" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="178" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="179" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="180" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="183" count="1" type="stmt"/>
+        <line num="184" count="1" type="stmt"/>
+        <line num="186" count="1" type="stmt"/>
+        <line num="191" count="1" type="stmt"/>
+        <line num="192" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="196" count="1" type="stmt"/>
+        <line num="209" count="1" type="stmt"/>
+        <line num="216" count="2" type="stmt"/>
+        <line num="218" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="219" count="1" type="stmt"/>
+        <line num="222" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="223" count="2" type="stmt"/>
+        <line num="226" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="227" count="0" type="stmt"/>
+        <line num="230" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="231" count="0" type="stmt"/>
+        <line num="234" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="235" count="0" type="stmt"/>
+        <line num="238" count="2" type="stmt"/>
+        <line num="242" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="243" count="1" type="stmt"/>
+        <line num="246" count="1" type="stmt"/>
+        <line num="251" count="2" type="stmt"/>
+        <line num="252" count="2" type="stmt"/>
+        <line num="254" count="2" type="stmt"/>
+        <line num="255" count="2" type="stmt"/>
+        <line num="257" count="2" type="stmt"/>
+        <line num="272" count="2" type="stmt"/>
+        <line num="277" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="278" count="1" type="stmt"/>
+        <line num="281" count="1" type="stmt"/>
+        <line num="289" count="1" type="stmt"/>
+        <line num="290" count="1" type="stmt"/>
+        <line num="292" count="1" type="stmt"/>
+        <line num="293" count="1" type="stmt"/>
+        <line num="294" count="1" type="stmt"/>
+        <line num="296" count="1" type="stmt"/>
+        <line num="297" count="1" type="stmt"/>
+        <line num="299" count="1" type="stmt"/>
+        <line num="315" count="1" type="stmt"/>
+        <line num="328" count="1" type="stmt"/>
+        <line num="329" count="1" type="stmt"/>
+        <line num="331" count="1" type="stmt"/>
+        <line num="342" count="1" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
