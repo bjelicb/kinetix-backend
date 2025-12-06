@@ -52,9 +52,33 @@ async function bootstrap() {
   app.use(compression());
 
   // CORS Configuration
+  const allowedOrigins = process.env.MOBILE_APP_URL
+    ? process.env.MOBILE_APP_URL.split(',')
+    : [
+        'http://localhost:19006', // Expo default
+        'http://localhost:8080',  // Flutter web
+        'http://localhost:3000',  // Backend (za Swagger)
+      ];
+
   app.enableCors({
-    origin: process.env.MOBILE_APP_URL || 'http://localhost:19006',
+    origin: (origin, callback) => {
+      // U development modu, dozvoli sve localhost origin-e
+      if (process.env.NODE_ENV !== 'production') {
+        if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+          return callback(null, true);
+        }
+      }
+      
+      // U produkciji, proveri da li je origin u dozvoljenim
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Global Validation Pipe

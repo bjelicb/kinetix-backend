@@ -44,9 +44,30 @@ async function bootstrap() {
     });
     app.use((0, helmet_1.default)());
     app.use((0, compression_1.default)());
+    const allowedOrigins = process.env.MOBILE_APP_URL
+        ? process.env.MOBILE_APP_URL.split(',')
+        : [
+            'http://localhost:19006',
+            'http://localhost:8080',
+            'http://localhost:3000',
+        ];
     app.enableCors({
-        origin: process.env.MOBILE_APP_URL || 'http://localhost:19006',
+        origin: (origin, callback) => {
+            if (process.env.NODE_ENV !== 'production') {
+                if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+                    return callback(null, true);
+                }
+            }
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
     });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
