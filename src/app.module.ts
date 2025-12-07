@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,6 +16,7 @@ import { MediaModule } from './media/media.module';
 import { CheckInsModule } from './checkins/checkins.module';
 import { TrainingModule } from './training/training.module';
 import { GamificationModule } from './gamification/gamification.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { GamificationModule } from './gamification/gamification.module';
       },
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     // Feature Modules
     AuthModule,
     UsersModule,
@@ -52,6 +55,7 @@ import { GamificationModule } from './gamification/gamification.module';
     CheckInsModule,
     TrainingModule,
     GamificationModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

@@ -10,6 +10,7 @@ import { TrainersService } from '../trainers/trainers.service';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { AssignPlanDto } from './dto/assign-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
+import { WorkoutDifficulty } from '../common/enums/workout-difficulty.enum';
 
 describe('PlansService', () => {
   let service: PlansService;
@@ -33,14 +34,16 @@ describe('PlansService', () => {
     trainerId: new Types.ObjectId(mockTrainerProfileId),
     name: 'Test Plan',
     description: 'Test Description',
-    difficulty: 'INTERMEDIATE',
+    difficulty: WorkoutDifficulty.INTERMEDIATE,
     workouts: [
       {
         dayOfWeek: 1,
+        isRestDay: false,
         name: 'Monday Workout',
         exercises: [
-          { name: 'Squat', sets: 3, reps: [10, 10, 10], weight: 100 },
+          { name: 'Squat', sets: 3, reps: '10', restSeconds: 60 },
         ],
+        estimatedDuration: 60,
       },
     ],
     isTemplate: true,
@@ -117,7 +120,7 @@ describe('PlansService', () => {
       const createDto: CreatePlanDto = {
         name: 'New Plan',
         description: 'Plan Description',
-        difficulty: 'BEGINNER',
+        difficulty: WorkoutDifficulty.BEGINNER,
         workouts: [],
         isTemplate: true,
       };
@@ -239,11 +242,11 @@ describe('PlansService', () => {
 
   describe('deletePlan', () => {
     it('should delete a plan', async () => {
+      trainersService.getProfile.mockResolvedValue(mockTrainerProfile as any);
+      
       (planModel as any).findById.mockReturnValue({
         populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockReturnValue({
-            exec: jest.fn().mockResolvedValue(mockPlan),
-          }),
+          exec: jest.fn().mockResolvedValue(mockPlan),
         }),
       });
 
@@ -251,9 +254,26 @@ describe('PlansService', () => {
         exec: jest.fn().mockResolvedValue(mockPlan),
       });
 
-      await service.deletePlan(mockPlanId, mockTrainerId);
+      await service.deletePlan(mockPlanId, mockTrainerId, 'TRAINER');
 
       expect((planModel as any).findByIdAndDelete).toHaveBeenCalledWith(mockPlanId);
+    });
+
+    it('should delete a plan as ADMIN without ownership check', async () => {
+      (planModel as any).findById.mockReturnValue({
+        populate: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockPlan),
+        }),
+      });
+
+      (planModel as any).findByIdAndDelete.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockPlan),
+      });
+
+      await service.deletePlan(mockPlanId, mockTrainerId, 'ADMIN');
+
+      expect((planModel as any).findByIdAndDelete).toHaveBeenCalledWith(mockPlanId);
+      expect(trainersService.getProfile).not.toHaveBeenCalled();
     });
   });
 
@@ -288,6 +308,7 @@ describe('PlansService', () => {
       const result = await service.assignPlanToClients(
         mockPlanId,
         mockTrainerId,
+        'TRAINER',
         assignDto,
       );
 
@@ -327,18 +348,18 @@ describe('PlansService', () => {
       };
 
       await expect(
-        service.assignPlanToClients(mockPlanId, mockTrainerId, assignDto),
+        service.assignPlanToClients(mockPlanId, mockTrainerId, 'TRAINER', assignDto),
       ).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('duplicatePlan', () => {
-    it('should duplicate a plan', async () => {
+    it('should duplicate a plan as TRAINER', async () => {
+      trainersService.getProfile.mockResolvedValue(mockTrainerProfile as any);
+      
       (planModel as any).findById.mockReturnValue({
-        populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockReturnValue({
-            exec: jest.fn().mockResolvedValue(mockPlan),
-          }),
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockPlan),
         }),
       });
 
@@ -353,12 +374,39 @@ describe('PlansService', () => {
       };
       (planModel as any).mockImplementation(() => mockInstance);
 
-      const result = await service.duplicatePlan(mockPlanId, mockTrainerId);
+      const result = await service.duplicatePlan(mockPlanId, mockTrainerId, 'TRAINER');
 
       expect(planModel).toHaveBeenCalled();
       expect(mockInstance.save).toHaveBeenCalled();
       expect(result.name).toBe('Test Plan (Copy)');
       expect(result.assignedClientIds).toEqual([]);
+    });
+
+    it('should duplicate a plan as ADMIN keeping original trainerId', async () => {
+      (planModel as any).findById.mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockPlan),
+        }),
+      });
+
+      const duplicatedPlan = {
+        ...mockPlan,
+        name: `${mockPlan.name} (Copy)`,
+        assignedClientIds: [],
+      };
+      const mockInstance = {
+        ...duplicatedPlan,
+        save: jest.fn().mockResolvedValue(duplicatedPlan),
+      };
+      (planModel as any).mockImplementation(() => mockInstance);
+
+      const result = await service.duplicatePlan(mockPlanId, mockTrainerId, 'ADMIN');
+
+      expect(planModel).toHaveBeenCalled();
+      expect(mockInstance.save).toHaveBeenCalled();
+      expect(result.name).toBe('Test Plan (Copy)');
+      expect(result.assignedClientIds).toEqual([]);
+      expect(trainersService.getProfile).not.toHaveBeenCalled();
     });
   });
 });

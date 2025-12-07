@@ -40,10 +40,10 @@ export class WorkoutsService {
       }
 
       // Get trainer profile ID - handle both populated and non-populated cases
-      let trainerProfileId: Types.ObjectId | string = client.trainerId;
-      if (!trainerProfileId) {
+      if (!client.trainerId) {
         throw new Error(`Client does not have a trainer assigned. Client ID: ${clientProfileId}`);
       }
+      let trainerProfileId: Types.ObjectId | string = client.trainerId;
       
       // Convert to ObjectId string if needed
       let trainerProfileIdString: string;
@@ -189,6 +189,9 @@ export class WorkoutsService {
     // Create new log
     // Get trainerId from client profile
     const trainerId = client.trainerId;
+    if (!trainerId) {
+      throw new Error(`Client does not have a trainer assigned. Client ID: ${clientProfileId}`);
+    }
     const trainerIdString = (trainerId as any)?._id 
       ? (trainerId as any)._id.toString() 
       : trainerId.toString();

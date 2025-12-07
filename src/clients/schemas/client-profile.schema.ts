@@ -31,9 +31,9 @@ export class ClientProfile {
   @Prop({
     type: Types.ObjectId,
     ref: 'TrainerProfile',
-    required: true,
+    required: false,
   })
-  trainerId: Types.ObjectId;
+  trainerId?: Types.ObjectId;
 
   // Client Metrics
   @Prop()

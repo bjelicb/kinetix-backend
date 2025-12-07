@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { PlansService } from './plans.service';
@@ -27,28 +28,38 @@ export class PlansController {
   constructor(private plansService: PlansService) {}
 
   @Post()
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async createPlan(
     @CurrentUser() user: JwtPayload,
     @Body() dto: CreatePlanDto,
   ) {
+    // If user is ADMIN, trainerId must be provided
+    if (user.role === 'ADMIN' && !dto.trainerId) {
+      throw new BadRequestException('trainerId is required when creating plan as admin');
+    }
+    
+    // If user is TRAINER, trainerId should not be provided (will use current user)
+    if (user.role === 'TRAINER' && dto.trainerId) {
+      throw new BadRequestException('trainerId cannot be provided when creating plan as trainer');
+    }
+    
     return this.plansService.createPlan(user.sub, dto);
   }
 
   @Get()
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async getPlans(@CurrentUser() user: JwtPayload) {
     return this.plansService.getPlans(user.sub);
   }
 
   @Get(':id')
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async getPlanById(@Param('id') id: string) {
     return this.plansService.getPlanById(id);
   }
 
   @Patch(':id')
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async updatePlan(
     @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
@@ -58,32 +69,32 @@ export class PlansController {
   }
 
   @Delete(':id')
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async deletePlan(
     @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
   ) {
-    await this.plansService.deletePlan(id, user.sub);
+    await this.plansService.deletePlan(id, user.sub, user.role);
     return { message: 'Plan deleted successfully' };
   }
 
   @Post(':id/assign')
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async assignPlan(
     @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: AssignPlanDto,
   ) {
-    return this.plansService.assignPlanToClients(id, user.sub, dto);
+    return this.plansService.assignPlanToClients(id, user.sub, user.role, dto);
   }
 
   @Post(':id/duplicate')
-  @Roles('TRAINER')
+  @Roles('TRAINER', 'ADMIN')
   async duplicatePlan(
     @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
   ) {
-    return this.plansService.duplicatePlan(id, user.sub);
+    return this.plansService.duplicatePlan(id, user.sub, user.role);
   }
 }
 

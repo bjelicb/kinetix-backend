@@ -67,7 +67,7 @@ export class GamificationService {
     const trainerProfileId = (trainerProfile as any)._id.toString();
 
     // Verify trainer owns this client
-    if (clientProfile.trainerId.toString() !== trainerProfileId) {
+    if (!clientProfile.trainerId || clientProfile.trainerId.toString() !== trainerProfileId) {
       throw new NotFoundException('Client not found or not authorized.');
     }
 

@@ -38,6 +38,7 @@ async function bootstrap() {
     .addTag('media', 'Media upload signatures')
     .addTag('training', 'Training synchronization')
     .addTag('gamification', 'Gamification and penalties')
+    .addTag('admin', 'Admin operations and user management')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -62,9 +63,12 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // U development modu, dozvoli sve localhost origin-e
+      // U development modu, dozvoli sve localhost origin-e i IP adrese iz lokalne mreže
       if (process.env.NODE_ENV !== 'production') {
-        if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        if (!origin || 
+            origin.startsWith('http://localhost:') || 
+            origin.startsWith('http://127.0.0.1:') ||
+            origin.startsWith('http://192.168.0.')) { // Dozvoli sve IP adrese iz 192.168.0.x opsega
           return callback(null, true);
         }
       }
@@ -95,7 +99,9 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  // Listen on all interfaces (0.0.0.0) to allow connections from mobile devices on the same network
+  await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`Accessible from network at: http://192.168.0.27:${port}/api`);
 }
 bootstrap();

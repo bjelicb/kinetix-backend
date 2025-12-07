@@ -145,7 +145,7 @@ describe('PlansController', () => {
 
       await controller.deletePlan(mockJwtPayload, planId);
 
-      expect(plansService.deletePlan).toHaveBeenCalledWith(planId, mockJwtPayload.sub);
+      expect(plansService.deletePlan).toHaveBeenCalledWith(planId, mockJwtPayload.sub, mockJwtPayload.role);
     });
 
     it('should throw ForbiddenException if trainer does not own plan', async () => {
@@ -176,6 +176,7 @@ describe('PlansController', () => {
       expect(plansService.assignPlanToClients).toHaveBeenCalledWith(
         planId,
         mockJwtPayload.sub,
+        mockJwtPayload.role,
         assignDto,
       );
       expect(response).toEqual(result);
@@ -205,7 +206,7 @@ describe('PlansController', () => {
 
       const result = await controller.duplicatePlan(mockJwtPayload, planId);
 
-      expect(plansService.duplicatePlan).toHaveBeenCalledWith(planId, mockJwtPayload.sub);
+      expect(plansService.duplicatePlan).toHaveBeenCalledWith(planId, mockJwtPayload.sub, mockJwtPayload.role);
       expect(result).toEqual(duplicatedPlan);
     });
 

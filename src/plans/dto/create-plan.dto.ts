@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -33,5 +34,9 @@ export class CreatePlanDto {
   @IsBoolean()
   @IsOptional()
   isTemplate?: boolean;
+
+  @IsMongoId()
+  @IsOptional()
+  trainerId?: string; // Required for ADMIN, optional for TRAINER (uses current user)
 }
 
