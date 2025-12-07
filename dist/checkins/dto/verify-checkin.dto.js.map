@@ -1,1 +1,0 @@
-{"version":3,"file":"verify-checkin.dto.js","sourceRoot":"","sources":["../../../src/checkins/dto/verify-checkin.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAAsF;AACtF,0FAAiF;AAEjF,MAAa,gBAAgB;IAG3B,kBAAkB,CAAqB;IAIvC,eAAe,CAAU;CAC1B;AARD,4CAQC;AALC;IAFC,IAAA,wBAAM,EAAC,6CAAkB,CAAC;IAC1B,IAAA,4BAAU,GAAE;;4DAC0B;AAIvC;IAFC,IAAA,4BAAU,GAAE;IACZ,IAAA,0BAAQ,GAAE;;yDACc"}
