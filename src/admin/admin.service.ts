@@ -11,6 +11,7 @@ import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { AssignClientDto } from './dto/assign-client.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class AdminService {
@@ -21,6 +22,7 @@ export class AdminService {
     @InjectModel(CheckIn.name) private checkInModel: Model<CheckInDocument>,
     @InjectModel(WeeklyPlan.name) private planModel: Model<WeeklyPlanDocument>,
     @InjectModel(WorkoutLog.name) private workoutLogModel: Model<WorkoutLogDocument>,
+    private gamificationService: GamificationService,
   ) {}
 
   async getAllUsers() {
@@ -578,10 +580,14 @@ export class AdminService {
   }
 
   async updateWorkoutStatus(workoutId: string, body: { isCompleted?: boolean; isMissed?: boolean }) {
+    console.log(`[AdminService] updateWorkoutStatus START - workoutId: ${workoutId}, body:`, body);
     const workout = await this.workoutLogModel.findById(workoutId).exec();
     if (!workout) {
       throw new NotFoundException('Workout not found');
     }
+
+    const wasMissed = workout.isMissed;
+    console.log(`[AdminService] updateWorkoutStatus - Current state: isCompleted=${workout.isCompleted}, isMissed=${wasMissed}`);
 
     if (body.isCompleted !== undefined) {
       workout.isCompleted = body.isCompleted;
@@ -594,10 +600,29 @@ export class AdminService {
       workout.isMissed = body.isMissed;
       if (body.isMissed) {
         workout.isCompleted = false;
+        
+        // If marking as missed and it wasn't already missed, add penalty
+        if (body.isMissed === true && wasMissed === false) {
+          console.log(`[AdminService] updateWorkoutStatus - Workout ${workoutId} is being marked as missed, adding penalty`);
+          try {
+            await this.gamificationService.addPenaltyToBalance(
+              workout.clientId.toString(),
+              1, // 1€ per missed workout
+              'Missed workout penalty',
+              workout.weeklyPlanId,
+            );
+            console.log(`[AdminService] updateWorkoutStatus - Successfully added 1€ penalty for missed workout ${workoutId}`);
+          } catch (error) {
+            console.error(`[AdminService] updateWorkoutStatus - Error adding penalty for missed workout ${workoutId}:`, error);
+            // Don't throw - workout update should succeed even if penalty fails
+          }
+        }
       }
     }
 
     await workout.save();
+
+    console.log(`[AdminService] updateWorkoutStatus SUCCESS - workoutId: ${workoutId}, isCompleted: ${workout.isCompleted}, isMissed: ${workout.isMissed}`);
 
     return {
       success: true,

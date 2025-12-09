@@ -75,5 +75,9 @@ export class LogWorkoutDto {
   @IsString()
   @IsOptional()
   clientNotes?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isMissed?: boolean;
 }
 

@@ -7,6 +7,7 @@ import { UpdateWorkoutLogDto } from './dto/update-workout-log.dto';
 import { ClientProfile } from '../clients/schemas/client-profile.schema';
 import { WeeklyPlan } from '../plans/schemas/weekly-plan.schema';
 import { ClientsService } from '../clients/clients.service';
+import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class WorkoutsService {
@@ -15,6 +16,8 @@ export class WorkoutsService {
     private workoutLogModel: Model<WorkoutLogDocument>,
     @Inject(forwardRef(() => ClientsService))
     private clientsService: ClientsService,
+    @Inject(forwardRef(() => GamificationService))
+    private gamificationService: GamificationService,
   ) {}
 
   async generateWeeklyLogs(
@@ -216,6 +219,12 @@ export class WorkoutsService {
     logId: string,
     dto: UpdateWorkoutLogDto,
   ): Promise<WorkoutLog> {
+    // First, get the existing log to check if isMissed is changing
+    const existingLog = await this.workoutLogModel.findById(logId).exec();
+    if (!existingLog) {
+      throw new NotFoundException('Workout log not found');
+    }
+
     const updateData: any = {};
 
     if (dto.completedExercises) {
@@ -236,6 +245,28 @@ export class WorkoutsService {
 
     if (dto.clientNotes !== undefined) {
       updateData.clientNotes = dto.clientNotes;
+    }
+
+    // Check if isMissed is being set to true (and wasn't already true)
+    if (dto.isMissed !== undefined) {
+      updateData.isMissed = dto.isMissed;
+      
+      // If marking as missed and it wasn't already missed, add penalty
+      if (dto.isMissed === true && existingLog.isMissed === false) {
+        console.log(`[WorkoutsService] updateWorkoutLog - Workout ${logId} is being marked as missed, adding penalty`);
+        try {
+          await this.gamificationService.addPenaltyToBalance(
+            existingLog.clientId.toString(),
+            1, // 1€ per missed workout
+            'Missed workout penalty',
+            existingLog.weeklyPlanId,
+          );
+          console.log(`[WorkoutsService] updateWorkoutLog - Successfully added 1€ penalty for missed workout ${logId}`);
+        } catch (error) {
+          console.error(`[WorkoutsService] updateWorkoutLog - Error adding penalty for missed workout ${logId}:`, error);
+          // Don't throw - workout update should succeed even if penalty fails
+        }
+      }
     }
 
     const log = await this.workoutLogModel
@@ -327,10 +358,75 @@ export class WorkoutsService {
       .exec();
   }
 
+  async getWorkoutLogsByClient(clientProfileId: string | Types.ObjectId): Promise<WorkoutLog[]> {
+    return this.workoutLogModel
+      .find({
+        clientId: new Types.ObjectId(clientProfileId.toString()),
+      })
+      .select('clientId trainerId weeklyPlanId workoutDate weekNumber dayOfWeek completedExercises isCompleted isMissed completedAt difficultyRating clientNotes isRestDay')
+      .populate('weeklyPlanId', 'name')
+      .sort({ workoutDate: 1 })
+      .lean()
+      .exec();
+  }
+
   async markMissedWorkouts(): Promise<number> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Find all workouts that should be marked as missed
+    const missedWorkouts = await this.workoutLogModel.find({
+      workoutDate: { $lt: today },
+      isCompleted: false,
+      isMissed: false,
+    }).exec();
+
+    if (missedWorkouts.length === 0) {
+      return 0;
+    }
+
+    // Group by clientId and weeklyPlanId to add penalties
+    const clientPenalties = new Map<string, { clientId: Types.ObjectId; planId?: Types.ObjectId; count: number }>();
+    
+    for (const workout of missedWorkouts) {
+      const clientId = workout.clientId.toString();
+      const planId = workout.weeklyPlanId?.toString();
+      
+      if (!clientPenalties.has(clientId)) {
+        clientPenalties.set(clientId, {
+          clientId: workout.clientId,
+          planId: planId ? new Types.ObjectId(planId) : undefined,
+          count: 0,
+        });
+      }
+      
+      const entry = clientPenalties.get(clientId)!;
+      entry.count += 1;
+    }
+
+    // Add 1€ penalty per missed workout to each client's balance
+    console.log(`[WorkoutsService] markMissedWorkouts - Found ${missedWorkouts.length} missed workouts, affecting ${clientPenalties.size} clients`);
+    
+    for (const [clientIdStr, penalty] of clientPenalties.entries()) {
+      try {
+        console.log(`[WorkoutsService] Adding penalty for client ${clientIdStr}: ${penalty.count} missed workouts = ${penalty.count}€`);
+        // Add 1€ for each missed workout
+        for (let i = 0; i < penalty.count; i++) {
+          await this.gamificationService.addPenaltyToBalance(
+            penalty.clientId,
+            1, // 1€ per missed workout
+            'Missed workout',
+            penalty.planId,
+          );
+        }
+        console.log(`[WorkoutsService] Successfully added ${penalty.count}€ penalty for client ${clientIdStr}`);
+      } catch (error) {
+        console.error(`[WorkoutsService] Error adding penalty for client ${clientIdStr}:`, error);
+        // Continue with other clients even if one fails
+      }
+    }
+
+    // Mark workouts as missed
     const result = await this.workoutLogModel.updateMany(
       {
         workoutDate: { $lt: today },

@@ -61,6 +61,23 @@ export class TrainerProfile {
   @Prop({ default: 10 })
   maxClients: number;
 
+  // Gym Location (for GPS verification)
+  @Prop({
+    type: {
+      latitude: { type: Number, required: false },
+      longitude: { type: Number, required: false },
+      address: { type: String, required: false },
+      radius: { type: Number, default: 100 }, // GPS verification radius in meters
+    },
+    required: false,
+  })
+  gymLocation?: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+    radius: number;
+  };
+
   // Stripe Integration (Future)
   @Prop()
   stripeCustomerId?: string;

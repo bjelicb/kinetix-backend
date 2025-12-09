@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { CheckInsService } from './checkins.service';
+import { WeighInService } from './weighin.service';
 import { CreateCheckInDto } from './dto/create-checkin.dto';
 import { VerifyCheckInDto } from './dto/verify-checkin.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -16,7 +17,10 @@ import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('checkins')
 export class CheckInsController {
-  constructor(private readonly checkInsService: CheckInsService) {}
+  constructor(
+    private readonly checkInsService: CheckInsService,
+    private readonly weighInService: WeighInService,
+  ) {}
 
   @Post()
   @Roles(UserRole.CLIENT)
@@ -87,6 +91,44 @@ export class CheckInsController {
   ) {
     await this.checkInsService.deleteCheckIn(checkInId, user.sub);
     return { message: 'Check-in deleted successfully' };
+  }
+
+  // Weigh-in endpoints
+  @Post('weigh-in')
+  @Roles(UserRole.CLIENT)
+  @UseGuards(SaasKillswitchGuard)
+  @ApiOperation({ summary: 'Record weigh-in (can be any day, Monday recommended)' })
+  @ApiResponse({ status: 201, description: 'Weigh-in recorded successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request - weigh-in already exists for this date' })
+  async createWeighIn(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: { weight: number; date?: string; photoUrl?: string; notes?: string; planId?: string },
+  ) {
+    const date = body.date ? new Date(body.date) : undefined;
+    return this.weighInService.createWeighIn(
+      user.sub,
+      body.weight,
+      date,
+      body.photoUrl,
+      body.notes,
+      body.planId,
+    );
+  }
+
+  @Get('weigh-in/history')
+  @Roles(UserRole.CLIENT)
+  @UseGuards(SaasKillswitchGuard)
+  @ApiOperation({ summary: 'Get weigh-in history' })
+  async getWeighInHistory(@CurrentUser() user: JwtPayload) {
+    return this.weighInService.getWeighInHistory(user.sub);
+  }
+
+  @Get('weigh-in/latest')
+  @Roles(UserRole.CLIENT)
+  @UseGuards(SaasKillswitchGuard)
+  @ApiOperation({ summary: 'Get latest weigh-in' })
+  async getLatestWeighIn(@CurrentUser() user: JwtPayload) {
+    return this.weighInService.getLatestWeighIn(user.sub);
   }
 }
 

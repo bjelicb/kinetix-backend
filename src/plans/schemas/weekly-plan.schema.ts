@@ -82,6 +82,10 @@ export class WeeklyPlan {
 
   @Prop({ default: true })
   isTemplate: boolean;
+
+  // Weekly Plan Cost (for Running Tab system)
+  @Prop({ default: 0 })
+  weeklyCost: number; // Cost in euros per week
 }
 
 export const WeeklyPlanSchema = SchemaFactory.createForClass(WeeklyPlan);

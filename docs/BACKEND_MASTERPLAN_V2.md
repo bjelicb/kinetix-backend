@@ -7,6 +7,8 @@
 
 > **FOKUS:** Edge case handling i validacije koje osiguravaju data integrity i sprečavaju bugove u produkciji.
 
+> **NAPOMENA:** Running Tab Balance System, Weekly Unlock Mechanism, GPS Check-in Validation i Monday Weigh-in su implementirani u V1. V2 se fokusira na Stripe payment integraciju i AI message system (vidi V4 za detalje).
+
 ---
 
 ## ⚠️ **KRITIČNA PRAVILA - MORA SE POŠTOVATI:**

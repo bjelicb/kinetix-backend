@@ -9,6 +9,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
 import { TrainersModule } from '../trainers/trainers.module';
 import { ClientsModule } from '../clients/clients.module';
 import { WorkoutsModule } from '../workouts/workouts.module';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WorkoutsModule } from '../workouts/workouts.module';
     TrainersModule,
     forwardRef(() => ClientsModule),
     forwardRef(() => WorkoutsModule),
+    forwardRef(() => GamificationModule),
   ],
   controllers: [PlansController],
   providers: [PlansService],

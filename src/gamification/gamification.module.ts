@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { GamificationService } from './gamification.service';
@@ -20,7 +20,7 @@ import { WorkoutLog, WorkoutLogSchema } from '../workouts/schemas/workout-log.sc
     ]),
     ScheduleModule.forRoot(),
     CommonModule,
-    ClientsModule,
+    forwardRef(() => ClientsModule),
     TrainersModule,
   ],
   controllers: [GamificationController],

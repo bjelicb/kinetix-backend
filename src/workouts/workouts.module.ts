@@ -9,6 +9,7 @@ import { CommonModule } from '../common/common.module';
 import { ClientsModule } from '../clients/clients.module';
 import { TrainersModule } from '../trainers/trainers.module';
 import { PlansModule } from '../plans/plans.module';
+import { GamificationModule } from '../gamification/gamification.module';
 import { DailyWorkoutChecker } from './jobs/daily-workout-checker.job';
 import { CleanupOldLogs } from './jobs/cleanup-old-logs.job';
 
@@ -23,6 +24,7 @@ import { CleanupOldLogs } from './jobs/cleanup-old-logs.job';
     forwardRef(() => ClientsModule),
     TrainersModule,
     forwardRef(() => PlansModule),
+    forwardRef(() => GamificationModule),
   ],
   controllers: [WorkoutsController],
   providers: [WorkoutsService, DailyWorkoutChecker, CleanupOldLogs],

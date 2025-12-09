@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -14,6 +14,7 @@ import { AssignPlanDto } from './dto/assign-plan.dto';
 import { ClientsService } from '../clients/clients.service';
 import { WorkoutsService } from '../workouts/workouts.service';
 import { TrainersService } from '../trainers/trainers.service';
+import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class PlansService {
@@ -31,6 +32,8 @@ export class PlansService {
     @Inject(forwardRef(() => WorkoutsService))
     private workoutsService: WorkoutsService,
     private trainersService: TrainersService,
+    @Inject(forwardRef(() => GamificationService))
+    private gamificationService: GamificationService,
   ) {}
 
   async createPlan(userId: string, dto: CreatePlanDto): Promise<WeeklyPlan> {
@@ -229,6 +232,116 @@ export class PlansService {
     console.log(`[PlansService] Plan deleted successfully`);
   }
 
+  /**
+   * Check if client can unlock next week
+   * Returns true only if current week's workouts are ALL completed
+   */
+  async canUnlockNextWeek(clientId: string): Promise<boolean> {
+    const client = await this.clientsService.getProfileById(clientId);
+    
+    // Define type for plan history entry
+    type PlanHistoryEntry = {
+      planId: Types.ObjectId;
+      planStartDate: Date;
+      planEndDate: Date;
+      assignedAt?: Date;
+      trainerId?: Types.ObjectId;
+    };
+    
+    // Get active plan from planHistory
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
+    let activePlanEntry: PlanHistoryEntry | null = null;
+    if (client.planHistory && client.planHistory.length > 0) {
+      const found = client.planHistory.find(entry => {
+        const start = new Date(entry.planStartDate);
+        const end = new Date(entry.planEndDate);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        return now >= start && now <= end;
+      });
+      if (found) {
+        activePlanEntry = {
+          planId: found.planId,
+          planStartDate: found.planStartDate,
+          planEndDate: found.planEndDate,
+          assignedAt: found.assignedAt,
+          trainerId: found.trainerId,
+        };
+      }
+    }
+    
+    // Fallback to currentPlanId (backward compatibility)
+    if (!activePlanEntry && client.currentPlanId) {
+      const start = client.planStartDate ? new Date(client.planStartDate) : null;
+      const end = client.planEndDate ? new Date(client.planEndDate) : null;
+      
+      if (start && end) {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        if (now >= start && now <= end) {
+          activePlanEntry = {
+            planId: client.currentPlanId,
+            planStartDate: start,
+            planEndDate: end,
+          };
+        }
+      }
+    }
+    
+    if (!activePlanEntry) {
+      // No active plan, can unlock (first week)
+      return true;
+    }
+    
+    // Check if current week has ended
+    const weekEnd = new Date(activePlanEntry.planEndDate);
+    weekEnd.setHours(23, 59, 59, 999);
+    
+    if (now > weekEnd) {
+      // Week has ended, check if all workouts are completed
+      const planId = (activePlanEntry.planId as any)?._id?.toString() || activePlanEntry.planId.toString();
+      
+      const workoutLogs = await this.workoutsService.getWorkoutLogsByClient(clientId);
+      
+      // Filter logs for this plan and week
+      const weekLogs = workoutLogs.filter(log => {
+        const logPlanId = (log.weeklyPlanId as any)?._id?.toString() || log.weeklyPlanId.toString();
+        const logDate = new Date(log.workoutDate);
+        logDate.setHours(0, 0, 0, 0);
+        
+        return logPlanId === planId &&
+               logDate >= new Date(activePlanEntry!.planStartDate) &&
+               logDate <= weekEnd;
+      });
+      
+      // Get plan to check rest days
+      const plan = await this.planModel.findById(planId).exec();
+      if (!plan) {
+        return false;
+      }
+      
+      // Check if all non-rest-day workouts are completed
+      const allCompleted = weekLogs.every(log => {
+        // Find the workout day in plan
+        const workoutDay = (plan.workouts || []).find((w: any) => w.dayOfWeek === log.dayOfWeek);
+        
+        // Rest days don't need to be completed
+        if (workoutDay && workoutDay.isRestDay) {
+          return true;
+        }
+        
+        return log.isCompleted === true;
+      });
+      
+      return allCompleted;
+    }
+    
+    // Week hasn't ended yet, cannot unlock
+    return false;
+  }
+
   async assignPlanToClients(
     planId: string,
     userId: string,
@@ -236,6 +349,101 @@ export class PlansService {
     dto: AssignPlanDto,
   ): Promise<any> {
     console.log(`[PlansService] assignPlanToClients called - planId: ${planId}, userId: ${userId}, role: ${userRole}, clientIds: ${dto.clientIds.length}, startDate: ${dto.startDate}`);
+    
+    // Validate that clients can unlock next week (if they have an active plan)
+    // BUT: Allow assign if it's a different plan (not the same plan)
+    console.log(`[PlansService] Checking unlock status for ${dto.clientIds.length} clients...`);
+    for (const clientId of dto.clientIds) {
+      try {
+        console.log(`[PlansService] Checking unlock status for client: ${clientId}`);
+        // Try to get client profile to get clientProfileId
+        let clientProfileId: string;
+        let client;
+        try {
+          client = await this.clientsService.getProfile(clientId);
+          clientProfileId = (client as any)._id.toString();
+          console.log(`[PlansService] Found client profile ${clientProfileId} for userId ${clientId}`);
+        } catch (e) {
+          // If not found as userId, try as clientProfileId
+          console.log(`[PlansService] Not found as userId, trying as clientProfileId: ${e}`);
+          try {
+            client = await this.clientsService.getProfileById(clientId);
+            clientProfileId = (client as any)._id.toString();
+            console.log(`[PlansService] Found client profile ${clientProfileId} (as clientProfileId)`);
+          } catch (e2) {
+            console.log(`[PlansService] Client profile not found for ${clientId} - might be new client, skipping unlock check`);
+            continue; // Skip unlock check for new clients
+          }
+        }
+        
+        // Check if client already has this exact plan assigned
+        console.log(`[PlansService] 🔍 Unlock check: Checking if client ${clientProfileId} already has plan ${planId}`);
+        console.log(`[PlansService] → Client planHistory length: ${client.planHistory?.length || 0}`);
+        console.log(`[PlansService] → Client currentPlanId: ${client.currentPlanId ? (client.currentPlanId as any)?._id?.toString() || client.currentPlanId.toString() : 'null'}`);
+        
+        let hasThisPlan = false;
+        let foundInUnlock = '';
+        
+        // Check planHistory
+        if (client.planHistory && client.planHistory.length > 0) {
+          console.log(`[PlansService] → Checking planHistory for unlock check (${client.planHistory.length} entries)...`);
+          for (let i = 0; i < client.planHistory.length; i++) {
+            const entry = client.planHistory[i];
+            const entryPlanId = (entry.planId as any)?._id?.toString() || entry.planId.toString();
+            console.log(`[PlansService] →   Entry ${i}: planId=${entryPlanId}, comparing with ${planId}`);
+            if (entryPlanId === planId.toString()) {
+              hasThisPlan = true;
+              foundInUnlock = `planHistory[${i}]`;
+              console.log(`[PlansService] → ✓ MATCH FOUND in planHistory[${i}] for unlock check!`);
+              break;
+            }
+          }
+        } else {
+          console.log(`[PlansService] → planHistory is empty or null for unlock check`);
+        }
+        
+        // Check currentPlanId (backward compatibility)
+        if (!hasThisPlan && client.currentPlanId) {
+          const existingPlanId = (client.currentPlanId as any)?._id?.toString() || client.currentPlanId.toString();
+          console.log(`[PlansService] → Checking currentPlanId for unlock check: ${existingPlanId}`);
+          if (existingPlanId === planId.toString()) {
+            hasThisPlan = true;
+            foundInUnlock = 'currentPlanId';
+            console.log(`[PlansService] → ✓ MATCH FOUND in currentPlanId for unlock check!`);
+          } else {
+            console.log(`[PlansService] → ✗ No match in currentPlanId (${existingPlanId} !== ${planId})`);
+          }
+        } else if (!hasThisPlan) {
+          console.log(`[PlansService] → currentPlanId is null/undefined for unlock check`);
+        }
+        
+        if (hasThisPlan) {
+          console.log(`[PlansService] ✅ Client ${clientProfileId} already has this plan (found in: ${foundInUnlock}) - will preserve existing dates, skipping unlock check`);
+          continue; // Skip unlock check if it's the same plan
+        } else {
+          console.log(`[PlansService] → ✗ No match found - client does NOT have this plan, will check unlock status`);
+        }
+        
+        // Only check unlock if client has a different active plan
+        console.log(`[PlansService] Client ${clientProfileId} has different plan - checking if can unlock next week...`);
+        const canUnlock = await this.canUnlockNextWeek(clientProfileId);
+        console.log(`[PlansService] Client ${clientProfileId} can unlock: ${canUnlock}`);
+        if (!canUnlock) {
+          throw new BadRequestException(
+            `Client cannot be assigned a new plan. Current week must be completed first. Complete all workouts in the current week before assigning a new plan.`
+          );
+        }
+      } catch (error) {
+        // If it's a BadRequestException about unlock, rethrow it
+        if (error instanceof BadRequestException) {
+          console.error(`[PlansService] Client ${clientId} cannot unlock next week - throwing error`);
+          throw error;
+        }
+        // For other errors (e.g., client not found), continue (might be new client)
+        console.log(`[PlansService] Could not check unlock status for client ${clientId}, continuing... (error: ${error})`);
+      }
+    }
+    console.log(`[PlansService] Unlock check completed`);
     
     // Get plan directly (not using getPlanById to avoid trainerName logic)
     const plan = await this.planModel
@@ -338,31 +546,52 @@ export class PlansService {
     for (const clientProfileId of clientProfileIds) {
       const client = await this.clientsService.getProfileById(clientProfileId);
       
+      console.log(`[PlansService] 🔍 Checking if client ${clientProfileId} already has plan ${planId}`);
+      console.log(`[PlansService] → Client planHistory length: ${client.planHistory?.length || 0}`);
+      console.log(`[PlansService] → Client currentPlanId: ${client.currentPlanId ? (client.currentPlanId as any)?._id?.toString() || client.currentPlanId.toString() : 'null'}`);
+      
       // Check if plan already exists in planHistory (new way) or currentPlanId (backward compatibility)
       let planExists = false;
+      let foundIn = '';
       
       // Check planHistory first
       if (client.planHistory && client.planHistory.length > 0) {
-        planExists = client.planHistory.some((entry) => {
+        console.log(`[PlansService] → Checking planHistory (${client.planHistory.length} entries)...`);
+        for (let i = 0; i < client.planHistory.length; i++) {
+          const entry = client.planHistory[i];
           const entryPlanId = (entry.planId as any)?._id?.toString() || entry.planId.toString();
-          return entryPlanId === planId.toString();
-        });
+          console.log(`[PlansService] →   Entry ${i}: planId=${entryPlanId}, comparing with ${planId}`);
+          if (entryPlanId === planId.toString()) {
+            planExists = true;
+            foundIn = `planHistory[${i}]`;
+            console.log(`[PlansService] → ✓ MATCH FOUND in planHistory[${i}]!`);
+            break;
+          }
+        }
+      } else {
+        console.log(`[PlansService] → planHistory is empty or null, skipping planHistory check`);
       }
       
       // If not in planHistory, check currentPlanId (backward compatibility)
       if (!planExists) {
+        console.log(`[PlansService] → Checking currentPlanId (backward compatibility)...`);
         const existingPlanId = (client.currentPlanId as any)?._id?.toString() || (client.currentPlanId as any)?.toString();
+        console.log(`[PlansService] →   currentPlanId value: ${existingPlanId || 'null'}, comparing with ${planId}`);
         if (existingPlanId && existingPlanId.toString() === planId.toString()) {
           planExists = true;
+          foundIn = 'currentPlanId';
+          console.log(`[PlansService] → ✓ MATCH FOUND in currentPlanId!`);
+        } else {
+          console.log(`[PlansService] → ✗ No match in currentPlanId`);
         }
       }
       
       if (planExists) {
         existingClients.push(clientProfileId);
-        console.log(`[PlansService] Client ${clientProfileId} already has this plan assigned - preserving existing dates`);
+        console.log(`[PlansService] ✅ Client ${clientProfileId} already has this plan assigned (found in: ${foundIn}) - preserving existing dates`);
       } else {
         newClients.push(clientProfileId);
-        console.log(`[PlansService] Client ${clientProfileId} is new or has different plan - will assign with new dates`);
+        console.log(`[PlansService] 🆕 Client ${clientProfileId} is new or has different plan - will assign with new dates`);
       }
     }
     
@@ -416,6 +645,27 @@ export class PlansService {
           },
         }).exec();
         
+        // Add plan cost to client's running tab balance
+        const planCost = (plan as any).weeklyCost || 0;
+        console.log(`[PlansService] Plan cost for client ${clientProfileId}: ${planCost}€`);
+        if (planCost > 0) {
+          try {
+            console.log(`[PlansService] Adding plan cost ${planCost}€ to client ${clientProfileId}'s balance`);
+            await this.gamificationService.addPenaltyToBalance(
+              clientProfileId,
+              planCost,
+              'Weekly plan cost',
+              new Types.ObjectId(planId),
+            );
+            console.log(`[PlansService] Successfully added plan cost ${planCost}€ to client ${clientProfileId}'s balance`);
+          } catch (error) {
+            console.error(`[PlansService] Error adding plan cost to balance for client ${clientProfileId}:`, error);
+            // Don't throw - plan assignment should succeed even if balance update fails
+          }
+        } else {
+          console.log(`[PlansService] Plan has no cost (weeklyCost = 0), skipping balance update`);
+        }
+        
         console.log(`[PlansService] Successfully updated NEW client profile ${clientProfileId} with plan in history and dates`);
       } catch (error) {
         console.error(`[PlansService] Error updating client profile ${clientProfileId}:`, error);
@@ -427,6 +677,7 @@ export class PlansService {
     // This is already handled by $addToSet below, so we just log it
     if (existingClients.length > 0) {
       console.log(`[PlansService] Skipping date updates for ${existingClients.length} existing clients - preserving their planStartDate and planEndDate`);
+      console.log(`[PlansService] Skipping plan cost addition for ${existingClients.length} existing clients - they were already charged when plan was first assigned`);
     }
 
     console.log(`[PlansService] Adding clients to plan's assignedClientIds`);
@@ -461,14 +712,17 @@ export class PlansService {
       console.log(`[PlansService] Skipping workout log generation for ${existingClients.length} existing clients - they already have logs`);
     }
 
-    console.log(`[PlansService] Plan assigned successfully to ${clientProfileIds.length} clients`);
-    return {
+    console.log(`[PlansService] ✅ Plan assigned successfully to ${clientProfileIds.length} clients`);
+    console.log(`[PlansService] ✅ Returning success response`);
+    const response = {
       message: 'Plan assigned successfully',
       planId,
       clientIds: dto.clientIds,
       startDate,
       endDate,
     };
+    console.log(`[PlansService] ✅ Response:`, JSON.stringify(response, null, 2));
+    return response;
   }
 
   async duplicatePlan(planId: string, userId: string, userRole: string): Promise<WeeklyPlan> {

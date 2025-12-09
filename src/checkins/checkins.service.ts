@@ -17,10 +17,79 @@ export class CheckInsService {
     private trainersService: TrainersService,
   ) {}
 
+  /**
+   * Calculate distance between two GPS coordinates using Haversine formula
+   * Returns distance in meters
+   */
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
+    const R = 6371000; // Earth's radius in meters
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLon = this.toRadians(lon2 - lon1);
+    
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  private toRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
+  }
+
+  /**
+   * Validate GPS coordinates against trainer's gym location
+   * Returns true if within radius, false otherwise
+   */
+  async validateGpsLocation(
+    trainerId: Types.ObjectId,
+    checkInLat: number,
+    checkInLon: number,
+  ): Promise<boolean> {
+    const trainerProfile = await this.trainersService.getProfileById(trainerId.toString());
+    
+    if (!trainerProfile || !trainerProfile.gymLocation) {
+      // If no gym location set, allow check-in (backward compatibility)
+      return true;
+    }
+
+    const gymLat = trainerProfile.gymLocation.latitude;
+    const gymLon = trainerProfile.gymLocation.longitude;
+    const radius = trainerProfile.gymLocation.radius || 100; // Default 100 meters
+
+    const distance = this.calculateDistance(gymLat, gymLon, checkInLat, checkInLon);
+    
+    return distance <= radius;
+  }
+
   async createCheckIn(clientId: string, createCheckInDto: CreateCheckInDto): Promise<CheckIn> {
     const clientProfile = await this.clientsService.getProfile(clientId);
     if (!clientProfile) {
       throw new NotFoundException('Client profile not found.');
+    }
+
+    // Validate GPS location against trainer's gym location
+    if (createCheckInDto.gpsCoordinates && clientProfile.trainerId) {
+      const isGymLocation = await this.validateGpsLocation(
+        clientProfile.trainerId,
+        createCheckInDto.gpsCoordinates.latitude,
+        createCheckInDto.gpsCoordinates.longitude,
+      );
+      
+      // Set isGymLocation flag (for verification)
+      (createCheckInDto as any).isGymLocation = isGymLocation;
+      
+      // Note: We don't block check-in if GPS doesn't match - trainer can verify manually
+      // But we flag it for review
     }
 
     const checkIn = new this.checkInModel({
@@ -31,6 +100,7 @@ export class CheckInsService {
       photoUrl: createCheckInDto.photoUrl,
       thumbnailUrl: createCheckInDto.thumbnailUrl,
       gpsCoordinates: createCheckInDto.gpsCoordinates,
+      isGymLocation: (createCheckInDto as any).isGymLocation || false,
       aiConfidenceScore: createCheckInDto.aiConfidenceScore,
       detectedActivities: createCheckInDto.detectedActivities,
       clientNotes: createCheckInDto.clientNotes,

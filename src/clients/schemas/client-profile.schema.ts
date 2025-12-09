@@ -102,6 +102,32 @@ export class ClientProfile {
   @Prop({ default: 0 })
   currentStreak: number; // Days in a row
 
+  // Running Tab / Penalty Balance System
+  @Prop({ default: 0 })
+  balance: number; // Running tab balance in euros
+
+  @Prop({ default: 0 })
+  monthlyBalance: number; // Current month's accumulated balance
+
+  @Prop()
+  lastBalanceReset?: Date; // When balance was last cleared
+
+  @Prop({
+    type: [{
+      date: { type: Date, required: true },
+      amount: { type: Number, required: true }, // e.g., 1€ per missed workout
+      reason: { type: String, required: true }, // "Missed workout", "Plan cost"
+      planId: { type: Types.ObjectId, ref: 'WeeklyPlan' },
+    }],
+    default: [],
+  })
+  penaltyHistory: Array<{
+    date: Date;
+    amount: number;
+    reason: string;
+    planId?: Types.ObjectId;
+  }>;
+
   // Notes
   @Prop()
   medicalConditions?: string;

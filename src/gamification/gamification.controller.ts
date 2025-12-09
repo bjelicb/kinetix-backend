@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
 import { GamificationService } from './gamification.service';
+import { ClientsService } from '../clients/clients.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { SaasKillswitchGuard } from '../common/guards/saas-killswitch.guard';
@@ -11,7 +12,10 @@ import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('gamification')
 export class GamificationController {
-  constructor(private readonly gamificationService: GamificationService) {}
+  constructor(
+    private readonly gamificationService: GamificationService,
+    private readonly clientsService: ClientsService,
+  ) {}
 
   @Get('status')
   @Roles(UserRole.CLIENT)
@@ -41,6 +45,31 @@ export class GamificationController {
   ) {
     await this.gamificationService.resetPenalty(clientId, user.sub);
     return { message: 'Penalty reset successfully' };
+  }
+
+  @Get('balance')
+  @Roles(UserRole.CLIENT)
+  @UseGuards(SaasKillswitchGuard)
+  async getBalance(@CurrentUser() user: JwtPayload) {
+    const client = await this.clientsService.getProfile(user.sub);
+    
+    return {
+      balance: client.balance || 0,
+      monthlyBalance: client.monthlyBalance || 0,
+      lastBalanceReset: client.lastBalanceReset,
+      penaltyHistory: client.penaltyHistory || [],
+    };
+  }
+
+  @Post('clear-balance')
+  @Roles(UserRole.CLIENT)
+  @UseGuards(SaasKillswitchGuard)
+  async clearBalance(@CurrentUser() user: JwtPayload) {
+    const client = await this.clientsService.getProfile(user.sub);
+    const clientProfileId = (client as any)._id;
+    
+    await this.gamificationService.clearBalance(clientProfileId);
+    return { message: 'Balance cleared successfully' };
   }
 }
 

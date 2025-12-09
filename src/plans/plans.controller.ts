@@ -96,5 +96,30 @@ export class PlansController {
   ) {
     return this.plansService.duplicatePlan(id, user.sub, user.role);
   }
+
+  @Get('unlock-next-week/:clientId')
+  @Roles('TRAINER', 'ADMIN', 'CLIENT')
+  @ApiOperation({ summary: 'Check if client can unlock next week' })
+  @ApiResponse({ status: 200, description: 'Returns whether next week can be unlocked' })
+  async canUnlockNextWeek(
+    @CurrentUser() user: JwtPayload,
+    @Param('clientId') clientId: string,
+  ) {
+    // If user is CLIENT, use their userId to get clientProfileId
+    let clientProfileId = clientId;
+    if (user.role === 'CLIENT') {
+      // For CLIENT role, clientId param might be userId, convert to clientProfileId
+      try {
+        const client = await this.plansService['clientsService'].getProfile(user.sub);
+        clientProfileId = (client as any)._id.toString();
+      } catch {
+        // If not found, use the provided clientId (might already be clientProfileId)
+        clientProfileId = clientId;
+      }
+    }
+    
+    const canUnlock = await this.plansService.canUnlockNextWeek(clientProfileId);
+    return { canUnlock };
+  }
 }
 

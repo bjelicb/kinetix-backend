@@ -466,6 +466,84 @@ export class GpsCoordinatesDto {
 
 ---
 
+## Running Tab Balance System
+
+### Implementation Status: ✅ COMPLETE
+
+**Schema Changes:**
+- Added `balance`, `monthlyBalance`, `lastBalanceReset`, `penaltyHistory` fields to `ClientProfile` schema
+- Added `weeklyCost` field to `WeeklyPlan` schema
+- Added `gymLocation` field to `TrainerProfile` schema (for GPS validation)
+
+**Service Logic:**
+- `GamificationService.addPenaltyToBalance()` - Adds penalty to client balance (+1€ per missed workout, plan cost on assignment)
+- `GamificationService.clearBalance()` - Clears balance after payment
+- `GamificationService.checkMonthlyPaywall()` - Validates monthly paywall access
+- `WorkoutsService.markMissedWorkouts()` - Automatically adds 1€ penalty per missed workout
+- `PlansService.assignPlanToClients()` - Adds plan cost to balance when plan is assigned
+
+**Endpoints:**
+- `GET /gamification/balance` - Get client balance
+- `POST /gamification/clear-balance` - Clear balance (after payment)
+- `GET /gamification/status` - Returns balance in penalty status response
+
+**Debug Logging:**
+- Added console.log in all balance operations for testing
+
+---
+
+## Weekly Unlock Mechanism
+
+### Implementation Status: ✅ COMPLETE
+
+**Service Logic:**
+- `PlansService.canUnlockNextWeek()` - Validates if current week is complete before allowing next week
+- Checks all non-rest-day workouts are completed
+- Validates week end date has passed
+- Integrated into `assignPlanToClients()` to block premature week assignment
+
+**Endpoints:**
+- `GET /plans/unlock-next-week/:clientId` - Check if client can unlock next week
+
+**Validation:**
+- Blocks next week assignment if current week workouts are incomplete
+- Returns `true` if no active plan (first week) or all workouts completed
+
+---
+
+## GPS Check-in Validation
+
+### Implementation Status: ✅ COMPLETE
+
+**Schema Changes:**
+- Added `gymLocation` to `TrainerProfile` schema (latitude, longitude, radius in meters)
+
+**Service Logic:**
+- `CheckInsService.validateGpsLocation()` - Validates GPS coordinates against trainer's gym location using Haversine formula
+- `CheckInsService.createCheckIn()` - Automatically validates GPS and sets `isGymLocation` flag
+- Check-ins outside radius are flagged but not blocked (trainer can verify manually)
+
+---
+
+## Monday Weigh-in System
+
+### Implementation Status: ✅ COMPLETE
+
+**Schema:**
+- Created `WeighIn` schema with weight, date, photoUrl, notes, aiFlagged, aiMessage fields
+
+**Service Logic:**
+- `WeighInService.createWeighIn()` - Validates Monday requirement, detects weight spikes (>5% change)
+- `WeighInService.getWeighInHistory()` - Returns client's weigh-in history
+- `WeighInService.getLatestWeighIn()` - Returns most recent weigh-in
+
+**Endpoints:**
+- `POST /checkins/weigh-in` - Record Monday weigh-in
+- `GET /checkins/weigh-in/history` - Get weigh-in history
+- `GET /checkins/weigh-in/latest` - Get latest weigh-in
+
+---
+
 ## 🔗 **VEZE:**
 
 - **Status:** `docs/BACKEND_STATUS.md` ✅ Ažurirano

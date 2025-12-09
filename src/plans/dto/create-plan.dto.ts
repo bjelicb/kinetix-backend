@@ -4,8 +4,10 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -38,5 +40,10 @@ export class CreatePlanDto {
   @IsMongoId()
   @IsOptional()
   trainerId?: string; // Required for ADMIN, optional for TRAINER (uses current user)
+
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  weeklyCost?: number; // Cost in euros per week (default: 0)
 }
 

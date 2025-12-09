@@ -14,6 +14,7 @@ import {
 import { CheckIn, CheckInSchema } from '../checkins/schemas/checkin.schema';
 import { WeeklyPlan, WeeklyPlanSchema } from '../plans/schemas/weekly-plan.schema';
 import { WorkoutLog, WorkoutLogSchema } from '../workouts/schemas/workout-log.schema';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { WorkoutLog, WorkoutLogSchema } from '../workouts/schemas/workout-log.sc
       { name: WeeklyPlan.name, schema: WeeklyPlanSchema },
       { name: WorkoutLog.name, schema: WorkoutLogSchema },
     ]),
+    GamificationModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

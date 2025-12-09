@@ -5,6 +5,8 @@ export class PenaltyStatusDto {
   consecutiveMissedWorkouts: number;
   currentStreak: number;
   totalWorkoutsCompleted: number;
+  balance: number; // Running tab balance
+  monthlyBalance: number; // Current month's balance
   recentPenalties: {
     weekStartDate: Date;
     weekEndDate: Date;
