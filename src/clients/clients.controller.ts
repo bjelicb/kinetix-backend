@@ -57,7 +57,34 @@ export class ClientsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Client role required or subscription inactive' })
   async getCurrentPlan(@CurrentUser() user: JwtPayload) {
-    return this.clientsService.getCurrentPlan(user.sub);
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[ClientsController] getCurrentPlan() START');
+    console.log('[ClientsController] → User ID:', user.sub);
+    console.log('[ClientsController] → User role:', user.role);
+    console.log('═══════════════════════════════════════════════════════════');
+    
+    const result = await this.clientsService.getCurrentPlan(user.sub);
+    
+    if (result) {
+      console.log('[ClientsController] ✓ Plan found');
+      console.log('[ClientsController] → Plan ID:', result._id || result.id);
+      console.log('[ClientsController] → Plan name:', result.name);
+    } else {
+      console.log('[ClientsController] ✗ No plan found');
+    }
+    
+    console.log('═══════════════════════════════════════════════════════════');
+    return result;
+  }
+
+  @Get('plan-history')
+  @Roles(UserRole.CLIENT)
+  @ApiOperation({ summary: 'Get all plan history for the client' })
+  @ApiResponse({ status: 200, description: 'Plan history retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Client role required or subscription inactive' })
+  async getPlanHistory(@CurrentUser() user: JwtPayload) {
+    return this.clientsService.getPlanHistory(user.sub);
   }
 
   @Get('workouts/upcoming')

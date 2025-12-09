@@ -34,11 +34,17 @@ export class AdminService {
         let trainerId: string | null = null;
         let trainerName: string | null = null;
 
-        // If user is a CLIENT, find their trainer
+        // If user is a CLIENT, find their trainer and get clientProfileId
+        let clientProfileId: string | null = null;
         if (user.role === 'CLIENT') {
           const clientProfile = await this.clientModel
             .findOne({ userId: user._id })
             .exec();
+
+          // Store clientProfileId if profile exists
+          if (clientProfile) {
+            clientProfileId = clientProfile._id.toString();
+          }
 
           if (clientProfile && clientProfile.trainerId) {
             // Get trainer profile ID (could be ObjectId or string)
@@ -110,6 +116,7 @@ export class AdminService {
           role: userObj.role,
           trainerId: trainerId,
           trainerName: trainerName,
+          clientProfileId: clientProfileId, // Add clientProfileId for CLIENT users
           isActive: isActive,
         };
       }),

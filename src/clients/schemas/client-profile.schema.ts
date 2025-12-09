@@ -57,7 +57,7 @@ export class ClientProfile {
   })
   activityLevel?: ActivityLevel;
 
-  // Current Plan Assignment
+  // Current Plan Assignment (kept for backward compatibility)
   @Prop({
     type: Types.ObjectId,
     ref: 'WeeklyPlan',
@@ -69,6 +69,25 @@ export class ClientProfile {
 
   @Prop()
   planEndDate?: Date;
+
+  // Plan History - tracks all assigned plans
+  @Prop({
+    type: [{
+      planId: { type: Types.ObjectId, ref: 'WeeklyPlan', required: true },
+      planStartDate: { type: Date, required: true },
+      planEndDate: { type: Date, required: true },
+      assignedAt: { type: Date, default: Date.now },
+      trainerId: { type: Types.ObjectId, ref: 'TrainerProfile', required: true },
+    }],
+    default: [],
+  })
+  planHistory: Array<{
+    planId: Types.ObjectId;
+    planStartDate: Date;
+    planEndDate: Date;
+    assignedAt: Date;
+    trainerId: Types.ObjectId;
+  }>;
 
   // Gamification Status
   @Prop({ default: false })

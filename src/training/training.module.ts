@@ -9,6 +9,7 @@ import { WorkoutsModule } from '../workouts/workouts.module';
 import { CheckInsModule } from '../checkins/checkins.module';
 import { WorkoutLog, WorkoutLogSchema } from '../workouts/schemas/workout-log.schema';
 import { CheckIn, CheckInSchema } from '../checkins/schemas/checkin.schema';
+import { WeeklyPlan, WeeklyPlanSchema } from '../plans/schemas/weekly-plan.schema';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CheckIn, CheckInSchema } from '../checkins/schemas/checkin.schema';
     MongooseModule.forFeature([
       { name: WorkoutLog.name, schema: WorkoutLogSchema },
       { name: CheckIn.name, schema: CheckInSchema },
+      { name: WeeklyPlan.name, schema: WeeklyPlanSchema },
     ]),
   ],
   controllers: [TrainingController],

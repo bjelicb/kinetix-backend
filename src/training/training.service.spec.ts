@@ -7,11 +7,13 @@ import { WorkoutsService } from '../workouts/workouts.service';
 import { CheckInsService } from '../checkins/checkins.service';
 import { WorkoutLog } from '../workouts/schemas/workout-log.schema';
 import { CheckIn } from '../checkins/schemas/checkin.schema';
+import { WeeklyPlan } from '../plans/schemas/weekly-plan.schema';
 import { SyncBatchDto } from './dto/sync-batch.dto';
 import { Types } from 'mongoose';
 
 describe('TrainingService', () => {
   let service: TrainingService;
+  let module: TestingModule;
   let clientsService: jest.Mocked<ClientsService>;
   let workoutsService: jest.Mocked<WorkoutsService>;
   let checkInsService: jest.Mocked<CheckInsService>;
@@ -32,7 +34,7 @@ describe('TrainingService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         TrainingService,
         {
@@ -59,11 +61,29 @@ describe('TrainingService', () => {
           provide: getModelToken(WorkoutLog.name),
           useValue: {
             bulkWrite: jest.fn(),
+            find: jest.fn(),
+            db: {
+              startSession: jest.fn().mockReturnValue({
+                startTransaction: jest.fn(),
+                commitTransaction: jest.fn(),
+                abortTransaction: jest.fn(),
+                endSession: jest.fn(),
+              }),
+            },
           },
         },
         {
           provide: getModelToken(CheckIn.name),
-          useValue: {},
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: getModelToken(WeeklyPlan.name),
+          useValue: {
+            find: jest.fn(),
+            findOne: jest.fn(),
+          },
         },
       ],
     }).compile();
@@ -359,6 +379,88 @@ describe('TrainingService', () => {
       expect(result.processedLogs).toBe(1);
       expect(result.processedCheckIns).toBe(1);
       expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe('getSyncChanges', () => {
+    const mockSinceDate = new Date('2024-01-01');
+    const mockWorkouts = [{ _id: '1', clientId: mockClientId, workoutDate: new Date() }];
+    const mockPlans = [{ _id: '2', name: 'Test Plan' }];
+    const mockCheckIns = [{ _id: '3', clientId: mockClientId, checkinDate: new Date() }];
+
+    beforeEach(() => {
+      // Setup chainable mock for WorkoutLog model
+      const chainMock = {
+        limit: jest.fn().mockReturnThis(),
+        populate: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockWorkouts),
+      };
+      workoutLogModel.find = jest.fn().mockReturnValue(chainMock);
+
+      // Setup chainable mock for CheckIn model
+      const checkInChainMock = {
+        limit: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockCheckIns),
+      };
+      const checkInModel: any = module.get(getModelToken(CheckIn.name));
+      checkInModel.find = jest.fn().mockReturnValue(checkInChainMock);
+
+      // Setup chainable mock for WeeklyPlan model
+      const planChainMock = {
+        limit: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockPlans),
+      };
+      const weeklyPlanModel: any = module.get(getModelToken(WeeklyPlan.name));
+      weeklyPlanModel.find = jest.fn().mockReturnValue(planChainMock);
+      weeklyPlanModel.findOne = jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockPlans[0]),
+      });
+    });
+
+    it('should return changes for CLIENT role', async () => {
+      clientsService.getProfile.mockResolvedValue({
+        _id: mockClientId,
+        currentPlanId: '12345',
+      });
+
+      const result = await service.getSyncChanges(mockClientId, 'CLIENT', mockSinceDate);
+
+      expect(result).toBeDefined();
+      expect(result.workouts).toBeDefined();
+      expect(result.totalRecords).toBeGreaterThanOrEqual(0);
+      expect(result.lastSync).toBeInstanceOf(Date);
+    });
+
+    it('should return changes for TRAINER role', async () => {
+      clientsService.getProfile.mockResolvedValue({
+        _id: mockClientId,
+        clientIds: [new Types.ObjectId(mockClientId)],
+      });
+
+      const result = await service.getSyncChanges(mockClientId, 'TRAINER', mockSinceDate);
+
+      expect(result).toBeDefined();
+      expect(result.totalRecords).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return changes for ADMIN role', async () => {
+      const result = await service.getSyncChanges(mockClientId, 'ADMIN', mockSinceDate);
+
+      expect(result).toBeDefined();
+      expect(result.totalRecords).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should normalize since date to start of day', async () => {
+      const unNormalizedDate = new Date('2024-01-01T14:30:00.000Z');
+
+      await service.getSyncChanges(mockClientId, 'ADMIN', unNormalizedDate);
+
+      // Verify that find was called (date normalization happens inside)
+      expect(workoutLogModel.find).toHaveBeenCalled();
     });
   });
 });

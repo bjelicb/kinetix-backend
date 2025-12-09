@@ -8,6 +8,8 @@ class CompletedExerciseDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(1)
+  @Max(20)
   targetSets?: number;
 
   @IsOptional()
@@ -17,21 +19,28 @@ class CompletedExerciseDto {
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
+  @Min(1, { each: true })
+  @Max(20, { each: true })
   actualSets?: number[];
 
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
+  @Min(1, { each: true })
+  @Max(100, { each: true })
   actualReps?: number[];
 
   @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
+  @Min(0, { each: true })
+  @Max(1000, { each: true })
   weightUsed?: number[];
 
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(600)
   restSeconds?: number;
 
   @IsOptional()
@@ -82,15 +91,20 @@ class WorkoutLogDto {
 class GpsCoordinatesDto {
   @IsNumber()
   @IsNotEmpty()
+  @Min(-90)
+  @Max(90)
   latitude: number;
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(-180)
+  @Max(180)
   longitude: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(10000)
   accuracy?: number;
 }
 

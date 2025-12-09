@@ -4,15 +4,20 @@ import { Type } from 'class-transformer';
 class GpsCoordinatesDto {
   @IsNumber()
   @IsNotEmpty()
+  @Min(-90)
+  @Max(90)
   latitude: number;
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(-180)
+  @Max(180)
   longitude: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(10000)
   accuracy?: number; // in meters
 }
 

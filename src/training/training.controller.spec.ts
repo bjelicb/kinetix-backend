@@ -13,6 +13,7 @@ describe('TrainingController', () => {
 
   const mockTrainingService = {
     syncBatch: jest.fn(),
+    getSyncChanges: jest.fn(),
   };
 
   const mockClientsService = {
@@ -151,6 +152,76 @@ describe('TrainingController', () => {
       expect(result.processedLogs).toBe(1);
       expect(result.processedCheckIns).toBe(1);
       expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe('getSyncChanges', () => {
+    const mockSyncChanges = {
+      workouts: [{ _id: '1', workoutDate: new Date() }],
+      plans: [{ _id: '2', name: 'Test Plan' }],
+      checkIns: [{ _id: '3', checkinDate: new Date() }],
+      lastSync: new Date(),
+      totalRecords: 3,
+    };
+
+    it('should get sync changes successfully for CLIENT', async () => {
+      trainingService.getSyncChanges.mockResolvedValue(mockSyncChanges);
+
+      const result = await controller.getSyncChanges(mockClientJwtPayload, '2024-01-01T00:00:00.000Z');
+
+      expect(trainingService.getSyncChanges).toHaveBeenCalledWith(
+        mockClientJwtPayload.sub,
+        mockClientJwtPayload.role,
+        expect.any(Date),
+      );
+      expect(result.workouts).toHaveLength(1);
+      expect(result.totalRecords).toBe(3);
+    });
+
+    it('should get sync changes with default date if since not provided', async () => {
+      trainingService.getSyncChanges.mockResolvedValue(mockSyncChanges);
+
+      await controller.getSyncChanges(mockClientJwtPayload, '');
+
+      expect(trainingService.getSyncChanges).toHaveBeenCalledWith(
+        mockClientJwtPayload.sub,
+        mockClientJwtPayload.role,
+        expect.any(Date),
+      );
+    });
+
+    it('should handle TRAINER role', async () => {
+      const trainerPayload: JwtPayload = {
+        ...mockClientJwtPayload,
+        role: 'TRAINER',
+      };
+      trainingService.getSyncChanges.mockResolvedValue(mockSyncChanges);
+
+      const result = await controller.getSyncChanges(trainerPayload, '2024-01-01T00:00:00.000Z');
+
+      expect(trainingService.getSyncChanges).toHaveBeenCalledWith(
+        trainerPayload.sub,
+        'TRAINER',
+        expect.any(Date),
+      );
+      expect(result).toBeDefined();
+    });
+
+    it('should handle ADMIN role', async () => {
+      const adminPayload: JwtPayload = {
+        ...mockClientJwtPayload,
+        role: 'ADMIN',
+      };
+      trainingService.getSyncChanges.mockResolvedValue(mockSyncChanges);
+
+      const result = await controller.getSyncChanges(adminPayload, '2024-01-01T00:00:00.000Z');
+
+      expect(trainingService.getSyncChanges).toHaveBeenCalledWith(
+        adminPayload.sub,
+        'ADMIN',
+        expect.any(Date),
+      );
+      expect(result).toBeDefined();
     });
   });
 });

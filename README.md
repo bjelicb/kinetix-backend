@@ -23,6 +23,23 @@
 
 ## Description
 
+Kinetix Backend - High-Performance Gym SaaS Platform built with NestJS.
+
+---
+
+## 📚 **DOKUMENTACIJA**
+
+Sva dokumentacija je u `docs/` folderu:
+
+- ⭐ **STATUS:** [`docs/BACKEND_STATUS.md`](docs/BACKEND_STATUS.md) - **POČNI OVDE** (Trenutno stanje implementacije)
+- 📖 **Glavni Masterplan:** [`docs/BACKEND_MASTERPLAN.md`](docs/BACKEND_MASTERPLAN.md) (Arhitektura)
+- 🚀 **Verzije:** `docs/BACKEND_MASTERPLAN_V1.md` - V4 (Faze implementacije)
+- 📋 **Uputstvo:** [`docs/README.md`](docs/README.md)
+
+---
+
+## Description
+
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Project setup

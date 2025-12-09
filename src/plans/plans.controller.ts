@@ -65,7 +65,7 @@ export class PlansController {
     @Param('id') id: string,
     @Body() dto: UpdatePlanDto,
   ) {
-    return this.plansService.updatePlan(id, user.sub, dto);
+    return this.plansService.updatePlan(id, user.sub, user.role, dto);
   }
 
   @Delete(':id')

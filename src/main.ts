@@ -63,26 +63,34 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
+      console.log(`[CORS] Request from origin: ${origin || 'no origin'}`);
+      
       // U development modu, dozvoli sve localhost origin-e i IP adrese iz lokalne mreže
       if (process.env.NODE_ENV !== 'production') {
         if (!origin || 
             origin.startsWith('http://localhost:') || 
             origin.startsWith('http://127.0.0.1:') ||
-            origin.startsWith('http://192.168.0.')) { // Dozvoli sve IP adrese iz 192.168.0.x opsega
+            origin.startsWith('http://192.168.0.') ||
+            origin.includes('localhost') ||
+            origin.includes('127.0.0.1')) { // Dozvoli sve localhost varijacije
+          console.log(`[CORS] ✓ Allowing origin in dev mode: ${origin}`);
           return callback(null, true);
         }
       }
       
       // U produkciji, proveri da li je origin u dozvoljenim
       if (allowedOrigins.includes(origin)) {
+        console.log(`[CORS] ✓ Allowing origin from allowed list: ${origin}`);
         callback(null, true);
       } else {
+        console.log(`[CORS] ✗ Blocking origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    exposedHeaders: ['Authorization'],
   });
 
   // Global Validation Pipe

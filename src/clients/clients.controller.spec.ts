@@ -17,7 +17,7 @@ describe('ClientsController', () => {
     getProfile: jest.fn(),
     updateProfile: jest.fn(),
     getCurrentPlan: jest.fn(),
-    getStats: jest.fn(),
+    getStats: jest.fn(), 
   };
 
   const mockWorkoutsService = {
