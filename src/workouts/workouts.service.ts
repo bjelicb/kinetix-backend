@@ -7,7 +7,10 @@ import { UpdateWorkoutLogDto } from './dto/update-workout-log.dto';
 import { ClientProfile } from '../clients/schemas/client-profile.schema';
 import { WeeklyPlan } from '../plans/schemas/weekly-plan.schema';
 import { ClientsService } from '../clients/clients.service';
+import { PlansService } from '../plans/plans.service';
 import { GamificationService } from '../gamification/gamification.service';
+import { AppLogger } from '../common/utils/logger.utils';
+import { DateUtils } from '../common/utils/date.utils';
 
 @Injectable()
 export class WorkoutsService {
@@ -16,6 +19,8 @@ export class WorkoutsService {
     private workoutLogModel: Model<WorkoutLogDocument>,
     @Inject(forwardRef(() => ClientsService))
     private clientsService: ClientsService,
+    @Inject(forwardRef(() => PlansService))
+    private plansService: PlansService,
     @Inject(forwardRef(() => GamificationService))
     private gamificationService: GamificationService,
   ) {}
@@ -25,19 +30,27 @@ export class WorkoutsService {
     plan: WeeklyPlan,
     startDate: Date,
   ): Promise<WorkoutLog[]> {
+    const clientProfileId = (client as any)._id || (client as any).id;
+    const planId = (plan as any)._id || (plan as any).id;
+    
+    AppLogger.logStart('WORKOUT_LOG_GENERATE', {
+      clientId: clientProfileId?.toString(),
+      planId: planId?.toString(),
+      startDate: startDate.toISOString(),
+    });
+
     try {
       const logs: WorkoutLog[] = [];
-      const weekStartDate = new Date(startDate);
-      weekStartDate.setHours(0, 0, 0, 0);
+      // Use DateUtils for consistent UTC normalization
+      const weekStartDate = DateUtils.normalizeToStartOfDay(new Date(startDate));
 
       // Validate plan has workouts
       const planWorkouts = (plan as any).workouts || plan.workouts;
       if (!planWorkouts || !Array.isArray(planWorkouts)) {
-        throw new Error(`Plan does not have valid workouts array. Plan ID: ${(plan as any)._id}`);
+        throw new Error(`Plan does not have valid workouts array. Plan ID: ${planId}`);
       }
 
       // Get client profile ID (not userId)
-      const clientProfileId = (client as any)._id || (client as any).id;
       if (!clientProfileId) {
         throw new Error('Client profile ID is missing');
       }
@@ -65,40 +78,89 @@ export class WorkoutsService {
         throw new Error(`Invalid trainer ID format: ${trainerProfileIdString}`);
       }
 
-      // Get plan ID
-      const planId = (plan as any)._id || (plan as any).id;
+      // Validate plan ID (already extracted at start of method)
       if (!planId) {
         throw new Error('Plan ID is missing');
       }
 
       // Generate 7 WorkoutLog documents (one per day)
       for (let day = 0; day < 7; day++) {
-        const workoutDate = new Date(weekStartDate);
-        workoutDate.setDate(workoutDate.getDate() + day);
-        workoutDate.setHours(0, 0, 0, 0);
+        // Use DateUtils.addDays for consistent UTC date arithmetic
+        const workoutDate = DateUtils.addDays(weekStartDate, day);
+        // Ensure it's normalized to start of day (addDays already handles this, but be explicit)
+        const normalizedWorkoutDate = DateUtils.normalizeToStartOfDay(workoutDate);
         
-        const workoutDateEnd = new Date(workoutDate);
-        workoutDateEnd.setHours(23, 59, 59, 999);
+        const workoutDateEnd = DateUtils.normalizeToEndOfDay(normalizedWorkoutDate);
+
+        AppLogger.logOperation('WORKOUT_LOG_DUPLICATE_CHECK', {
+          clientId: clientProfileId.toString(),
+          workoutDate: workoutDate.toISOString(),
+          day,
+        }, 'debug');
 
         // Check if log already exists for this specific date using MongoDB query
         // Note: MongoDB index is on clientId_1_workoutDate_1, so we check without weeklyPlanId
         const existingLog = await this.workoutLogModel.findOne({
           clientId: new Types.ObjectId(clientProfileId),
           workoutDate: {
-            $gte: workoutDate,
+            $gte: normalizedWorkoutDate,
             $lt: workoutDateEnd,
           },
         }).exec();
 
         if (existingLog) {
-          // Skip if log already exists
+          AppLogger.logWarning('WORKOUT_LOG_DUPLICATE_FOUND', {
+            clientId: clientProfileId.toString(),
+            workoutDate: normalizedWorkoutDate.toISOString(),
+            existingLogId: existingLog._id.toString(),
+            action: 'Updating existing log',
+          });
+          
+          // Update existing log with new plan data
+          existingLog.weeklyPlanId = new Types.ObjectId(planId);
+          existingLog.trainerId = new Types.ObjectId(trainerProfileIdString);
+          
+          // Normalize workoutDate to UTC (fixes old logs with 23:00:00.000Z)
+          const existingDate = new Date(existingLog.workoutDate);
+          const existingNormalized = DateUtils.normalizeToStartOfDay(existingDate);
+          if (existingDate.getTime() !== existingNormalized.getTime()) {
+            console.log(`[WorkoutsService] → Normalizing workoutDate from ${existingDate.toISOString()} to ${existingNormalized.toISOString()}`);
+            existingLog.workoutDate = existingNormalized;
+          } else {
+            // Ensure it's set to normalized date even if already correct
+            existingLog.workoutDate = normalizedWorkoutDate;
+          }
+          
+          const planDayIndex = day + 1; // Plan day index (1-7)
+          const planWorkout = planWorkouts.find((w: any) => w.dayOfWeek === planDayIndex) || null;
+          console.log(`[WorkoutsService] → Day ${day + 1}/7: planDayIndex=${planDayIndex}, workoutDate=${normalizedWorkoutDate.toISOString()}, planWorkout=${planWorkout ? planWorkout.name : 'null'}`);
+          
+          if (planWorkout && planWorkout.exercises && Array.isArray(planWorkout.exercises) && planWorkout.exercises.length > 0) {
+            existingLog.completedExercises = planWorkout.exercises.map((ex: any) => ({
+              exerciseName: ex.name || ex.exerciseName || 'Unknown',
+              actualSets: ex.sets || 0,
+              actualReps: [],
+              weightUsed: undefined,
+              notes: undefined,
+            }));
+          }
+          
+          existingLog.dayOfWeek = planDayIndex;
+          await existingLog.save();
           continue;
         }
 
-        const dayOfWeek = workoutDate.getDay() === 0 ? 7 : workoutDate.getDay(); // Convert Sunday (0) to 7
+        AppLogger.logOperation('WORKOUT_LOG_NEW_CREATED', {
+          clientId: clientProfileId.toString(),
+          workoutDate: normalizedWorkoutDate.toISOString(),
+          day,
+        }, 'debug');
+
+        const planDayIndex = day + 1; // Plan day index (1-7)
+        console.log(`[WorkoutsService] → Day ${day + 1}/7: planDayIndex=${planDayIndex}, workoutDate=${normalizedWorkoutDate.toISOString()}`);
 
         // Find workout for this day from plan
-        const planWorkout = planWorkouts.find((w: any) => w.dayOfWeek === dayOfWeek) || null;
+        const planWorkout = planWorkouts.find((w: any) => w.dayOfWeek === planDayIndex) || null;
 
         // Build completedExercises array
         let completedExercises: any[] = [];
@@ -116,9 +178,9 @@ export class WorkoutsService {
           clientId: new Types.ObjectId(clientProfileId),
           trainerId: new Types.ObjectId(trainerProfileIdString),
           weeklyPlanId: new Types.ObjectId(planId),
-          workoutDate,
+          workoutDate: normalizedWorkoutDate,
           weekNumber: 1, // First week
-          dayOfWeek,
+          dayOfWeek: planDayIndex,
           isCompleted: false,
           isMissed: planWorkout?.isRestDay === true ? false : false, // Not missed initially
           completedExercises,
@@ -129,8 +191,25 @@ export class WorkoutsService {
 
       // Save all logs (only if there are new ones to create)
       if (logs.length > 0) {
+        // Log details about each workout log being created
+        console.log(`[WorkoutsService] 📝 Creating ${logs.length} workout logs for client ${clientProfileId.toString()}:`);
+        logs.forEach((log, index) => {
+          const logDate = log.workoutDate.toISOString().split('T')[0];
+          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][log.dayOfWeek === 7 ? 0 : log.dayOfWeek];
+          const exerciseCount = log.completedExercises?.length || 0;
+          console.log(`[WorkoutsService]   ${index + 1}. Day ${log.dayOfWeek} (${dayName}) - ${logDate} - ${exerciseCount} exercises`);
+        });
+        
+        AppLogger.logOperation('WORKOUT_LOG_GENERATE_COMPLETE', {
+          clientId: clientProfileId.toString(),
+          planId: planId.toString(),
+          totalLogsCreated: logs.length,
+        }, 'info');
+        
         try {
-          return await this.workoutLogModel.insertMany(logs, { ordered: false });
+          const insertedLogs = await this.workoutLogModel.insertMany(logs, { ordered: false });
+          console.log(`[WorkoutsService] ✅ Successfully created ${insertedLogs.length} workout logs for client ${clientProfileId.toString()}`);
+          return insertedLogs;
         } catch (error: any) {
           // If it's a duplicate key error, some documents may have been inserted successfully
           // With ordered: false, MongoDB continues inserting even if some fail
@@ -163,12 +242,75 @@ export class WorkoutsService {
     }
   }
 
-  async logWorkout(userId: string, dto: LogWorkoutDto): Promise<WorkoutLog> {
+  async logWorkout(userId: string, dto: LogWorkoutDto, userRole?: string): Promise<WorkoutLog> {
     // Get client profile to get clientProfileId
     const client = await this.clientsService.getProfile(userId);
     const clientProfileId = (client as any)._id;
     
     const workoutDate = new Date(dto.workoutDate);
+
+    AppLogger.logStart('WORKOUT_COMPLETE', {
+      clientId: clientProfileId.toString(),
+      workoutDate: workoutDate.toISOString(),
+      weeklyPlanId: dto.weeklyPlanId,
+      userRole: userRole || 'CLIENT',
+    });
+
+    // Validate workout date (only for CLIENT role)
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    AppLogger.logOperation('WORKOUT_DATE_VALIDATE', {
+      clientId: clientProfileId.toString(),
+      workoutDate: workoutDate.toISOString(),
+      today: today.toISOString(),
+      thirtyDaysAgo: thirtyDaysAgo.toISOString(),
+      userRole: userRole || 'CLIENT',
+    }, 'debug');
+
+    if (!userRole || userRole === 'CLIENT') {
+      // Don't allow future dates
+      if (workoutDate > today) {
+        AppLogger.logWarning('WORKOUT_DATE_FUTURE', {
+          clientId: clientProfileId.toString(),
+          workoutDate: workoutDate.toISOString(),
+          today: today.toISOString(),
+          reason: 'Cannot log workout for future dates',
+        });
+        throw new Error(
+          'Cannot log workout for future dates. Please log workouts on or before their scheduled date.'
+        );
+      }
+
+      // Don't allow workouts older than 30 days
+      if (workoutDate < thirtyDaysAgo) {
+        AppLogger.logWarning('WORKOUT_DATE_TOO_OLD', {
+          clientId: clientProfileId.toString(),
+          workoutDate: workoutDate.toISOString(),
+          thirtyDaysAgo: thirtyDaysAgo.toISOString(),
+          reason: 'Cannot log workouts older than 30 days',
+        });
+        throw new Error(
+          'Cannot log workouts older than 30 days. Please contact your trainer if you need to log past workouts.'
+        );
+      }
+
+      AppLogger.logOperation('WORKOUT_DATE_VALID', {
+        clientId: clientProfileId.toString(),
+        workoutDate: workoutDate.toISOString(),
+      }, 'debug');
+    } else {
+      AppLogger.logOperation('WORKOUT_DATE_BYPASS', {
+        clientId: clientProfileId.toString(),
+        workoutDate: workoutDate.toISOString(),
+        userRole,
+        reason: 'Trainer/Admin can log any date',
+      }, 'debug');
+    }
 
     // Check if log already exists
     const existingLog = await this.workoutLogModel.findOne({
@@ -177,16 +319,121 @@ export class WorkoutsService {
     }).exec();
 
     if (existingLog) {
+      // Validate rest day - check if workout is marked as rest day
+      const plan = await this.workoutLogModel.findById(existingLog._id)
+        .populate('weeklyPlanId')
+        .exec();
+      
+      if (plan && (plan as any).weeklyPlanId) {
+        const weeklyPlan = (plan as any).weeklyPlanId;
+        const dayOfWeek = workoutDate.getDay() === 0 ? 7 : workoutDate.getDay();
+        const workoutDay = weeklyPlan.workouts?.find((w: any) => w.dayOfWeek === dayOfWeek);
+        
+        if (workoutDay?.isRestDay) {
+          AppLogger.logWarning('WORKOUT_REST_DAY_BLOCKED', {
+            clientId: clientProfileId.toString(),
+            workoutDate: workoutDate.toISOString(),
+            dayOfWeek,
+            reason: 'Cannot log workout on rest day',
+          });
+          throw new Error('Cannot log workout on rest day. This day is scheduled as a rest day.');
+        }
+        
+        AppLogger.logOperation('WORKOUT_REST_DAY_CHECK', {
+          clientId: clientProfileId.toString(),
+          workoutDate: workoutDate.toISOString(),
+          dayOfWeek,
+          isRestDay: false,
+        }, 'debug');
+      }
+
+      // Check for multiple workouts same day
+      const sameDayStart = DateUtils.normalizeToStartOfDay(workoutDate);
+      const sameDayEnd = DateUtils.normalizeToEndOfDay(workoutDate);
+      
+      const existingWorkoutsCount = await this.workoutLogModel.countDocuments({
+        clientId: new Types.ObjectId(clientProfileId),
+        workoutDate: {
+          $gte: sameDayStart,
+          $lte: sameDayEnd,
+        },
+        isCompleted: true,
+      }).exec();
+
+      AppLogger.logOperation('WORKOUT_SAME_DAY_CHECK', {
+        clientId: clientProfileId.toString(),
+        workoutDate: workoutDate.toISOString(),
+        existingCompletedCount: existingWorkoutsCount,
+      }, 'debug');
+
+      if (existingWorkoutsCount > 0) {
+        AppLogger.logWarning('WORKOUT_SAME_DAY_FOUND', {
+          clientId: clientProfileId.toString(),
+          workoutDate: workoutDate.toISOString(),
+          count: existingWorkoutsCount,
+          action: 'Allowing - updating existing log',
+        });
+      }
+      
+      // If first completion, set workoutStartTime
+      // If first completion, set workoutStartTime
+      if (!existingLog.workoutStartTime && !existingLog.isCompleted) {
+        existingLog.workoutStartTime = new Date();
+        AppLogger.logOperation('WORKOUT_START_TIME_SET', {
+          workoutLogId: existingLog._id.toString(),
+          workoutStartTime: existingLog.workoutStartTime.toISOString(),
+        }, 'debug');
+      }
+      
       // Update existing log
       existingLog.completedExercises = dto.completedExercises || [];
       existingLog.isCompleted = dto.isCompleted ?? true;
-      existingLog.completedAt = dto.completedAt
+      const completedAt = dto.completedAt
         ? new Date(dto.completedAt)
         : new Date();
+      existingLog.completedAt = completedAt;
       existingLog.difficultyRating = dto.difficultyRating;
       existingLog.clientNotes = dto.clientNotes;
 
-      return existingLog.save();
+      // Validate completion time (minimum 5 minutes)
+      if (existingLog.workoutStartTime && existingLog.isCompleted) {
+        const minimumDurationMs = 5 * 60 * 1000; // 5 minutes
+        const durationMs = completedAt.getTime() - existingLog.workoutStartTime.getTime();
+        const durationMinutes = Math.round(durationMs / 60000);
+
+        AppLogger.logOperation('WORKOUT_COMPLETE_DURATION', {
+          workoutLogId: existingLog._id.toString(),
+          durationMs,
+          durationMinutes,
+          minimumMinutes: 5,
+        }, 'debug');
+
+        if (durationMs < minimumDurationMs) {
+          existingLog.suspiciousCompletion = true;
+          AppLogger.logWarning('WORKOUT_COMPLETE_SUSPICIOUS', {
+            workoutLogId: existingLog._id.toString(),
+            clientId: clientProfileId.toString(),
+            durationSeconds: Math.round(durationMs / 1000),
+            durationMinutes,
+            minimumMinutes: 5,
+            reason: 'Workout completed too quickly',
+          });
+        } else {
+          AppLogger.logOperation('WORKOUT_COMPLETE_NORMAL', {
+            workoutLogId: existingLog._id.toString(),
+            durationMinutes,
+          }, 'debug');
+        }
+      }
+
+      await existingLog.save();
+      AppLogger.logComplete('WORKOUT_COMPLETE', {
+        workoutLogId: existingLog._id.toString(),
+        clientId: clientProfileId.toString(),
+        suspiciousCompletion: existingLog.suspiciousCompletion,
+      });
+      
+      return existingLog;
     }
 
     // Create new log
@@ -199,6 +446,14 @@ export class WorkoutsService {
       ? (trainerId as any)._id.toString() 
       : trainerId.toString();
 
+    const workoutStartTime = new Date();
+    const completedAt = dto.completedAt ? new Date(dto.completedAt) : new Date();
+    
+    AppLogger.logOperation('WORKOUT_START_TIME_SET', {
+      clientId: clientProfileId.toString(),
+      workoutStartTime: workoutStartTime.toISOString(),
+    }, 'debug');
+
     const log = new this.workoutLogModel({
       clientId: new Types.ObjectId(clientProfileId),
       trainerId: new Types.ObjectId(trainerIdString),
@@ -207,12 +462,22 @@ export class WorkoutsService {
       dayOfWeek: dto.dayOfWeek,
       completedExercises: dto.completedExercises || [],
       isCompleted: dto.isCompleted ?? true,
-      completedAt: dto.completedAt ? new Date(dto.completedAt) : new Date(),
+      completedAt,
+      workoutStartTime,
+      suspiciousCompletion: false, // New logs can't be suspicious (just created)
       difficultyRating: dto.difficultyRating,
       clientNotes: dto.clientNotes,
     });
 
-    return log.save();
+    await log.save();
+    
+    AppLogger.logComplete('WORKOUT_COMPLETE', {
+      workoutLogId: log._id.toString(),
+      clientId: clientProfileId.toString(),
+      suspiciousCompletion: false,
+    });
+
+    return log;
   }
 
   async updateWorkoutLog(
@@ -318,31 +583,84 @@ export class WorkoutsService {
   async getWeekWorkouts(
     userId: string,
     date: Date,
-  ): Promise<WorkoutLog[]> {
-    // Get client profile to get clientProfileId
-    const client = await this.clientsService.getProfile(userId);
+  ): Promise<any[]> {
+    // Get client profile - handle users without ClientProfile (e.g., ADMIN)
+    let client;
+    try {
+      client = await this.clientsService.getProfile(userId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return [];
+      }
+      throw error;
+    }
+    
     const clientProfileId = (client as any)._id;
     
-    const weekStart = new Date(date);
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 7);
-
-    return this.workoutLogModel
-      .find({
-        clientId: new Types.ObjectId(clientProfileId),
-        workoutDate: {
-          $gte: weekStart,
-          $lt: weekEnd,
-        },
-      })
-      .select('clientId trainerId weeklyPlanId workoutDate weekNumber dayOfWeek completedExercises isCompleted isMissed completedAt difficultyRating clientNotes')
-      .populate('weeklyPlanId', 'name')
+    // Find active plan and get date range + plan workouts
+    let weeklyPlanIdFilter: Types.ObjectId | null = null;
+    let planStartDate: Date | null = null;
+    let planEndDate: Date | null = null;
+    let planWorkouts: any[] = [];
+    
+    const activePlanEntry = this.clientsService.getActivePlanEntry(client);
+    
+    if (activePlanEntry) {
+      const planId = (activePlanEntry.planId as any)?._id?.toString() || 
+                     activePlanEntry.planId.toString();
+      weeklyPlanIdFilter = new Types.ObjectId(planId);
+      planStartDate = DateUtils.normalizeToStartOfDay(new Date(activePlanEntry.planStartDate));
+      planEndDate = DateUtils.normalizeToEndOfDay(new Date(activePlanEntry.planEndDate));
+      
+      // Fetch plan to get workouts array
+      try {
+        const plan = await this.plansService.getPlanById(planId);
+        planWorkouts = (plan as any).workouts || [];
+      } catch (error) {
+        console.error('[WorkoutsService] Error fetching plan:', error);
+      }
+    }
+    
+    // Build query - filter by PLAN date range, not week
+    const query: any = {
+      clientId: new Types.ObjectId(clientProfileId),
+    };
+    
+    if (weeklyPlanIdFilter && planStartDate && planEndDate) {
+      // Filter by active plan date range
+      query.weeklyPlanId = weeklyPlanIdFilter;
+      query.workoutDate = { $gte: planStartDate, $lte: planEndDate };
+    } else {
+      // Fallback: use week if no active plan
+      const normalizedDate = DateUtils.normalizeToStartOfDay(new Date(date));
+      const dayOfWeek = normalizedDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Convert to Monday
+      const weekStart = DateUtils.addDays(normalizedDate, daysToMonday);
+      const weekEnd = DateUtils.addDays(weekStart, 7);
+      query.workoutDate = { $gte: weekStart, $lt: weekEnd };
+    }
+    
+    const workouts = await this.workoutLogModel
+      .find(query)
+      .select('clientId trainerId weeklyPlanId workoutDate weekNumber dayOfWeek completedExercises isCompleted isMissed completedAt difficultyRating clientNotes updatedAt')
+      .populate('weeklyPlanId', 'name workouts')
       .sort({ workoutDate: 1 })
       .lean()
       .exec();
+    
+    // Enrich each log with plan data
+    const enrichedWorkouts = workouts.map((log: any) => {
+      const planWorkout = planWorkouts.find((w: any) => w.dayOfWeek === log.dayOfWeek);
+      
+      return {
+        ...log,
+        workoutName: planWorkout?.name || 'Workout',
+        isRestDay: planWorkout?.isRestDay || false,
+        planExercises: planWorkout?.exercises || [],
+      };
+    });
+    
+    return enrichedWorkouts;
   }
 
   async getWorkoutHistory(clientId: string): Promise<WorkoutLog[]> {
@@ -439,6 +757,130 @@ export class WorkoutsService {
     ).exec();
 
     return result.modifiedCount;
+  }
+
+  /**
+   * Mark all future/pending workouts for a plan as missed
+   * Used when plan is changed/cancelled or overlaps with another plan
+   * @param clientId Client profile ID
+   * @param planId Plan ID
+   * @param endDate Date when plan ends (future workouts from this date will be marked as missed)
+   */
+  async markMissedWorkoutsForPlan(
+    clientId: string,
+    planId: string,
+    endDate: Date,
+  ): Promise<void> {
+    AppLogger.logStart('WORKOUT_CLEANUP', {
+      clientId,
+      planId,
+      endDate: endDate.toISOString(),
+    });
+
+    try {
+      const today = DateUtils.normalizeToStartOfDay(new Date());
+
+      // Log query parameters
+      AppLogger.logOperation('WORKOUT_CLEANUP_QUERY', {
+        clientId,
+        planId,
+        today: today.toISOString(),
+        endDate: endDate.toISOString(),
+        criteria: 'workoutDate >= today, isCompleted = false, isMissed = false',
+      }, 'debug');
+
+      // Find all future/pending workouts for this plan
+      const result = await this.workoutLogModel.updateMany(
+        {
+          clientId: new Types.ObjectId(clientId),
+          weeklyPlanId: new Types.ObjectId(planId),
+          workoutDate: { $gte: today },
+          isCompleted: false,
+          isMissed: false,
+        },
+        {
+          $set: {
+            isMissed: true,
+            updatedAt: new Date(),
+          }
+        }
+      ).exec();
+
+      AppLogger.logWarning('WORKOUT_CLEANUP_MARKED', {
+        clientId,
+        planId,
+        count: result.modifiedCount,
+        reason: 'Plan changed or overlaps with new plan',
+      });
+
+      AppLogger.logComplete('WORKOUT_CLEANUP', {
+        clientId,
+        planId,
+        markedCount: result.modifiedCount,
+      });
+    } catch (error) {
+      AppLogger.logError('WORKOUT_CLEANUP', { clientId, planId }, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete uncompleted workout logs for a plan
+   * Used when unassigning a plan from a client
+   */
+  async deleteUncompletedWorkoutsForPlan(
+    clientProfileId: string,
+    planId: string,
+  ): Promise<number> {
+    AppLogger.logStart('WORKOUT_DELETE_UNCOMPLETED', {
+      clientProfileId,
+      planId,
+    });
+
+    try {
+      // Find all uncompleted workout logs for this plan
+      const query = {
+        clientId: new Types.ObjectId(clientProfileId),
+        weeklyPlanId: new Types.ObjectId(planId),
+        isCompleted: false,
+        isMissed: false,
+      };
+
+      AppLogger.logOperation('WORKOUT_DELETE_UNCOMPLETED_QUERY', {
+        clientProfileId,
+        planId,
+        criteria: 'isCompleted = false, isMissed = false',
+      }, 'debug');
+
+      // Count before deletion for logging
+      const countBefore = await this.workoutLogModel.countDocuments(query).exec();
+      
+      AppLogger.logOperation('WORKOUT_DELETE_UNCOMPLETED_COUNT', {
+        clientProfileId,
+        planId,
+        count: countBefore,
+      }, 'debug');
+
+      // Delete uncompleted workout logs
+      const result = await this.workoutLogModel.deleteMany(query).exec();
+
+      AppLogger.logOperation('WORKOUT_DELETE_UNCOMPLETED_DELETED', {
+        clientProfileId,
+        planId,
+        deletedCount: result.deletedCount,
+      }, 'info');
+
+      AppLogger.logComplete('WORKOUT_DELETE_UNCOMPLETED', {
+        clientProfileId,
+        planId,
+        deletedCount: result.deletedCount,
+      });
+
+      return result.deletedCount;
+    } catch (error) {
+      AppLogger.logError('WORKOUT_DELETE_UNCOMPLETED', { clientProfileId, planId }, error);
+      throw error;
+    }
   }
 }
 

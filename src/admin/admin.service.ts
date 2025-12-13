@@ -334,9 +334,12 @@ export class AdminService {
         let trainerName = 'Unknown Trainer';
         let trainerEmail = '';
 
+        let trainerUserId: string | null = null;
+        let trainerProfileId: string | null = null;
+        
         if (planObj.trainerId) {
           // Get trainer profile ID (handle both populated and non-populated cases)
-          const trainerProfileId = (planObj.trainerId as any)?._id || planObj.trainerId;
+          trainerProfileId = (planObj.trainerId as any)?._id?.toString() || (planObj.trainerId as any)?.toString() || null;
           
           // Get trainer profile
           const trainerProfile = await this.trainerModel
@@ -351,6 +354,8 @@ export class AdminService {
               const trainerUser = trainerProfile.userId as any;
               trainerName = `${trainerUser.firstName} ${trainerUser.lastName}`.trim();
               trainerEmail = trainerUser.email || '';
+              // Extract User ID (this is what frontend needs to match with User.id)
+              trainerUserId = trainerUser._id?.toString() || null;
             } else {
               // Fallback: get user directly by userId
               const userId = (trainerProfile.userId as any)?._id || trainerProfile.userId;
@@ -359,6 +364,7 @@ export class AdminService {
                 if (trainerUser) {
                   trainerName = `${trainerUser.firstName} ${trainerUser.lastName}`.trim();
                   trainerEmail = trainerUser.email || '';
+                  trainerUserId = (trainerUser._id as any)?.toString() || null;
                 }
               }
             }
@@ -370,10 +376,13 @@ export class AdminService {
           name: planObj.name,
           description: planObj.description,
           difficulty: planObj.difficulty,
+          trainerId: trainerUserId, // ✅ User ID (matches User.id in frontend)
+          trainerProfileId: trainerProfileId, // ✅ TrainerProfile ID (for info)
           trainerName,
           trainerEmail,
           assignedClientCount: planObj.assignedClientIds?.length || 0,
           isTemplate: planObj.isTemplate,
+          weeklyCost: planObj.weeklyCost || 0, // ✅ Weekly cost
           createdAt: planObj.createdAt,
           updatedAt: planObj.updatedAt,
         };

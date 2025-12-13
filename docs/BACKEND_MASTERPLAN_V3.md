@@ -440,7 +440,166 @@ Retry-After: 60
 
 ---
 
-### **3.9 CORS Security Configuration** 🟡 **NOVO**
+### **3.8 AI Message Automation (Cron Jobs)** 🔴 **KRITIČNO**
+
+**Zadatak:**
+Automatski generisati i slati AI poruke na osnovu event-a
+
+**Zahtevi:**
+- [ ] Cron job: Check missed workouts (daily at 20:00)
+  - Ako >2 missed u nedelji → generate aggressive message
+- [ ] Cron job: Check streaks (daily at 9:00)
+  - Ako 7+ dana bez propusta → generate motivational message
+- [ ] Cron job: Post-weigh-in analysis (Monday at 10:00)
+  - Ako weight spike >5% → generate warning message
+- [ ] Integration sa Push Notification service (kada je ready V4)
+- [ ] Fallback: Poruke se čuvaju i prikazuju u app-u
+- [ ] Avoid duplicate messages (ne slati istu poruku više puta u 24h)
+
+**Fajlovi:**
+- `src/gamification/jobs/ai-message-automation.job.ts` - **NOVO**
+- `src/gamification/ai-message.service.ts` - **IZMENA**
+
+**Implementacija:**
+
+```typescript
+// ai-message-automation.job.ts
+@Injectable()
+export class AIMessageAutomationJob {
+  @Cron('0 20 * * *') // Daily at 20:00
+  async checkMissedWorkouts() {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    // Find clients with >2 missed workouts in last 7 days
+    const clients = await this.findClientsWithMissedWorkouts(weekAgo);
+    
+    for (const client of clients) {
+      // Check if message already sent in last 24h
+      const recentMessage = await this.aiMessageService.getRecentMessage(
+        client._id,
+        'MISSED_WORKOUTS',
+        24
+      );
+      
+      if (!recentMessage) {
+        await this.aiMessageService.generateMessage(
+          client._id.toString(),
+          'MISSED_WORKOUTS'
+        );
+        // TODO: Send push notification (V4)
+      }
+    }
+  }
+
+  @Cron('0 9 * * *') // Daily at 9:00
+  async checkStreaks() {
+    // Find clients with 7+ day streak
+    const clients = await this.findClientsWithStreak(7);
+    
+    for (const client of clients) {
+      const recentMessage = await this.aiMessageService.getRecentMessage(
+        client._id,
+        'STREAK',
+        24
+      );
+      
+      if (!recentMessage) {
+        await this.aiMessageService.generateMessage(
+          client._id.toString(),
+          'STREAK'
+        );
+      }
+    }
+  }
+
+  @Cron('0 10 * * 1') // Monday at 10:00
+  async checkWeightSpikes() {
+    // Find clients with weight spike >5% from last weigh-in
+    const clients = await this.findClientsWithWeightSpike();
+    
+    for (const client of clients) {
+      await this.aiMessageService.generateMessage(
+        client._id.toString(),
+        'WEIGHT_SPIKE'
+      );
+    }
+  }
+}
+```
+
+**Testovi:**
+- [ ] Test cron job execution
+- [ ] Test message triggers
+- [ ] Test duplicate prevention
+- [ ] Test notification sending (mock)
+
+---
+
+### **3.9 Video Upload & Management** 🟢
+
+**Zadatak:**
+Video tutorials za vežbe (preparation)
+
+**Zahtevi:**
+- [ ] Cloudinary video upload (ili YouTube URL storage)
+- [ ] Exercise schema: `videoUrl: string` (already exists)
+- [ ] Video metadata (duration, thumbnail)
+- [ ] Admin upload interface (future Mobile V3)
+- [ ] Endpoint: `POST /media/video-upload` (Cloudinary upload)
+- [ ] Endpoint: `GET /media/video/:videoId` (video metadata)
+
+**Fajlovi:**
+- `src/media/video-upload.service.ts` - **NOVO**
+- `src/media/media.controller.ts` - **IZMENA**
+- `src/media/dto/video-upload.dto.ts` - **NOVO**
+
+**Implementacija:**
+
+```typescript
+// video-upload.service.ts
+@Injectable()
+export class VideoUploadService {
+  async uploadVideo(file: Express.Multer.File, folder: string): Promise<VideoMetadata> {
+    // Upload to Cloudinary
+    const result = await this.cloudinaryService.uploadVideo(file, folder);
+    
+    return {
+      videoUrl: result.secure_url,
+      thumbnailUrl: result.thumbnail_url,
+      duration: result.duration,
+      publicId: result.public_id,
+    };
+  }
+
+  async deleteVideo(publicId: string): Promise<void> {
+    await this.cloudinaryService.deleteVideo(publicId);
+  }
+}
+
+// media.controller.ts
+@Post('video-upload')
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(FileInterceptor('video'))
+async uploadVideo(
+  @CurrentUser() user: JwtPayload,
+  @UploadedFile() file: Express.Multer.File,
+  @Body() dto: VideoUploadDto,
+): Promise<VideoMetadata> {
+  const folder = `exercises/${dto.exerciseId || 'general'}`;
+  return this.videoUploadService.uploadVideo(file, folder);
+}
+```
+
+**Testovi:**
+- [ ] Test video upload
+- [ ] Test video metadata extraction
+- [ ] Test video deletion
+- [ ] Test file size validation
+
+---
+
+### **3.10 CORS Security Configuration** 🟡 **NOVO**
 
 **Zadatak:**
 Učvrstiti CORS configuration za produkciju
@@ -524,8 +683,10 @@ DEV_MOBILE_IP=http://192.168.0.27:8080
 - [ ] **Plan renewal feature implementirana**
 - [ ] **Trainer switch handling implementirana (KRITIČNO)**
 - [ ] **Rate Limiting Strategy implementirana (NOVO)**
+- [ ] **AI Message Automation (Cron Jobs) implementirana (KRITIČNO)**
+- [ ] **Video Upload & Management implementirana**
 - [ ] **CORS Security Configuration učvršćena (NOVO)**
-- [ ] Testovi napisani (min 15 testova - povećano)
+- [ ] Testovi napisani (min 20 testova - povećano)
 
 ---
 

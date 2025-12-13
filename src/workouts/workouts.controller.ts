@@ -57,7 +57,7 @@ export class WorkoutsController {
   }
 
   @Get('week/:date')
-  @Roles('CLIENT')
+  @Roles('CLIENT', 'ADMIN')
   async getWeekWorkouts(
     @CurrentUser() user: JwtPayload,
     @Param('date') date: string,

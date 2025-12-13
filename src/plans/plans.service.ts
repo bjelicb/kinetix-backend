@@ -8,6 +8,7 @@ import {
 import { TrainerProfile, TrainerProfileDocument } from '../trainers/schemas/trainer-profile.schema';
 import { ClientProfile, ClientProfileDocument } from '../clients/schemas/client-profile.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
+import { WorkoutLog, WorkoutLogDocument } from '../workouts/schemas/workout-log.schema';
 import { CreatePlanDto } from './dto/create-plan.dto';
 import { UpdatePlanDto } from './dto/update-plan.dto';
 import { AssignPlanDto } from './dto/assign-plan.dto';
@@ -15,6 +16,10 @@ import { ClientsService } from '../clients/clients.service';
 import { WorkoutsService } from '../workouts/workouts.service';
 import { TrainersService } from '../trainers/trainers.service';
 import { GamificationService } from '../gamification/gamification.service';
+import { AppLogger } from '../common/utils/logger.utils';
+import { PlanOverlapHandler } from '../common/utils/plan-overlap-handler';
+import { DateUtils } from '../common/utils/date.utils';
+import { PlanValidators } from '../common/utils/plan-validators';
 
 @Injectable()
 export class PlansService {
@@ -27,6 +32,8 @@ export class PlansService {
     private clientModel: Model<ClientProfileDocument>,
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    @InjectModel(WorkoutLog.name)
+    private workoutLogModel: Model<WorkoutLogDocument>,
     @Inject(forwardRef(() => ClientsService))
     private clientsService: ClientsService,
     @Inject(forwardRef(() => WorkoutsService))
@@ -67,7 +74,10 @@ export class PlansService {
     const trainerProfileId = (trainerProfile as any)._id;
 
     return this.planModel
-      .find({ trainerId: trainerProfileId })
+      .find({ 
+        trainerId: trainerProfileId,
+        isDeleted: { $ne: true } // Filter out soft deleted plans
+      })
       .select('trainerId name description difficulty workouts assignedClientIds isTemplate createdAt updatedAt')
       .populate('assignedClientIds', 'userId')
       .lean()
@@ -79,7 +89,10 @@ export class PlansService {
     console.log('[PlansService] → Plan ID:', planId);
     
     const plan = await this.planModel
-      .findById(planId)
+      .findOne({ 
+        _id: planId,
+        isDeleted: { $ne: true } // Filter out soft deleted plans
+      })
       .populate('trainerId', 'businessName userId')
       .populate('assignedClientIds', 'userId')
       .lean()
@@ -95,12 +108,16 @@ export class PlansService {
     console.log('[PlansService] → Plan updatedAt:', (plan as any).updatedAt);
 
     const planObj = plan as any;
+    console.log('[PlansService] → Raw trainerId from DB:', planObj.trainerId);
+    console.log('[PlansService] → trainerId type:', typeof planObj.trainerId);
     let trainerName = 'Unknown Trainer';
     let trainerEmail = '';
+    let trainerUserId: string | null = null;
+    let trainerProfileId: string | null = null;
 
     if (planObj.trainerId) {
       // Get trainer profile ID (handle both populated and non-populated cases)
-      const trainerProfileId = (planObj.trainerId as any)?._id || planObj.trainerId;
+      trainerProfileId = (planObj.trainerId as any)?._id?.toString() || (planObj.trainerId as any)?.toString() || null;
       
       // Get trainer profile
       const trainerProfile = await this.trainerModel
@@ -115,6 +132,8 @@ export class PlansService {
           const trainerUser = trainerProfile.userId as any;
           trainerName = `${trainerUser.firstName} ${trainerUser.lastName}`.trim();
           trainerEmail = trainerUser.email || '';
+          // Extract User ID (this is what frontend needs to match with User.id)
+          trainerUserId = trainerUser._id?.toString() || null;
         } else {
           // Fallback: get user directly by userId
           const userId = (trainerProfile.userId as any)?._id || trainerProfile.userId;
@@ -123,6 +142,7 @@ export class PlansService {
             if (user) {
               trainerName = `${user.firstName} ${user.lastName}`.trim();
               trainerEmail = user.email || '';
+              trainerUserId = (user._id as any)?.toString() || null;
             }
           }
         }
@@ -131,6 +151,8 @@ export class PlansService {
 
     const result = {
       ...planObj,
+      trainerId: trainerUserId, // ✅ Vraća User ID (matches User.id in frontend)
+      trainerProfileId: trainerProfileId, // ✅ TrainerProfile ID (for info)
       trainerName,
       trainerEmail,
       _id: planObj._id.toString(),
@@ -138,7 +160,11 @@ export class PlansService {
     
     console.log('[PlansService] ✓ Plan prepared with trainer info');
     console.log('[PlansService] → Trainer name:', trainerName);
+    console.log('[PlansService] → Trainer User ID:', trainerUserId);
+    console.log('[PlansService] → Trainer Profile ID:', trainerProfileId);
     console.log('[PlansService] → Workouts count:', planObj.workouts?.length || 0);
+    console.log('[PlansService] → Final trainerId being returned:', result.trainerId);
+    console.log('[PlansService] → Final trainerId type:', typeof result.trainerId);
     console.log('═══════════════════════════════════════════════════════════');
     
     return result;
@@ -163,6 +189,11 @@ export class PlansService {
       throw new NotFoundException('Plan not found');
     }
 
+    // Validate template status if plan has assigned clients
+    if (plan.assignedClientIds && plan.assignedClientIds.length > 0) {
+      PlanValidators.validateIsTemplate(plan, 'update');
+    }
+
     // If user is ADMIN, skip ownership check
     if (userRole !== 'ADMIN') {
       const planTrainerId = (plan.trainerId as any)?._id || plan.trainerId;
@@ -182,8 +213,36 @@ export class PlansService {
     }
 
     console.log(`[PlansService] Updating plan: ${planId} with data:`, dto);
+    
+    // Handle trainerId conversion (user ID → trainer profile ID)
+    let trainerProfileId: Types.ObjectId | undefined;
+    if (dto.trainerId) {
+      // Get trainer profile to get trainerProfileId (same logic as createPlan)
+      const trainerProfile = await this.trainersService.getProfile(dto.trainerId);
+      if (!trainerProfile) {
+        throw new NotFoundException(`Trainer profile not found for user ${dto.trainerId}`);
+      }
+      trainerProfileId = (trainerProfile as any)._id;
+      console.log(`[PlansService] Converted trainerId: ${dto.trainerId} → ${trainerProfileId}`);
+    }
+    
+    // Build update object - use explicit ObjectId for trainerId, not $set spread
+    const updateFields: any = {};
+    if (dto.name !== undefined) updateFields.name = dto.name;
+    if (dto.description !== undefined) updateFields.description = dto.description;
+    if (dto.difficulty !== undefined) updateFields.difficulty = dto.difficulty;
+    if (dto.workouts !== undefined) updateFields.workouts = dto.workouts;
+    if (dto.isTemplate !== undefined) updateFields.isTemplate = dto.isTemplate;
+    if (dto.weeklyCost !== undefined) updateFields.weeklyCost = dto.weeklyCost;
+    if (trainerProfileId !== undefined) {
+      updateFields.trainerId = new Types.ObjectId(trainerProfileId);
+      console.log(`[PlansService] Setting trainerId as ObjectId: ${updateFields.trainerId}`);
+    }
+    
+    console.log(`[PlansService] Update fields:`, Object.keys(updateFields));
+    
     const updatedPlan = await this.planModel
-      .findByIdAndUpdate(planId, { $set: dto }, { new: true })
+      .findByIdAndUpdate(planId, updateFields, { new: true })
       .exec();
 
     if (!updatedPlan) {
@@ -192,44 +251,108 @@ export class PlansService {
     }
 
     console.log(`[PlansService] Plan updated successfully: ${planId}`);
+    console.log(`[PlansService] ✓ Verified trainerId in updated plan: ${updatedPlan.trainerId}`);
+    console.log(`[PlansService] ✓ Verified trainerId type: ${typeof updatedPlan.trainerId}`);
     return updatedPlan;
   }
 
   async deletePlan(planId: string, userId: string, userRole: string): Promise<void> {
-    console.log(`[PlansService] deletePlan called - planId: ${planId}, userId: ${userId}, role: ${userRole}`);
+    AppLogger.logStart('PLAN_DELETE', { planId, userId, userRole });
     
-    // Get plan directly (not using getPlanById to avoid trainerName logic)
-    const plan = await this.planModel
-      .findById(planId)
-      .populate('trainerId', 'userId')
-      .exec();
+    try {
+      // Get plan directly (not using getPlanById to avoid trainerName logic)
+      const plan = await this.planModel
+        .findById(planId)
+        .populate('trainerId', 'userId')
+        .exec();
 
-    if (!plan) {
-      console.log(`[PlansService] Plan not found: ${planId}`);
-      throw new NotFoundException('Plan not found');
-    }
-
-    // If user is ADMIN, skip ownership check
-    if (userRole !== 'ADMIN') {
-      const planTrainerId = (plan.trainerId as any)?._id || plan.trainerId;
-      
-      // Get trainer profile to get trainerProfileId
-      const trainerProfile = await this.trainersService.getProfile(userId);
-      const trainerProfileId = (trainerProfile as any)._id;
-      
-      console.log(`[PlansService] Plan trainerId: ${planTrainerId}, Current user trainerProfileId: ${trainerProfileId}`);
-      
-      if (planTrainerId.toString() !== trainerProfileId.toString()) {
-        console.log(`[PlansService] Forbidden: Plan trainerId doesn't match current user`);
-        throw new ForbiddenException('You can only delete your own plans');
+      if (!plan) {
+        AppLogger.logError('PLAN_DELETE', { planId, reason: 'Plan not found' });
+        throw new NotFoundException('Plan not found');
       }
-    } else {
-      console.log(`[PlansService] User is ADMIN, skipping ownership check`);
-    }
 
-    console.log(`[PlansService] Deleting plan: ${planId}`);
-    await this.planModel.findByIdAndDelete(planId).exec();
-    console.log(`[PlansService] Plan deleted successfully`);
+      // Validate that plan is a template (only templates can be deleted fully)
+      // Note: This is a soft validation - we still allow delete but will soft-delete if needed
+      if (plan.assignedClientIds && plan.assignedClientIds.length > 0) {
+        AppLogger.logOperation('PLAN_DELETE', {
+          planId,
+          note: 'Plan has assigned clients - will use soft delete',
+        }, 'debug');
+      }
+
+      // If user is ADMIN, skip ownership check
+      if (userRole !== 'ADMIN') {
+        const planTrainerId = (plan.trainerId as any)?._id || plan.trainerId;
+        
+        // Get trainer profile to get trainerProfileId
+        const trainerProfile = await this.trainersService.getProfile(userId);
+        const trainerProfileId = (trainerProfile as any)._id;
+        
+        if (planTrainerId.toString() !== trainerProfileId.toString()) {
+          AppLogger.logError('PLAN_DELETE', { 
+            planId, 
+            reason: 'Ownership validation failed',
+            planTrainerId: planTrainerId.toString(),
+            userTrainerId: trainerProfileId.toString()
+          });
+          throw new ForbiddenException('You can only delete your own plans');
+        }
+      }
+
+      // Check for active workout logs (future dates)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const activeLogsCount = await this.workoutLogModel.countDocuments({
+        weeklyPlanId: new Types.ObjectId(planId),
+        workoutDate: { $gte: today },
+      }).exec();
+
+      AppLogger.logOperation('PLAN_DELETE_CHECK', {
+        planId,
+        activeLogsCount,
+        checkType: 'future_workout_logs'
+      }, 'debug');
+
+      // Check for assigned clients
+      const assignedClientsCount = plan.assignedClientIds?.length || 0;
+
+      AppLogger.logOperation('PLAN_DELETE_CHECK_CLIENTS', {
+        planId,
+        assignedClientsCount,
+        checkType: 'assigned_clients'
+      }, 'debug');
+
+      // Determine if soft delete or hard delete
+      if (activeLogsCount > 0 || assignedClientsCount > 0) {
+        // Soft delete
+        await this.planModel.findByIdAndUpdate(planId, {
+          isDeleted: true,
+          deletedAt: new Date(),
+        }).exec();
+
+        AppLogger.logWarning('PLAN_DELETE_SOFT', {
+          planId,
+          reason: 'Has active logs or assigned clients',
+          activeLogsCount,
+          assignedClientsCount,
+          deletedAt: new Date().toISOString()
+        });
+      } else {
+        // Hard delete
+        await this.planModel.findByIdAndDelete(planId).exec();
+
+        AppLogger.logOperation('PLAN_DELETE_HARD', {
+          planId,
+          reason: 'No active logs or assigned clients'
+        }, 'info');
+      }
+
+      AppLogger.logComplete('PLAN_DELETE', { planId, userId });
+    } catch (error) {
+      AppLogger.logError('PLAN_DELETE', { planId, userId }, error);
+      throw error;
+    }
   }
 
   /**
@@ -239,56 +362,8 @@ export class PlansService {
   async canUnlockNextWeek(clientId: string): Promise<boolean> {
     const client = await this.clientsService.getProfileById(clientId);
     
-    // Define type for plan history entry
-    type PlanHistoryEntry = {
-      planId: Types.ObjectId;
-      planStartDate: Date;
-      planEndDate: Date;
-      assignedAt?: Date;
-      trainerId?: Types.ObjectId;
-    };
-    
-    // Get active plan from planHistory
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    
-    let activePlanEntry: PlanHistoryEntry | null = null;
-    if (client.planHistory && client.planHistory.length > 0) {
-      const found = client.planHistory.find(entry => {
-        const start = new Date(entry.planStartDate);
-        const end = new Date(entry.planEndDate);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
-        return now >= start && now <= end;
-      });
-      if (found) {
-        activePlanEntry = {
-          planId: found.planId,
-          planStartDate: found.planStartDate,
-          planEndDate: found.planEndDate,
-          assignedAt: found.assignedAt,
-          trainerId: found.trainerId,
-        };
-      }
-    }
-    
-    // Fallback to currentPlanId (backward compatibility)
-    if (!activePlanEntry && client.currentPlanId) {
-      const start = client.planStartDate ? new Date(client.planStartDate) : null;
-      const end = client.planEndDate ? new Date(client.planEndDate) : null;
-      
-      if (start && end) {
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
-        if (now >= start && now <= end) {
-          activePlanEntry = {
-            planId: client.currentPlanId,
-            planStartDate: start,
-            planEndDate: end,
-          };
-        }
-      }
-    }
+    // Get active plan from planHistory using helper method
+    const activePlanEntry = this.clientsService.getActivePlanEntry(client);
     
     if (!activePlanEntry) {
       // No active plan, can unlock (first week)
@@ -296,8 +371,8 @@ export class PlansService {
     }
     
     // Check if current week has ended
-    const weekEnd = new Date(activePlanEntry.planEndDate);
-    weekEnd.setHours(23, 59, 59, 999);
+    const now = DateUtils.normalizeToStartOfDay(new Date());
+    const weekEnd = DateUtils.normalizeToEndOfDay(new Date(activePlanEntry.planEndDate));
     
     if (now > weekEnd) {
       // Week has ended, check if all workouts are completed
@@ -306,13 +381,13 @@ export class PlansService {
       const workoutLogs = await this.workoutsService.getWorkoutLogsByClient(clientId);
       
       // Filter logs for this plan and week
+      const planStartDate = DateUtils.normalizeToStartOfDay(new Date(activePlanEntry.planStartDate));
       const weekLogs = workoutLogs.filter(log => {
         const logPlanId = (log.weeklyPlanId as any)?._id?.toString() || log.weeklyPlanId.toString();
-        const logDate = new Date(log.workoutDate);
-        logDate.setHours(0, 0, 0, 0);
+        const logDate = DateUtils.normalizeToStartOfDay(new Date(log.workoutDate));
         
         return logPlanId === planId &&
-               logDate >= new Date(activePlanEntry!.planStartDate) &&
+               logDate >= planStartDate &&
                logDate <= weekEnd;
       });
       
@@ -342,108 +417,66 @@ export class PlansService {
     return false;
   }
 
+  /**
+   * Helper method to resolve clientId (can be userId or clientProfileId) to clientProfileId and client profile
+   */
+  private async resolveClientProfileId(clientId: string): Promise<{clientProfileId: string, client: ClientProfile} | null> {
+    try {
+      // Try as userId first
+      const client = await this.clientsService.getProfile(clientId);
+      const clientProfileId = (client as any)._id.toString();
+      return { clientProfileId, client };
+    } catch (e) {
+      try {
+        // Try as clientProfileId
+        const client = await this.clientsService.getProfileById(clientId);
+        const clientProfileId = (client as any)._id.toString();
+        return { clientProfileId, client };
+      } catch (e2) {
+        // Client not found
+        return null;
+      }
+    }
+  }
+
   async assignPlanToClients(
     planId: string,
     userId: string,
     userRole: string,
     dto: AssignPlanDto,
   ): Promise<any> {
-    console.log(`[PlansService] assignPlanToClients called - planId: ${planId}, userId: ${userId}, role: ${userRole}, clientIds: ${dto.clientIds.length}, startDate: ${dto.startDate}`);
-    
     // Validate that clients can unlock next week (if they have an active plan)
-    // BUT: Allow assign if it's a different plan (not the same plan)
-    console.log(`[PlansService] Checking unlock status for ${dto.clientIds.length} clients...`);
+    // BUT: Allow assign if it's the same plan (re-assign)
     for (const clientId of dto.clientIds) {
       try {
-        console.log(`[PlansService] Checking unlock status for client: ${clientId}`);
-        // Try to get client profile to get clientProfileId
-        let clientProfileId: string;
-        let client;
-        try {
-          client = await this.clientsService.getProfile(clientId);
-          clientProfileId = (client as any)._id.toString();
-          console.log(`[PlansService] Found client profile ${clientProfileId} for userId ${clientId}`);
-        } catch (e) {
-          // If not found as userId, try as clientProfileId
-          console.log(`[PlansService] Not found as userId, trying as clientProfileId: ${e}`);
-          try {
-            client = await this.clientsService.getProfileById(clientId);
-            clientProfileId = (client as any)._id.toString();
-            console.log(`[PlansService] Found client profile ${clientProfileId} (as clientProfileId)`);
-          } catch (e2) {
-            console.log(`[PlansService] Client profile not found for ${clientId} - might be new client, skipping unlock check`);
-            continue; // Skip unlock check for new clients
-          }
+        const resolved = await this.resolveClientProfileId(clientId);
+        if (!resolved) {
+          continue; // Skip unlock check for new clients
         }
+        
+        const { clientProfileId, client } = resolved;
         
         // Check if client already has this exact plan assigned
-        console.log(`[PlansService] 🔍 Unlock check: Checking if client ${clientProfileId} already has plan ${planId}`);
-        console.log(`[PlansService] → Client planHistory length: ${client.planHistory?.length || 0}`);
-        console.log(`[PlansService] → Client currentPlanId: ${client.currentPlanId ? (client.currentPlanId as any)?._id?.toString() || client.currentPlanId.toString() : 'null'}`);
-        
-        let hasThisPlan = false;
-        let foundInUnlock = '';
-        
-        // Check planHistory
-        if (client.planHistory && client.planHistory.length > 0) {
-          console.log(`[PlansService] → Checking planHistory for unlock check (${client.planHistory.length} entries)...`);
-          for (let i = 0; i < client.planHistory.length; i++) {
-            const entry = client.planHistory[i];
-            const entryPlanId = (entry.planId as any)?._id?.toString() || entry.planId.toString();
-            console.log(`[PlansService] →   Entry ${i}: planId=${entryPlanId}, comparing with ${planId}`);
-            if (entryPlanId === planId.toString()) {
-              hasThisPlan = true;
-              foundInUnlock = `planHistory[${i}]`;
-              console.log(`[PlansService] → ✓ MATCH FOUND in planHistory[${i}] for unlock check!`);
-              break;
-            }
-          }
-        } else {
-          console.log(`[PlansService] → planHistory is empty or null for unlock check`);
-        }
-        
-        // Check currentPlanId (backward compatibility)
-        if (!hasThisPlan && client.currentPlanId) {
-          const existingPlanId = (client.currentPlanId as any)?._id?.toString() || client.currentPlanId.toString();
-          console.log(`[PlansService] → Checking currentPlanId for unlock check: ${existingPlanId}`);
-          if (existingPlanId === planId.toString()) {
-            hasThisPlan = true;
-            foundInUnlock = 'currentPlanId';
-            console.log(`[PlansService] → ✓ MATCH FOUND in currentPlanId for unlock check!`);
-          } else {
-            console.log(`[PlansService] → ✗ No match in currentPlanId (${existingPlanId} !== ${planId})`);
-          }
-        } else if (!hasThisPlan) {
-          console.log(`[PlansService] → currentPlanId is null/undefined for unlock check`);
-        }
+        const hasThisPlan = await this.clientsService.hasPlanInHistory(clientProfileId, planId);
         
         if (hasThisPlan) {
-          console.log(`[PlansService] ✅ Client ${clientProfileId} already has this plan (found in: ${foundInUnlock}) - will preserve existing dates, skipping unlock check`);
           continue; // Skip unlock check if it's the same plan
-        } else {
-          console.log(`[PlansService] → ✗ No match found - client does NOT have this plan, will check unlock status`);
         }
         
         // Only check unlock if client has a different active plan
-        console.log(`[PlansService] Client ${clientProfileId} has different plan - checking if can unlock next week...`);
         const canUnlock = await this.canUnlockNextWeek(clientProfileId);
-        console.log(`[PlansService] Client ${clientProfileId} can unlock: ${canUnlock}`);
         if (!canUnlock) {
           throw new BadRequestException(
             `Client cannot be assigned a new plan. Current week must be completed first. Complete all workouts in the current week before assigning a new plan.`
           );
         }
       } catch (error) {
-        // If it's a BadRequestException about unlock, rethrow it
         if (error instanceof BadRequestException) {
-          console.error(`[PlansService] Client ${clientId} cannot unlock next week - throwing error`);
           throw error;
         }
         // For other errors (e.g., client not found), continue (might be new client)
-        console.log(`[PlansService] Could not check unlock status for client ${clientId}, continuing... (error: ${error})`);
       }
     }
-    console.log(`[PlansService] Unlock check completed`);
     
     // Get plan directly (not using getPlanById to avoid trainerName logic)
     const plan = await this.planModel
@@ -474,150 +507,113 @@ export class PlansService {
       console.log(`[PlansService] User is ADMIN, skipping ownership check`);
     }
 
-    const startDate = new Date(dto.startDate);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 7); // 7 days cycle
+    // Parse startDate as UTC (append T00:00:00.000Z if date-only string to prevent timezone conversion)
+    const dateString = dto.startDate.includes('T') ? dto.startDate : `${dto.startDate}T00:00:00.000Z`;
+    const startDate = DateUtils.normalizeToStartOfDay(new Date(dateString));
+    const endDate = DateUtils.addDays(startDate, 7); // 7 days cycle
+    const normalizedEndDate = DateUtils.normalizeToEndOfDay(endDate);
 
-    console.log(`[PlansService] Start date: ${startDate.toISOString()}, End date: ${endDate.toISOString()}`);
+    // Validate start date
+    PlanValidators.validateStartDate(startDate, planId);
+
 
     // Convert clientIds (can be userId or clientProfileId) to clientProfileIds
     const clientProfileIds: Types.ObjectId[] = [];
     for (const clientId of dto.clientIds) {
       try {
-        console.log(`[PlansService] Processing clientId: ${clientId}`);
-        let clientProfileId: Types.ObjectId;
-        let client;
-        let clientUser;
-        
-        // Frontend may send either userId or clientProfileId
-        // Try as userId first (most common case)
-        try {
-          client = await this.clientsService.getProfile(clientId);
-          clientProfileId = (client as any)._id;
-          console.log(`[PlansService] Found client profile: ${clientProfileId} for userId: ${clientId}`);
-        } catch (error) {
-          // Not found as userId, try as clientProfileId
-          console.log(`[PlansService] Not found as userId ${clientId}, trying as clientProfileId`);
-          try {
-            client = await this.clientsService.getProfileById(clientId);
-            clientProfileId = (client as any)._id;
-            console.log(`[PlansService] Found client profile: ${clientProfileId} (as clientProfileId)`);
-          } catch (e2) {
-            // Not found as either, try to find user and create profile
-            console.log(`[PlansService] Client profile not found for ${clientId} (as userId or clientProfileId), trying to create new profile`);
-            
-            // Try to find user by ID (assuming clientId is userId)
-            clientUser = await this.userModel.findById(clientId).exec();
-            
-            if (!clientUser) {
-              throw new NotFoundException(`Client user not found: ${clientId} (tried as userId and clientProfileId, user does not exist)`);
-            }
-            
-            if (clientUser.role !== 'CLIENT') {
-              throw new NotFoundException(`User is not a CLIENT: ${clientUser.role}`);
-            }
-            
-            // Create client profile with trainer from plan (needed for workout logs)
-            const newClientProfile = new this.clientModel({
-              userId: clientUser._id,
-              trainerId: planTrainerId, // Assign trainer from plan
-            });
-            await newClientProfile.save();
-            clientProfileId = newClientProfile._id;
-            console.log(`[PlansService] Created new client profile: ${clientProfileId} for userId: ${clientUser._id} with trainerId: ${planTrainerId}`);
+        const resolved = await this.resolveClientProfileId(clientId);
+        if (resolved) {
+          clientProfileIds.push(new Types.ObjectId(resolved.clientProfileId));
+        } else {
+          // Not found, try to find user and create profile
+          const clientUser = await this.userModel.findById(clientId).exec();
+          
+          if (!clientUser) {
+            throw new NotFoundException(`Client user not found: ${clientId}`);
           }
+          
+          if (clientUser.role !== 'CLIENT') {
+            throw new NotFoundException(`User is not a CLIENT: ${clientUser.role}`);
+          }
+          
+          // Create client profile with trainer from plan (needed for workout logs)
+          const newClientProfile = new this.clientModel({
+            userId: clientUser._id,
+            trainerId: planTrainerId,
+          });
+          await newClientProfile.save();
+          clientProfileIds.push(newClientProfile._id);
         }
-        
-        clientProfileIds.push(clientProfileId);
       } catch (error) {
         console.error(`[PlansService] Error processing clientId ${clientId}:`, error);
         throw error;
       }
     }
-
-    console.log(`[PlansService] Converted to ${clientProfileIds.length} clientProfileIds`);
-
-    console.log(`[PlansService] Updating ${clientProfileIds.length} client profiles`);
     
     // Separate clients who already have this plan from new clients
     const existingClients: Types.ObjectId[] = [];
     const newClients: Types.ObjectId[] = [];
     
     for (const clientProfileId of clientProfileIds) {
-      const client = await this.clientsService.getProfileById(clientProfileId);
-      
-      console.log(`[PlansService] 🔍 Checking if client ${clientProfileId} already has plan ${planId}`);
-      console.log(`[PlansService] → Client planHistory length: ${client.planHistory?.length || 0}`);
-      console.log(`[PlansService] → Client currentPlanId: ${client.currentPlanId ? (client.currentPlanId as any)?._id?.toString() || client.currentPlanId.toString() : 'null'}`);
-      
-      // Check if plan already exists in planHistory (new way) or currentPlanId (backward compatibility)
-      let planExists = false;
-      let foundIn = '';
-      
-      // Check planHistory first
-      if (client.planHistory && client.planHistory.length > 0) {
-        console.log(`[PlansService] → Checking planHistory (${client.planHistory.length} entries)...`);
-        for (let i = 0; i < client.planHistory.length; i++) {
-          const entry = client.planHistory[i];
-          const entryPlanId = (entry.planId as any)?._id?.toString() || entry.planId.toString();
-          console.log(`[PlansService] →   Entry ${i}: planId=${entryPlanId}, comparing with ${planId}`);
-          if (entryPlanId === planId.toString()) {
-            planExists = true;
-            foundIn = `planHistory[${i}]`;
-            console.log(`[PlansService] → ✓ MATCH FOUND in planHistory[${i}]!`);
-            break;
-          }
-        }
-      } else {
-        console.log(`[PlansService] → planHistory is empty or null, skipping planHistory check`);
-      }
-      
-      // If not in planHistory, check currentPlanId (backward compatibility)
-      if (!planExists) {
-        console.log(`[PlansService] → Checking currentPlanId (backward compatibility)...`);
-        const existingPlanId = (client.currentPlanId as any)?._id?.toString() || (client.currentPlanId as any)?.toString();
-        console.log(`[PlansService] →   currentPlanId value: ${existingPlanId || 'null'}, comparing with ${planId}`);
-        if (existingPlanId && existingPlanId.toString() === planId.toString()) {
-          planExists = true;
-          foundIn = 'currentPlanId';
-          console.log(`[PlansService] → ✓ MATCH FOUND in currentPlanId!`);
-        } else {
-          console.log(`[PlansService] → ✗ No match in currentPlanId`);
-        }
-      }
-      
-      if (planExists) {
+      const hasPlan = await this.clientsService.hasPlanInHistory(clientProfileId.toString(), planId);
+      if (hasPlan) {
         existingClients.push(clientProfileId);
-        console.log(`[PlansService] ✅ Client ${clientProfileId} already has this plan assigned (found in: ${foundIn}) - preserving existing dates`);
       } else {
         newClients.push(clientProfileId);
-        console.log(`[PlansService] 🆕 Client ${clientProfileId} is new or has different plan - will assign with new dates`);
       }
     }
-    
-    console.log(`[PlansService] Found ${existingClients.length} existing clients and ${newClients.length} new clients`);
     
     // Update only new clients (don't touch existing clients' dates)
     for (const clientProfileId of newClients) {
       try {
         // Get client profile
         const client = await this.clientsService.getProfileById(clientProfileId);
-        // Extract clientUserId - handle both populated and non-populated cases
-        const clientUserId = (client.userId as any)?._id?.toString() || (client.userId as any)?.toString() || (client.userId as any).toString();
-        console.log(`[PlansService] Updating NEW client profile ${clientProfileId} (userId: ${clientUserId})`);
+        
+        // Check for overlapping plans and automatically close them
+        const newStartDate = DateUtils.normalizeToStartOfDay(startDate);
+        const newEndDate = DateUtils.normalizeToEndOfDay(endDate);
+        
+        if (client.planHistory && client.planHistory.length > 0) {
+          const overlappingPlan = PlanOverlapHandler.findOverlappingPlan(
+            client.planHistory,
+            planId,
+            newStartDate,
+            newEndDate,
+          );
+          
+          if (overlappingPlan) {
+            // Calculate close date (day before new plan starts)
+            const closeDate = PlanOverlapHandler.calculateCloseDate(newStartDate);
+            
+            AppLogger.logWarning('PLAN_OVERLAP_CLOSE', {
+              clientId: clientProfileId.toString(),
+              oldPlanId: overlappingPlan.planId.toString(),
+              newPlanId: planId,
+              oldEndDate: overlappingPlan.planEndDate,
+              newCloseDate: closeDate.toISOString(),
+            });
+            
+            // Mark future workouts of the overlapping plan as missed
+            await this.workoutsService.markMissedWorkoutsForPlan(
+              clientProfileId.toString(),
+              overlappingPlan.planId.toString(),
+              closeDate
+            );
+            
+            // Update the overlapping plan's end date in planHistory
+            await this.clientModel.updateOne(
+              { _id: clientProfileId, 'planHistory.planId': overlappingPlan.planId },
+              { $set: { 'planHistory.$.planEndDate': closeDate } }
+            ).exec();
+          }
+        }
         
         // Trainer validation and assignment logic
         let finalTrainerId = planTrainerId;
-        if (!client.trainerId) {
-          // Client doesn't have a trainer - assign trainer from plan
-          console.log(`[PlansService] Client ${clientProfileId} doesn't have a trainer, assigning trainer from plan: ${planTrainerId}`);
-        } else {
-          // Client has a trainer - check if plan is from different trainer
+        if (client.trainerId) {
           const clientTrainerId = (client.trainerId as any)?._id || client.trainerId;
           if (clientTrainerId.toString() !== planTrainerId.toString()) {
             // Plan is from different trainer - automatically change trainer
-            // (because only one trainer can be active at a time)
-            console.log(`[PlansService] Client ${clientProfileId} has trainer ${clientTrainerId}, but plan is from trainer ${planTrainerId}. Changing trainer to match plan.`);
             finalTrainerId = planTrainerId;
           } else {
             // Trainer matches - use existing trainer
@@ -625,11 +621,11 @@ export class PlansService {
           }
         }
         
-        // Add plan to planHistory and update currentPlanId for backward compatibility
+        // Add plan to planHistory
         const historyEntry = {
           planId: new Types.ObjectId(planId),
           planStartDate: startDate,
-          planEndDate: endDate,
+          planEndDate: normalizedEndDate,
           assignedAt: new Date(),
           trainerId: finalTrainerId,
         };
@@ -638,55 +634,35 @@ export class PlansService {
           $push: { planHistory: historyEntry },
           $set: {
             trainerId: finalTrainerId,
-            // Keep currentPlanId for backward compatibility
-            currentPlanId: new Types.ObjectId(planId),
-            planStartDate: startDate,
-            planEndDate: endDate,
           },
         }).exec();
         
         // Add plan cost to client's running tab balance
         const planCost = (plan as any).weeklyCost || 0;
-        console.log(`[PlansService] Plan cost for client ${clientProfileId}: ${planCost}€`);
         if (planCost > 0) {
           try {
-            console.log(`[PlansService] Adding plan cost ${planCost}€ to client ${clientProfileId}'s balance`);
             await this.gamificationService.addPenaltyToBalance(
               clientProfileId,
               planCost,
               'Weekly plan cost',
               new Types.ObjectId(planId),
             );
-            console.log(`[PlansService] Successfully added plan cost ${planCost}€ to client ${clientProfileId}'s balance`);
           } catch (error) {
             console.error(`[PlansService] Error adding plan cost to balance for client ${clientProfileId}:`, error);
             // Don't throw - plan assignment should succeed even if balance update fails
           }
-        } else {
-          console.log(`[PlansService] Plan has no cost (weeklyCost = 0), skipping balance update`);
         }
-        
-        console.log(`[PlansService] Successfully updated NEW client profile ${clientProfileId} with plan in history and dates`);
       } catch (error) {
         console.error(`[PlansService] Error updating client profile ${clientProfileId}:`, error);
         throw error;
       }
     }
     
-    // For existing clients, only ensure they're still in the plan's assignedClientIds (but don't touch their dates)
-    // This is already handled by $addToSet below, so we just log it
-    if (existingClients.length > 0) {
-      console.log(`[PlansService] Skipping date updates for ${existingClients.length} existing clients - preserving their planStartDate and planEndDate`);
-      console.log(`[PlansService] Skipping plan cost addition for ${existingClients.length} existing clients - they were already charged when plan was first assigned`);
-    }
 
-    console.log(`[PlansService] Adding clients to plan's assignedClientIds`);
     // Add clients to plan's assignedClientIds
     await this.planModel.findByIdAndUpdate(planId, {
       $addToSet: { assignedClientIds: { $each: clientProfileIds } },
     }).exec();
-
-    console.log(`[PlansService] Generating workout logs for NEW clients only`);
     // Auto-generate WorkoutLog placeholders for 7 days - ONLY for new clients
     // Existing clients already have their workout logs, don't regenerate
     // Get plan (not lean, needs to be Mongoose document for proper structure)
@@ -698,31 +674,199 @@ export class PlansService {
     // Only generate logs for new clients (not existing ones)
     for (const clientProfileId of newClients) {
       try {
-        console.log(`[PlansService] Generating logs for NEW client ${clientProfileId}`);
         const client = await this.clientsService.getProfileById(clientProfileId);
         await this.workoutsService.generateWeeklyLogs(client, planForLogs as any, startDate);
-        console.log(`[PlansService] Successfully generated logs for NEW client ${clientProfileId}`);
       } catch (error) {
-        console.error(`[PlansService] Error generating logs for client ${clientProfileId}:`, error);
+        console.error(`[PlansService] ❌ Error generating logs for client ${clientProfileId}:`, error);
         throw error;
       }
     }
     
-    if (existingClients.length > 0) {
-      console.log(`[PlansService] Skipping workout log generation for ${existingClients.length} existing clients - they already have logs`);
-    }
-
-    console.log(`[PlansService] ✅ Plan assigned successfully to ${clientProfileIds.length} clients`);
-    console.log(`[PlansService] ✅ Returning success response`);
     const response = {
       message: 'Plan assigned successfully',
       planId,
       clientIds: dto.clientIds,
       startDate,
-      endDate,
+      endDate: normalizedEndDate,
     };
-    console.log(`[PlansService] ✅ Response:`, JSON.stringify(response, null, 2));
     return response;
+  }
+
+  /**
+   * Cancel plan assignment for clients
+   * Marks future workout logs as missed and removes plan from clients
+   */
+  async cancelPlan(planId: string, clientId: string, userId: string, userRole: string): Promise<void> {
+    AppLogger.logStart('PLAN_CANCEL', { planId, clientId, userId, userRole });
+
+    try {
+      const plan = await this.planModel.findById(planId).exec();
+      if (!plan) {
+        AppLogger.logError('PLAN_CANCEL', { planId, clientId }, new NotFoundException('Plan not found'));
+        throw new NotFoundException('Plan not found');
+      }
+
+      AppLogger.logOperation('PLAN_CANCEL_PLAN_FOUND', {
+        planId,
+        clientId,
+        planName: plan.name,
+      }, 'debug');
+
+      // Convert userId to clientProfileId (clientId might be userId from frontend)
+      let clientProfileId: string;
+      try {
+        const client = await this.clientsService.getProfile(clientId);
+        clientProfileId = (client as any)._id.toString();
+        AppLogger.logOperation('PLAN_CANCEL_CLIENT_FOUND', {
+          userId: clientId,
+          clientProfileId,
+        }, 'debug');
+      } catch (e) {
+        // If not found as userId, try as clientProfileId
+        try {
+          const client = await this.clientsService.getProfileById(clientId);
+          clientProfileId = (client as any)._id.toString();
+          AppLogger.logOperation('PLAN_CANCEL_CLIENT_FOUND_BY_ID', {
+            clientId,
+            clientProfileId,
+          }, 'debug');
+        } catch (e2) {
+          AppLogger.logError('PLAN_CANCEL', { planId, clientId }, new NotFoundException('Client profile not found'));
+          throw new NotFoundException('Client profile not found');
+        }
+      }
+
+      // Delete uncompleted workout logs (instead of marking as missed)
+      AppLogger.logOperation('PLAN_CANCEL_DELETE_WORKOUTS', {
+        planId,
+        clientProfileId,
+      }, 'debug');
+
+      const deletedCount = await this.workoutsService.deleteUncompletedWorkoutsForPlan(
+        clientProfileId,
+        planId,
+      );
+
+      AppLogger.logOperation('PLAN_CANCEL_WORKOUTS_DELETED', {
+        planId,
+        clientProfileId,
+        deletedCount,
+      }, 'info');
+
+      // Remove penalties for this plan
+      AppLogger.logOperation('PLAN_CANCEL_REMOVE_PENALTIES', {
+        planId,
+        clientProfileId,
+      }, 'debug');
+
+      const removedPenaltiesCount = await this.gamificationService.removePenaltiesForPlan(
+        clientProfileId,
+        planId,
+      );
+
+      AppLogger.logOperation('PLAN_CANCEL_PENALTIES_REMOVED', {
+        planId,
+        clientProfileId,
+        removedPenaltiesCount,
+      }, 'info');
+
+      // Remove from client's planHistory and currentPlanId
+      AppLogger.logOperation('PLAN_CANCEL_UPDATE_CLIENT', {
+        planId,
+        clientProfileId,
+      }, 'debug');
+
+      await this.clientModel.updateOne(
+        { _id: new Types.ObjectId(clientProfileId) },
+        {
+          $pull: { planHistory: { planId: new Types.ObjectId(planId) } },
+        }
+      ).exec();
+
+      AppLogger.logOperation('PLAN_CANCEL_CLIENT_UPDATED', {
+        planId,
+        clientId,
+      }, 'debug');
+
+      // Remove from plan's assignedClientIds
+      AppLogger.logOperation('PLAN_CANCEL_UPDATE_PLAN', {
+        planId,
+        clientProfileId,
+      }, 'debug');
+
+      await this.planModel.updateOne(
+        { _id: new Types.ObjectId(planId) },
+        { $pull: { assignedClientIds: new Types.ObjectId(clientProfileId) } }
+      ).exec();
+
+      AppLogger.logOperation('PLAN_CANCEL_PLAN_UPDATED', {
+        planId,
+        clientProfileId,
+      }, 'debug');
+
+      AppLogger.logComplete('PLAN_CANCEL', {
+        planId,
+        clientId,
+        clientProfileId,
+        deletedWorkouts: deletedCount,
+        removedPenalties: removedPenaltiesCount,
+      });
+    } catch (error) {
+      AppLogger.logError('PLAN_CANCEL', { planId, clientId }, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Request next week - Client initiates request for next week's plan
+   */
+  async requestNextWeek(clientId: string): Promise<void> {
+    AppLogger.logStart('NEXT_WEEK_REQUEST', {
+      clientId,
+    });
+
+    try {
+      // Validate that client can unlock next week
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_VALIDATE', {
+        clientId,
+      }, 'debug');
+
+      const canUnlock = await this.canUnlockNextWeek(clientId);
+
+      if (!canUnlock) {
+        AppLogger.logWarning('NEXT_WEEK_REQUEST_INVALID', {
+          clientId,
+          reason: 'Current week not completed or no active plan',
+        });
+        throw new BadRequestException(
+          'Cannot request next week. Current week must be completed first.'
+        );
+      }
+
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_VALID', {
+        clientId,
+      }, 'debug');
+
+      // Set request flag
+      await this.clientModel.findByIdAndUpdate(clientId, {
+        $set: {
+          nextWeekRequested: true,
+          nextWeekRequestDate: new Date(),
+        }
+      }).exec();
+
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_SAVED', {
+        clientId,
+        requestDate: new Date().toISOString(),
+      }, 'info');
+
+      AppLogger.logComplete('NEXT_WEEK_REQUEST', {
+        clientId,
+      });
+    } catch (error) {
+      AppLogger.logError('NEXT_WEEK_REQUEST', { clientId }, error);
+      throw error;
+    }
   }
 
   async duplicatePlan(planId: string, userId: string, userRole: string): Promise<WeeklyPlan> {

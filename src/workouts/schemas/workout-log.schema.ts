@@ -44,7 +44,7 @@ export class WorkoutLog {
   weekNumber?: number; // Week number in the cycle
 
   @Prop({ required: true, min: 1, max: 7 })
-  dayOfWeek: number; // 1-7 (Monday-Sunday)
+  dayOfWeek: number; // 1-7 (Plan day index: 1 = first day of plan, 2 = second day, etc.)
 
   @Prop({
     type: [
@@ -68,6 +68,12 @@ export class WorkoutLog {
 
   @Prop()
   completedAt?: Date;
+
+  @Prop()
+  workoutStartTime?: Date; // When workout was started
+
+  @Prop({ default: false })
+  suspiciousCompletion: boolean; // Flag for workouts completed too quickly
 
   @Prop({ min: 1, max: 5 })
   difficultyRating?: number; // 1-5 scale

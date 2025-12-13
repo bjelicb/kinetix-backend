@@ -15,6 +15,7 @@ import { SubscriptionUpdateDto } from './dto/subscription-update.dto';
 import { AssignClientDto } from './dto/assign-client.dto';
 import { UpgradeSubscriptionDto, SubscriptionTier } from './dto/upgrade-subscription.dto';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
+import { AppLogger } from '../common/utils/logger.utils';
 
 @Injectable()
 export class TrainersService {
@@ -298,6 +299,35 @@ export class TrainersService {
     }
 
     return updatedProfile;
+  }
+
+  /**
+   * Get pending week requests from clients
+   */
+  async getPendingWeekRequests(trainerId: string): Promise<ClientProfile[]> {
+    AppLogger.logOperation('NEXT_WEEK_REQUESTS_GET', {
+      trainerId,
+    }, 'debug');
+
+    // Get trainer profile to get trainerProfileId
+    const trainerProfile = await this.getProfile(trainerId);
+    const trainerProfileId = (trainerProfile as any)._id;
+
+    const clients = await this.clientModel
+      .find({
+        trainerId: trainerProfileId,
+        nextWeekRequested: true,
+      })
+      .populate('userId', 'firstName lastName email')
+      .lean()
+      .exec();
+
+    AppLogger.logOperation('NEXT_WEEK_REQUESTS_GET', {
+      trainerId,
+      count: clients.length,
+    }, 'info');
+
+    return clients as ClientProfile[];
   }
 }
 

@@ -86,6 +86,13 @@ export class WeeklyPlan {
   // Weekly Plan Cost (for Running Tab system)
   @Prop({ default: 0 })
   weeklyCost: number; // Cost in euros per week
+
+  // Soft delete fields
+  @Prop({ default: false })
+  isDeleted: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const WeeklyPlanSchema = SchemaFactory.createForClass(WeeklyPlan);
@@ -94,4 +101,5 @@ export const WeeklyPlanSchema = SchemaFactory.createForClass(WeeklyPlan);
 WeeklyPlanSchema.index({ trainerId: 1 });
 WeeklyPlanSchema.index({ trainerId: 1, isTemplate: 1 }); // Compound index for getPlans
 WeeklyPlanSchema.index({ isTemplate: 1 });
+WeeklyPlanSchema.index({ isDeleted: 1 }); // Index for soft delete filtering
 

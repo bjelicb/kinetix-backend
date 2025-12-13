@@ -168,6 +168,78 @@ export class GamificationService {
   }
 
   /**
+   * Remove penalties for a specific plan from client's penaltyHistory
+   * Used when unassigning a plan from a client
+   */
+  async removePenaltiesForPlan(
+    clientProfileId: string | Types.ObjectId,
+    planId: string | Types.ObjectId,
+  ): Promise<number> {
+    console.log(`[GamificationService] removePenaltiesForPlan START - clientId: ${clientProfileId}, planId: ${planId}`);
+    
+    const client = await this.clientProfileModel.findById(clientProfileId).exec();
+    if (!client) {
+      console.error(`[GamificationService] Client profile not found: ${clientProfileId}`);
+      throw new NotFoundException('Client profile not found');
+    }
+
+    const planIdObj = typeof planId === 'string' ? new Types.ObjectId(planId) : planId;
+    const penaltyHistory = (client as any).penaltyHistory || [];
+    
+    // Find penalties for this plan
+    const penaltiesToRemove = penaltyHistory.filter((penalty: any) => {
+      if (!penalty.planId) return false;
+      const penaltyPlanId = penalty.planId.toString();
+      const targetPlanId = planIdObj.toString();
+      return penaltyPlanId === targetPlanId;
+    });
+
+    if (penaltiesToRemove.length === 0) {
+      console.log(`[GamificationService] removePenaltiesForPlan - No penalties found for plan ${planId}`);
+      return 0;
+    }
+
+    // Calculate total amount to subtract
+    const totalAmount = penaltiesToRemove.reduce((sum: number, penalty: any) => {
+      return sum + (penalty.amount || 0);
+    }, 0);
+
+    console.log(`[GamificationService] removePenaltiesForPlan - Found ${penaltiesToRemove.length} penalties, total amount: ${totalAmount}€`);
+
+    const oldBalance = client.balance || 0;
+    const oldMonthlyBalance = client.monthlyBalance || 0;
+    
+    // Calculate new balances
+    const updatedBalance = Math.max(0, oldBalance - totalAmount);
+    const updatedMonthlyBalance = Math.max(0, oldMonthlyBalance - totalAmount);
+
+    console.log(`[GamificationService] removePenaltiesForPlan - Balance update: ${oldBalance}€ -> ${updatedBalance}€ (monthly: ${oldMonthlyBalance}€ -> ${updatedMonthlyBalance}€)`);
+
+    // Remove penalties from penaltyHistory and update balances
+    const updatedPenaltyHistory = penaltyHistory.filter((penalty: any) => {
+      if (!penalty.planId) return true;
+      const penaltyPlanId = penalty.planId.toString();
+      const targetPlanId = planIdObj.toString();
+      return penaltyPlanId !== targetPlanId;
+    });
+
+    await this.clientProfileModel.findByIdAndUpdate(
+      clientProfileId,
+      {
+        $set: {
+          balance: updatedBalance,
+          monthlyBalance: updatedMonthlyBalance,
+          penaltyHistory: updatedPenaltyHistory,
+        },
+      },
+    ).exec();
+
+    console.log(`[GamificationService] removePenaltiesForPlan SUCCESS - Removed ${penaltiesToRemove.length} penalties, new balance: ${updatedBalance}€`);
+    
+    return penaltiesToRemove.length;
+  }
+
+  /**
    * Clear client's balance (after payment)
    */
   async clearBalance(clientProfileId: string | Types.ObjectId): Promise<void> {

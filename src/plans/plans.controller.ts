@@ -97,6 +97,21 @@ export class PlansController {
     return this.plansService.duplicatePlan(id, user.sub, user.role);
   }
 
+  @Post(':id/cancel/:clientId')
+  @Roles('TRAINER', 'ADMIN')
+  @ApiOperation({ summary: 'Cancel plan assignment for a client' })
+  @ApiResponse({ status: 200, description: 'Plan cancelled successfully' })
+  @ApiResponse({ status: 400, description: 'Cannot cancel - has active workout logs' })
+  @ApiResponse({ status: 404, description: 'Plan not found' })
+  async cancelPlan(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') planId: string,
+    @Param('clientId') clientId: string,
+  ) {
+    await this.plansService.cancelPlan(planId, clientId, user.sub, user.role);
+    return { message: 'Plan cancelled successfully' };
+  }
+
   @Get('unlock-next-week/:clientId')
   @Roles('TRAINER', 'ADMIN', 'CLIENT')
   @ApiOperation({ summary: 'Check if client can unlock next week' })
@@ -120,6 +135,23 @@ export class PlansController {
     
     const canUnlock = await this.plansService.canUnlockNextWeek(clientProfileId);
     return { canUnlock };
+  }
+
+  @Post('request-next-week/:clientId')
+  @Roles('CLIENT')
+  @ApiOperation({ summary: 'Request next week plan assignment' })
+  @ApiResponse({ status: 200, description: 'Request submitted successfully' })
+  @ApiResponse({ status: 400, description: 'Cannot request next week - current week not completed' })
+  async requestNextWeek(
+    @CurrentUser() user: JwtPayload,
+    @Param('clientId') clientId: string,
+  ) {
+    // Get client profile ID
+    const client = await this.plansService['clientsService'].getProfile(user.sub);
+    const clientProfileId = (client as any)._id.toString();
+    
+    await this.plansService.requestNextWeek(clientProfileId);
+    return { message: 'Next week request submitted successfully' };
   }
 }
 

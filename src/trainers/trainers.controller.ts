@@ -134,5 +134,15 @@ export class TrainersController {
   ) {
     return this.trainersService.upgradeSubscription(user.sub, dto);
   }
+
+  @Get('pending-week-requests')
+  @Roles('TRAINER')
+  @ApiOperation({ summary: 'Get clients who requested next week' })
+  @ApiResponse({ status: 200, description: 'Pending requests retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Trainer role required' })
+  async getPendingWeekRequests(@CurrentUser() user: JwtPayload) {
+    return this.trainersService.getPendingWeekRequests(user.sub);
+  }
 }
 

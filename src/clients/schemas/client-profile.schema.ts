@@ -99,6 +99,13 @@ export class ClientProfile {
   @Prop({ default: 0 })
   totalWorkoutsCompleted: number;
 
+  // Request Next Week feature (V2)
+  @Prop({ default: false })
+  nextWeekRequested: boolean;
+
+  @Prop()
+  nextWeekRequestDate?: Date;
+
   @Prop({ default: 0 })
   currentStreak: number; // Days in a row
 

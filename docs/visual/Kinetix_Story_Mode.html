@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX: Story Mode (Video Game Logic)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif; /* Namerno "detinjast" font za lakše čitanje */
+            background-color: #2b2b2b;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px #FF4500;
+        }
+        .card {
+            background: #383838;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 3px solid #555;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .card-title {
+            color: #00F0FF;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #00F0FF;
+            padding-bottom: 10px;
+        }
+        .analogy {
+            background: rgba(255, 255, 0, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-style: italic;
+            color: #eee;
+        }
+        /* Mermaid styling fix */
+        .mermaid {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎮 KINETIX: Logika Igrice 🎮</h1>
+    <p style="text-align: center; font-size: 1.2em;">Kako sistem radi (Objašnjeno za ljude, ne za robote)</p>
+
+    <!-- NIVOA 1 -->
+    <div class="card" style="border-color: #00FF00;">
+        <div class="card-title">NIVO 1: Dnevna Misija (Osnova)</div>
+        <div class="analogy">
+            💡 <strong>Logika:</strong> Kao u igrici, svaki dan imaš "Daily Quest". Ako ga rešiš, dobijaš poene (Streak). Ako ne rešiš, gubiš Health (Pare).
+        </div>
+        <div class="mermaid">
+            flowchart LR
+                %% Stilovi
+                classDef player fill:#a29bfe,stroke:#6c5ce7,stroke-width:2px,color:black;
+                classDef mission fill:#ffeaa7,stroke:#fdcb6e,stroke-width:2px,color:black;
+                classDef check fill:#81ecec,stroke:#00cec9,stroke-width:2px,color:black;
+                classDef win fill:#55efc4,stroke:#00b894,stroke-width:3px,color:black;
+                classDef lose fill:#ff7675,stroke:#d63031,stroke-width:3px,color:black;
+
+                P(👱 IGRAČ) -->|Otvara aplikaciju| M(📜 DNEVNA MISIJA)
+                M -->|Odlazi u teretanu| C{Da li si stvarno tu?}
+                
+                C -->|GPS kaže: NE ❌| L[GUBIŠ 5€ 💸]:::lose
+                C -->|GPS kaže: DA ✅| T(Uradi Trening)
+                
+                T -->|Završiš sve vežbe| W[POBEDA! 🔥 Streak raste]:::win
+                T -->|Odustaneš na pola| L
+        </div>
+    </div>
+
+    <!-- NIVOA 2 -->
+    <div class="card" style="border-color: #FFA500;">
+        <div class="card-title">NIVO 2: Boss Fight (Kraj Nedelje)</div>
+        <div class="analogy">
+            💡 <strong>Logika:</strong> Ne možeš na Nivo 2 dok ne pobediš Boss-a na Nivou 1. Boss je "Nedelja". Ako si bio loš, vrata su zaključana katancem koji se otvara samo novcem.
+        </div>
+        <div class="mermaid">
+            flowchart TD
+                %% Stilovi
+                classDef week fill:#74b9ff,stroke:#0984e3,color:black;
+                classDef gate fill:#dfe6e9,stroke:#636e72,color:black;
+                classDef lock fill:#ff7675,stroke:#d63031,color:black;
+                classDef open fill:#55efc4,stroke:#00b894,color:black;
+
+                Start(NEDELJA 1 GOTOVA) --> Gate{KAPIJA ZA NEDELJU 2}:::gate
+                
+                Gate -->|Sve si uradio| Open[KAPIJA SE OTVARA 🎉<br/>Ulaziš besplatno]:::open
+                Gate -->|Zabušavao si| Locked[KAPIJA ZAKLJUČANA 🔒<br/>Duguješ kazne!]:::lock
+                
+                Locked -->|Platiš kaznu| Open
+                Locked -->|Ne platiš| Stop(GAME OVER<br/>Nema treninga)
+        </div>
+    </div>
+
+    <!-- NIVOA 3 -->
+    <div class="card" style="border-color: #FF00FF;">
+        <div class="card-title">NIVO 3: Super-Moći (Budućnost / V2)</div>
+        <div class="analogy">
+            💡 <strong>Logika:</strong> Ovde dodajemo magiju. "App Lock" je kletva koja ti zamrzne telefon. "AI" je mali robot koji leti oko tebe i smara te da vežbaš.
+        </div>
+        <div class="mermaid">
+            flowchart TD
+                %% Stilovi
+                classDef magic fill:#e056fd,stroke:#be2edd,color:white;
+                classDef robot fill:#f0932b,stroke:#e67e22,color:black;
+                classDef phone fill:#fab1a0,stroke:#e17055,color:black;
+
+                Trainer(🧙‍♂️ TRENER) -->|Baci kletvu| Curse(📱 ZAKLJUČAJ INSTAGRAM):::magic
+                
+                Curse -->|Dokle traje?| Condition{Dok ne uradiš trening}
+                
+                Condition -->|Trening urađen| Free(Telefon otključan ✅):::phone
+                Condition -->|Nije urađen| Blocked(Nema Instagrama ❌):::phone
+                
+                AI(🤖 AI ROBOT):::robot -.->|Šapuće| Player(👱 IGRAČ)
+                AI -->|Vidi da spavaš| Msg1["Alo! 3 dana nisi bio!"]
+                AI -->|Vidi da kidaš| Msg2["Bravo mašino! Još malo!"]
+        </div>
+    </div>
+
+    <div class="card" style="border-color: #00F0FF;">
+        <div class="card-title">TVOJ "MASTER PLAN" UKRATKO</div>
+        <ul style="font-size: 1.2em; list-style-type: none; padding: 0;">
+            <li>1️⃣ <strong>Temelj:</strong> Trener postavlja zadatak, Ti radiš, GPS proverava. (V1)</li>
+            <li>2️⃣ <strong>Kazna:</strong> Ako ne radiš, skupljaš dug. Ne možeš dalje dok ne platiš. (V1)</li>
+            <li>3️⃣ <strong>Zatvor (Opcija):</strong> Trener može da ti ugasi Instagram dok ne vežbaš. (V2)</li>
+            <li>4️⃣ <strong>Pomoćnik:</strong> AI prati sve i motiviše te (ili te grdi). (V2/V3)</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true });
+</script>
+
+</body>
+</html>

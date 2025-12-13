@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - System Architecture Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 2px solid #00F0FF;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        }
+        
+        h1 {
+            font-size: 3em;
+            color: #00F0FF;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.8);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.2em;
+        }
+        
+        .nav {
+            position: sticky;
+            top: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid #00F0FF;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav h2 {
+            color: #00F0FF;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00F0FF;
+            border-radius: 5px;
+            color: #00F0FF;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .nav-link:hover {
+            background: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .diagram-section {
+            margin-bottom: 60px;
+            padding: 30px;
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
+            scroll-margin-top: 100px;
+        }
+        
+        .diagram-section h2 {
+            color: #00F0FF;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00F0FF;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+        
+        .diagram-section p {
+            color: #B3B3B3;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .mermaid {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            overflow-x: auto;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 240, 255, 0.2);
+            border: 2px solid #00F0FF;
+            border-radius: 50%;
+            color: #00F0FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 24px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .back-to-top:hover {
+            background: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+            transform: translateY(-5px);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+            }
+            
+            .diagram-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">System Architecture Diagrams - Visual Guide</p>
+        </header>
+        
+        <nav class="nav">
+            <h2>Quick Navigation</h2>
+            <div class="nav-links">
+                <a href="#erd" class="nav-link">1. Entity Diagram</a>
+                <a href="#plan-assign" class="nav-link">2. Plan Assignment</a>
+                <a href="#active-plan" class="nav-link">3. Active Plan</a>
+                <a href="#workout-log" class="nav-link">4. Workout Logging</a>
+                <a href="#admin-dashboard" class="nav-link">5. Admin Dashboard</a>
+                <a href="#admin-actions" class="nav-link">6. Admin Actions</a>
+                <a href="#killswitch" class="nav-link">7. Kill-Switch</a>
+                <a href="#plan-history" class="nav-link">8. Plan History</a>
+                <a href="#penalty" class="nav-link">9. Penalty System</a>
+                <a href="#checkin" class="nav-link">10. Check-In</a>
+                <a href="#weighin" class="nav-link">11. Weigh-In</a>
+                <a href="#balance" class="nav-link">12. Balance System</a>
+                <a href="#unlock" class="nav-link">13. Weekly Unlock</a>
+                <a href="#ai-messages" class="nav-link">14. AI Messages</a>
+                <a href="#request-week" class="nav-link">15. Request Next Week</a>
+                <a href="#paywall" class="nav-link">16. Monthly Paywall</a>
+            </div>
+        </nav>
+        
+        <section id="erd" class="diagram-section">
+            <h2>1. Entity Relationship Diagram (ERD)</h2>
+            <p>Database structure showing all entities and their relationships</p>
+            <p><strong>Legend:</strong> <span style="color: #00F0FF;">→</span> = Reference (ref:), <span style="color: #00FF00;">[I]</span> = Indexed, <span style="color: #FFA500;">[U]</span> = Unique Index, <span style="color: #FF003C;">[C]</span> = Compound Index</p>
+            <p><strong>Collection Names:</strong> Mongoose automatically pluralizes class names. V1 Collections: <code>users</code>, <code>trainerprofiles</code>, <code>clientprofiles</code>, <code>weeklyplans</code>, <code>workoutlogs</code>, <code>checkins</code>, <code>weighins</code>, <code>penaltyrecords</code></p>
+            <p><strong>V2 Collections:</strong> <code>aimessages</code> (AI Message System)</p>
+            <p><strong>Note:</strong> Phase 2 collections (V4): <code>clientpayments</code>, <code>monthlyinvoices</code>, <code>planeffectivenesses</code></p>
+            <div class="mermaid">
+erDiagram
+    USER ||--o| TRAINER_PROFILE : has
+    USER ||--o| CLIENT_PROFILE : has
+    
+    TRAINER_PROFILE ||--o{ WEEKLY_PLAN : creates
+    TRAINER_PROFILE ||--o{ CLIENT_PROFILE : manages
+    
+    CLIENT_PROFILE ||--o{ PLAN_HISTORY : has "embedded array"
+    CLIENT_PROFILE ||--o{ WORKOUT_LOG : logs
+    CLIENT_PROFILE ||--o{ CHECK_IN : performs
+    CLIENT_PROFILE ||--o{ WEIGH_IN : records
+    CLIENT_PROFILE ||--o{ PENALTY_RECORD : has
+    CLIENT_PROFILE ||--o{ AI_MESSAGE : receives
+    
+    WEEKLY_PLAN ||--o{ WORKOUT_DAY : contains "embedded array"
+    WEEKLY_PLAN ||--o{ PLAN_HISTORY : assigned_to "via ClientProfile"
+    WEEKLY_PLAN ||--o{ WORKOUT_LOG : generates
+    WEEKLY_PLAN ||--o{ WEIGH_IN : linked_to
+    
+    WORKOUT_DAY ||--o{ EXERCISE : contains "embedded array"
+    WORKOUT_LOG ||--o{ COMPLETED_EXERCISE : tracks "embedded array"
+    
+    USER {
+        string id PK "Collection: users"
+        string email
+        string passwordHash
+        string role "TRAINER|CLIENT|ADMIN"
+        string firstName
+        string lastName
+        string phone
+        string profilePictureUrl
+        boolean isEmailVerified
+    }
+    
+    TRAINER_PROFILE {
+        ObjectId id PK "Collection: trainerprofiles"
+        ObjectId userId FK "ref: User"
+        string businessName
+        boolean isActive "Kill-switch control"
+        string subscriptionStatus "ACTIVE|SUSPENDED|CANCELLED"
+        Date subscriptionExpiresAt
+        string subscriptionTier "BASIC|PRO|ENTERPRISE"
+        array clientIds "ref: ClientProfile"
+        object gymLocation "GPS: lat, lng, radius"
+        string stripeCustomerId "Future"
+        string stripeSubscriptionId "Future"
+    }
+    
+    CLIENT_PROFILE {
+        ObjectId id PK "Collection: clientprofiles"
+        ObjectId userId FK "ref: User [Unique]"
+        ObjectId trainerId FK "ref: TrainerProfile [nullable, indexed]"
+        ObjectId currentPlanId FK "ref: WeeklyPlan [nullable, backward compat]"
+        Date planStartDate "nullable"
+        Date planEndDate "nullable"
+        array planHistory "Embedded: stores all plans"
+        boolean isPenaltyMode
+        int consecutiveMissedWorkouts
+        int currentStreak
+        int totalWorkoutsCompleted
+        number weight "kg"
+        number height "cm"
+        string fitnessGoal "WEIGHT_LOSS|MUSCLE_GAIN|ENDURANCE|GENERAL_FITNESS"
+        number balance "Running tab balance in euros"
+        number monthlyBalance "Current month's balance"
+        Date lastBalanceReset "When balance was cleared"
+        array penaltyHistory "Embedded: Balance transaction history"
+        boolean nextWeekRequested "V2: Client requested next week"
+        Date nextWeekRequestDate "V2: When request was made"
+    }
+    
+    PLAN_HISTORY {
+        ObjectId planId FK "ref: WeeklyPlan (embedded in ClientProfile)"
+        Date planStartDate
+        Date planEndDate
+        Date assignedAt
+        ObjectId trainerId FK "ref: TrainerProfile"
+    }
+    
+    WEEKLY_PLAN {
+        ObjectId id PK "Collection: weeklyplans"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed]"
+        string name
+        string description
+        string difficulty "BEGINNER|INTERMEDIATE|ADVANCED"
+        array workouts "Embedded: 7 WorkoutDay objects"
+        array assignedClientIds "ref: ClientProfile"
+        boolean isTemplate
+        number weeklyCost "Cost in euros per week (default 0)"
+        boolean isDeleted "V2: Soft delete flag"
+        Date deletedAt "V2: When plan was deleted"
+    }
+    
+    WORKOUT_DAY {
+        int dayOfWeek "1-7 (Monday-Sunday)"
+        boolean isRestDay
+        string name
+        array exercises "Embedded: Exercise objects"
+        int estimatedDuration "minutes"
+        string notes
+    }
+    
+    EXERCISE {
+        string name "Embedded in WorkoutDay"
+        int sets
+        string reps "e.g. '8-12' or number"
+        int restSeconds
+        string notes
+        string videoUrl "YouTube link"
+    }
+    
+    WORKOUT_LOG {
+        ObjectId id PK "Collection: workoutlogs"
+        ObjectId clientId FK "ref: ClientProfile [indexed in compound]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed in compound]"
+        ObjectId weeklyPlanId FK "ref: WeeklyPlan [indexed]"
+        Date workoutDate "[Compound Unique with clientId]"
+        int weekNumber
+        int dayOfWeek "1-7"
+        array completedExercises "Embedded: CompletedExercise objects"
+        boolean isCompleted
+        boolean isMissed "Triggers 1€ penalty"
+        Date completedAt
+        Date workoutStartTime "V2: When workout started"
+        boolean suspiciousCompletion "V2: Flag if completed too fast (<5min)"
+        number difficultyRating "1-5"
+        string clientNotes
+    }
+    
+    CHECK_IN {
+        ObjectId id PK "Collection: checkins"
+        ObjectId clientId FK "ref: ClientProfile [Compound Unique with checkinDate]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed in compound]"
+        ObjectId workoutLogId FK "ref: WorkoutLog [nullable]"
+        Date checkinDate "[Compound Unique with clientId]"
+        string photoUrl "Cloudinary URL"
+        string thumbnailUrl "Cloudinary thumbnail"
+        object gpsCoordinates "Embedded: lat, lng, accuracy"
+        boolean isGymLocation "GPS validation flag (vs trainer.gymLocation)"
+        string verificationStatus "PENDING|VERIFIED|REJECTED [indexed with trainerId]"
+        ObjectId verifiedBy "ref: User [nullable]"
+        Date verifiedAt
+        string rejectionReason
+        number aiConfidenceScore "0-1 (future)"
+        array detectedActivities "Future: AI detection"
+        string clientNotes
+    }
+    
+    WEIGH_IN {
+        ObjectId id PK "Collection: weighins"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        ObjectId planId FK "ref: WeeklyPlan [nullable, indexed]"
+        Date planStartDate "Plan week start date"
+        number weight "Weight in kg"
+        Date date "Weigh-in date (any day, Monday recommended) [Compound Unique with clientId]"
+        string photoUrl "Optional scale photo"
+        string notes "Client explanation if spike"
+        boolean isMandatory "True if Monday of plan week"
+        boolean isWeightSpike "Flag if >5% increase"
+        boolean aiFlagged "AI detected anomaly"
+        string aiMessage "AI explanation request"
+    }
+    
+    PENALTY_RECORD {
+        ObjectId id PK "Collection: penaltyrecords"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        Date weekStartDate "[Compound Unique with clientId]"
+        Date weekEndDate
+        int totalMissedWorkouts
+        string penaltyType
+    }
+    
+    AI_MESSAGE {
+        ObjectId id PK "Collection: aimessages"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        string message "AI-generated message text"
+        string tone "AGGRESSIVE|EMPATHETIC|MOTIVATIONAL|WARNING"
+        string trigger "MISSED_WORKOUTS|STREAK|WEIGHT_SPIKE|SICK_DAY"
+        boolean isRead "V2: Client read status"
+        Date createdAt "V2: When message was generated"
+    }
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: rgba(0, 240, 255, 0.1); border: 1px solid #00F0FF; border-radius: 10px;">
+                <h3 style="color: #00F0FF; margin-bottom: 15px;">Database Connection Details</h3>
+                
+                <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Reference Relationships (MongoDB ref:)</h4>
+                <ul style="color: #FFFFFF; line-height: 2;">
+                    <li><strong>users → trainerprofiles:</strong> <code>TrainerProfile.userId</code> refs <code>User._id</code> [Unique Index]</li>
+                    <li><strong>users → clientprofiles:</strong> <code>ClientProfile.userId</code> refs <code>User._id</code> [Unique Index]</li>
+                    <li><strong>trainerprofiles → clientprofiles:</strong> <code>ClientProfile.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed, nullable]</li>
+                    <li><strong>trainerprofiles → weeklyplans:</strong> <code>WeeklyPlan.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed]</li>
+                    <li><strong>clientprofiles → weeklyplans:</strong> <code>ClientProfile.currentPlanId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
+                    <li><strong>clientprofiles.planHistory[]:</strong> Embedded array with <code>planId</code> refs <code>WeeklyPlan._id</code></li>
+                    <li><strong>clientprofiles.planHistory[]:</strong> Embedded array with <code>trainerId</code> refs <code>TrainerProfile._id</code></li>
+                    <li><strong>weeklyplans → clientprofiles:</strong> <code>WeeklyPlan.assignedClientIds[]</code> array refs <code>ClientProfile._id</code></li>
+                    <li><strong>workoutlogs → clientprofiles:</strong> <code>WorkoutLog.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound]</li>
+                    <li><strong>workoutlogs → trainerprofiles:</strong> <code>WorkoutLog.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed in compound]</li>
+                    <li><strong>workoutlogs → weeklyplans:</strong> <code>WorkoutLog.weeklyPlanId</code> refs <code>WeeklyPlan._id</code> [Indexed]</li>
+                    <li><strong>checkins → clientprofiles:</strong> <code>CheckIn.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound, unique]</li>
+                    <li><strong>checkins → trainerprofiles:</strong> <code>CheckIn.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed in compound]</li>
+                    <li><strong>checkins → workoutlogs:</strong> <code>CheckIn.workoutLogId</code> refs <code>WorkoutLog._id</code> [nullable]</li>
+                    <li><strong>checkins → users:</strong> <code>CheckIn.verifiedBy</code> refs <code>User._id</code> [nullable]</li>
+                    <li><strong>weighins → clientprofiles:</strong> <code>WeighIn.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                    <li><strong>weighins → weeklyplans:</strong> <code>WeighIn.planId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
+                    <li><strong>penaltyrecords → clientprofiles:</strong> <code>PenaltyRecord.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                    <li><strong>aimessages → clientprofiles:</strong> <code>AIMessage.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                </ul>
+                
+                <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Embedded Documents (Stored in parent document, not separate collections)</h4>
+                <ul style="color: #FFFFFF; line-height: 2;">
+                    <li><strong>weeklyplans.workouts[]:</strong> Embedded array of <code>WorkoutDay</code> objects (7 days)</li>
+                    <li><strong>WorkoutDay.exercises[]:</strong> Embedded array of <code>Exercise</code> objects within WorkoutDay</li>
+                    <li><strong>workoutlogs.completedExercises[]:</strong> Embedded array of <code>CompletedExercise</code> objects</li>
+                    <li><strong>clientprofiles.planHistory[]:</strong> Embedded array of plan history entries (planId, dates, trainerId)</li>
+                    <li><strong>clientprofiles.penaltyHistory[]:</strong> Embedded array of balance transactions (date, amount, reason, planId)</li>
+                    <li><strong>checkins.gpsCoordinates:</strong> Embedded <code>GpsCoordinates</code> object (lat, lng, accuracy)</li>
+                    <li><strong>trainerprofiles.gymLocation:</strong> Embedded object (lat, lng, address, radius)</li>
+                </ul>
+                
+                <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Database Indexes (Performance Optimization)</h4>
+                <ul style="color: #FFFFFF; line-height: 2;">
+                    <li><strong>users:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>email</code> [Unique] - One user per email</li>
+                        </ul>
+                    </li>
+                    <li><strong>clientprofiles:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>userId</code> [Unique] - One profile per user</li>
+                            <li><code>trainerId</code> [Single] - Fast trainer queries</li>
+                            <li><code>trainerId + currentPlanId</code> [Compound] - Trainer's clients with specific plan</li>
+                            <li><code>currentPlanId</code> [Single] - Find all clients with plan</li>
+                        </ul>
+                    </li>
+                    <li><strong>trainerprofiles:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>userId</code> [Unique] - One profile per user</li>
+                            <li><code>isActive</code> [Single] - Filter active trainers</li>
+                            <li><code>subscriptionExpiresAt</code> [Single] - Find expiring subscriptions</li>
+                        </ul>
+                    </li>
+                    <li><strong>weeklyplans:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>trainerId</code> [Single] - Trainer's plans</li>
+                            <li><code>trainerId + isTemplate</code> [Compound] - Trainer's templates vs assigned plans</li>
+                            <li><code>isTemplate</code> [Single] - All templates</li>
+                        </ul>
+                    </li>
+                    <li><strong>workoutlogs:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>clientId + workoutDate</code> [Compound, Unique] - Prevent duplicate logs per day</li>
+                            <li><code>trainerId</code> [Single] - Trainer's client logs</li>
+                            <li><code>trainerId + workoutDate</code> [Compound] - Trainer's logs by date</li>
+                            <li><code>weeklyPlanId</code> [Single] - Logs for specific plan</li>
+                            <li><code>isCompleted</code> [Single] - Completed workouts</li>
+                            <li><code>isMissed</code> [Single] - Missed workouts (penalty calculation)</li>
+                        </ul>
+                    </li>
+                    <li><strong>checkins:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>clientId + checkinDate</code> [Compound, Unique] - One check-in per day</li>
+                            <li><code>trainerId + verificationStatus</code> [Compound] - Pending check-ins for trainer</li>
+                        </ul>
+                    </li>
+                    <li><strong>weighins:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>clientId + date</code> [Compound, Unique] - One weigh-in per client per date</li>
+                            <li><code>clientId + date</code> [Compound] - For getting latest weigh-ins</li>
+                            <li><code>planId + planStartDate</code> [Compound] - Weigh-ins by plan</li>
+                            <li><code>clientId + planId + date</code> [Compound] - Weigh-ins by client and plan</li>
+                        </ul>
+                    </li>
+                    <li><strong>penaltyrecords:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>clientId + weekStartDate</code> [Compound, Unique] - One record per client per week</li>
+                        </ul>
+                    </li>
+                    <li><strong>aimessages:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>clientId</code> [Single] - All messages for client</li>
+                            <li><code>clientId + isRead</code> [Compound] - Unread messages</li>
+                            <li><code>clientId + createdAt</code> [Compound] - Latest messages first</li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Populate Patterns (How data is joined at query time)</h4>
+                <ul style="color: #FFFFFF; line-height: 2;">
+                    <li><strong>Get Client Profile:</strong> <code>.populate('userId')</code>, <code>.populate('trainerId')</code>, <code>.populate('currentPlanId')</code></li>
+                    <li><strong>Get Weekly Plan:</strong> <code>.populate('trainerId')</code>, <code>.populate('assignedClientIds')</code></li>
+                    <li><strong>Get Workout Log:</strong> <code>.populate('clientId')</code>, <code>.populate('trainerId')</code>, <code>.populate('weeklyPlanId')</code></li>
+                    <li><strong>Get Trainer Clients:</strong> <code>.populate('clientIds')</code> - All clients for trainer</li>
+                    <li><strong>Admin Queries:</strong> Multiple populate chains for full data hierarchy</li>
+                </ul>
+                
+                <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Bidirectional Relationships</h4>
+                <ul style="color: #FFFFFF; line-height: 2;">
+                    <li><strong>TRAINER ↔ CLIENT:</strong> 
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>TrainerProfile.clientIds[]</code> → Array of ClientProfile._id</li>
+                            <li><code>ClientProfile.trainerId</code> → Single TrainerProfile._id</li>
+                            <li><em>Maintained manually in code (not enforced by DB)</em></li>
+                        </ul>
+                    </li>
+                    <li><strong>WEEKLY_PLAN ↔ CLIENT:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li><code>WeeklyPlan.assignedClientIds[]</code> → Array of ClientProfile._id</li>
+                            <li><code>ClientProfile.currentPlanId</code> → Single WeeklyPlan._id (current)</li>
+                            <li><code>ClientProfile.planHistory[]</code> → Array with planId references (all history)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        
+        <section id="plan-assign" class="diagram-section">
+            <h2>2. Plan Assignment Flow</h2>
+            <p>How Admin/Trainer assigns a plan to clients</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin/Trainer
+    participant API as Backend API
+    participant PlanService as PlansService
+    participant ClientService as ClientsService
+    participant WorkoutService as WorkoutsService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+
+    Admin->>API: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+    
+    API->>PlanService: assignPlanToClients(planId, userId, role, dto)
+    
+    PlanService->>DB: Find plan by ID
+    DB-->>PlanService: Plan document (with weeklyCost)
+    
+    Note over PlanService: Validate: Plan ownership<br/>(unless ADMIN)
+    
+    Note over PlanService: Convert clientIds to clientProfileIds<br/>(handle userId or clientProfileId)
+    
+    loop For each clientId
+        PlanService->>ClientService: getProfile(clientId) or getProfileById(clientId)
+        ClientService->>DB: Find client profile
+        DB-->>ClientService: ClientProfile
+        
+        alt Client profile not found
+            PlanService->>DB: Create new ClientProfile<br/>with trainerId from plan
+            DB-->>PlanService: New ClientProfile created
+        end
+        
+        PlanService->>PlanService: Check if plan exists in<br/>planHistory or currentPlanId
+        
+        alt Plan already exists
+            Note over PlanService: Add to existingClients array<br/>Skip unlock check<br/>Skip balance addition<br/>Skip workout log generation
+        else New plan assignment
+            Note over PlanService: Add to newClients array<br/>Will check unlock status
+        end
+    end
+    
+    Note over PlanService: Separate clients into:<br/>existingClients[] and newClients[]
+    
+    loop For each clientId in newClients
+        PlanService->>PlanService: canUnlockNextWeek(clientProfileId)
+        
+        alt Cannot unlock (current week incomplete)
+            PlanService-->>API: Error: "Client must complete<br/>current week first"
+            API-->>Admin: BadRequestException
+        else Can unlock OR no active plan
+            Note over PlanService: Proceed with assignment
+        end
+    end
+    
+    loop For each newClient
+        alt Client has no trainer
+            PlanService->>DB: Update client.trainerId = plan.trainerId
+        else Client has different trainer
+            PlanService->>DB: Update client.trainerId = plan.trainerId<br/>(change trainer to match plan)
+        end
+        
+        PlanService->>DB: Add to planHistory array:<br/>{planId, startDate, endDate, trainerId}
+        PlanService->>DB: Update currentPlanId (backward compat)
+        PlanService->>DB: Update planStartDate, planEndDate
+        
+        alt Plan has weeklyCost > 0
+            PlanService->>GamificationService: addPenaltyToBalance(<br/>clientId, weeklyCost,<br/>"Weekly plan cost", planId)
+            GamificationService->>DB: Update client.balance += weeklyCost<br/>Update client.monthlyBalance += weeklyCost<br/>Add to penaltyHistory[]
+            Note over GamificationService: Balance updated:<br/>oldBalance -> newBalance
+        end
+    end
+    
+    PlanService->>WorkoutService: generateWeeklyLogs()<br/>ONLY for newClients
+    loop For each newClient
+        WorkoutService->>DB: Create 7 WorkoutLog documents<br/>(one per day, isCompleted: false)
+    end
+    
+    PlanService->>DB: Add clients to plan.assignedClientIds<br/>(both existing and new)
+    
+    PlanService-->>API: {message: "Plan assigned successfully"}
+    API-->>Admin: Success response
+
+    Note over Admin,DB: Result: Client has plan in planHistory,<br/>7 workout logs generated,<br/>balance updated with weeklyCost
+            </div>
+        </section>
+        
+        <section id="active-plan" class="diagram-section">
+            <h2>3. Get Active Plan Flow</h2>
+            <p>How client gets their currently active plan (based on date)</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant API as Backend API
+    participant ClientService as ClientsService
+    participant PlanService as PlansService
+    participant DB as MongoDB
+
+    Client->>API: GET /api/clients/current-plan
+    
+    API->>ClientService: getCurrentPlan(userId)
+    
+    ClientService->>DB: Find ClientProfile by userId
+    DB-->>ClientService: ClientProfile with planHistory
+    
+    alt planHistory exists and not empty
+        ClientService->>ClientService: getActivePlanFromHistory(profile)
+        
+        Note over ClientService: Find plan where:<br/>planStartDate <= today <= planEndDate
+        
+        alt Active plan found
+            ClientService->>PlanService: getPlanById(activePlan.planId)
+            PlanService->>DB: Find plan with workouts populated
+            DB-->>PlanService: Full plan details
+            PlanService-->>ClientService: Plan with workouts
+            ClientService-->>API: Active plan
+            API-->>Client: Plan details
+        else No active plan
+            ClientService-->>API: null
+            API-->>Client: No active plan (expired or not started)
+        end
+        
+    else planHistory empty, but currentPlanId exists
+        Note over ClientService: BACKWARD COMPATIBILITY
+        
+        ClientService->>ClientService: migrateCurrentPlanToHistory(profile)
+        ClientService->>DB: Push currentPlanId to planHistory array
+        
+        ClientService->>DB: Reload profile
+        DB-->>ClientService: Updated profile with planHistory
+        
+        ClientService->>ClientService: getActivePlanFromHistory(updatedProfile)
+        
+        alt Plan is still active by date
+            ClientService->>PlanService: getPlanById(planId)
+            PlanService-->>ClientService: Plan details
+            ClientService-->>API: Active plan
+            API-->>Client: Plan details
+        else Plan expired
+            ClientService-->>API: null
+            API-->>Client: No active plan
+        end
+        
+    else No plan assigned
+        ClientService-->>API: null
+        API-->>Client: No plan assigned
+    end
+
+    Note over Client,DB: Result: Client sees only ACTIVE plan<br/>based on current date, or null if expired
+            </div>
+        </section>
+        
+        <section id="workout-log" class="diagram-section">
+            <h2>4. Workout Logging Flow</h2>
+            <p>Offline-first workflow for logging workouts</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant IsarDB as Isar (Local DB)
+    participant Sync as SyncManager
+    participant API as Backend API
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+    participant Cron as Cron Job
+
+    Note over Client,IsarDB: OFFLINE-FIRST: Client can work offline
+    
+    Client->>IsarDB: Save workout log locally<br/>(weight, reps, sets, RPE)
+    IsarDB-->>Client: Saved locally
+    
+    Note over Client: Client can continue working<br/>even without internet
+    
+    Client->>IsarDB: Mark workoutLog.isDirty = true
+    
+    alt Internet available
+        Sync->>API: POST /api/workouts/log<br/>(sync dirty logs)
+        
+        API->>WorkoutService: logWorkout(userId, dto)
+        
+        WorkoutService->>WorkoutService: Validate: Get active plan<br/>for today's date
+        
+        alt Active plan exists
+            WorkoutService->>DB: Find WorkoutLog for today
+            DB-->>WorkoutService: WorkoutLog document
+            
+            WorkoutService->>DB: Update WorkoutLog:<br/>completedExercises, isCompleted: true, completedAt
+            DB-->>WorkoutService: Updated log
+            
+            WorkoutService->>ClientService: Update client stats:<br/>totalWorkoutsCompleted++, currentStreak++
+            ClientService->>DB: Update ClientProfile
+            
+            WorkoutService-->>API: Success
+            API-->>Sync: Success
+            Sync->>IsarDB: Mark isDirty = false,<br/>Update serverId
+            
+        else No active plan
+            WorkoutService-->>API: Error: No active plan
+            API-->>Sync: Error (will retry later)
+        end
+        
+    else No internet
+        Note over Sync: Queue for sync when online
+    end
+    
+    Note over Cron: Every Monday at 23:59
+    
+    Cron->>WorkoutService: Analyze last week's logs
+    
+    loop For each client
+        WorkoutService->>DB: Count missed workouts (isMissed: true)
+        
+        alt Missed workouts > 2
+            WorkoutService->>ClientService: Enable penalty mode
+            WorkoutService->>DB: Add "Penalty Cardio" to next week's plan
+            WorkoutService->>DB: Update client.isPenaltyMode = true
+            WorkoutService->>DB: Reset client.currentStreak = 0
+        else Good adherence
+            WorkoutService->>DB: Award badge/achievement
+        end
+    end
+
+    Note over Client,DB: Result: Workout logged, stats updated,<br/>penalties calculated weekly
+            </div>
+        </section>
+        
+        <section id="admin-dashboard" class="diagram-section">
+            <h2>5. Admin Dashboard - Full Control Flow</h2>
+            <p>All available admin actions organized by category</p>
+            <div class="mermaid">
+graph TD
+    A[Admin Dashboard] --> B[User Management]
+    A --> C[Trainer Management]
+    A --> D[Plan Management]
+    A --> E[Workout Management]
+    A --> F[Client Management]
+    A --> G[System Stats]
+    
+    B --> B1[Create User<br/>CLIENT/TRAINER/ADMIN]
+    B --> B2[Edit User<br/>email, name, role]
+    B --> B3[Delete User<br/>with cascade]
+    B --> B4[View All Users<br/>with filters]
+    
+    C --> C1[View All Trainers<br/>with subscription status]
+    C --> C2[Assign Clients to Trainer<br/>or Unassign]
+    C --> C3[Activate/Suspend Trainer<br/>Kill-switch control]
+    C --> C4[View Trainer's Clients]
+    C --> C5[Manage Subscription<br/>expiry, status]
+    
+    D --> D1[Create Plan<br/>for any trainer]
+    D --> D2[Edit Plan<br/>workouts, exercises]
+    D --> D3[Delete Plan<br/>with validation]
+    D --> D4[Assign Plan to Clients<br/>bypass trainer ownership]
+    D --> D5[View Plan Details<br/>assigned clients, history]
+    D --> D6[Duplicate Plan<br/>as template]
+    
+    E --> E1[View All Workout Logs<br/>by client, date, plan]
+    E --> E2[View Workout Details<br/>exercises, sets, reps]
+    E --> E3[Manual Log Correction<br/>if needed]
+    E --> E4[View Completion Stats<br/>per client/week]
+    
+    F --> F1[View All Clients<br/>with trainer info]
+    F --> F2[View Client Profile<br/>metrics, goals, stats]
+    F --> F3[View Client Plan History<br/>all assigned plans]
+    F --> F4[View Active Plan<br/>current week]
+    F --> F5[Assign/Reassign Client<br/>to different trainer]
+    F --> F6[View Client Workouts<br/>completed, missed]
+    
+    G --> G1[Total Users<br/>Trainers, Clients]
+    G --> G2[Active Subscriptions<br/>Suspended, Expired]
+    G --> G3[Total Plans Created<br/>Templates vs Assigned]
+    G --> G4[Workout Completion Rate<br/>Average across all clients]
+    G --> G5[System Health<br/>API uptime, DB status]
+    
+    style A fill:#00F0FF,stroke:#fff,stroke-width:3px
+    style B fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style C fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style D fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style E fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style F fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style G fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+            </div>
+        </section>
+        
+        <section id="admin-actions" class="diagram-section">
+            <h2>6. Admin Actions - Detailed Flow</h2>
+            <p>Sequence diagram showing admin bypassing all guards and ownership checks</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant AdminAPI as Admin API
+    participant PlansAPI as Plans API
+    participant ClientsAPI as Clients API
+    participant TrainersAPI as Trainers API
+    participant DB as MongoDB
+
+    Note over Admin,DB: ADMIN BYPASSES ALL GUARDS AND OWNERSHIP CHECKS
+
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: PLAN MANAGEMENT
+        Admin->>PlansAPI: POST /api/plans<br/>{name, workouts, trainerId}
+        PlansAPI->>DB: Create plan (any trainer)
+        
+        Admin->>PlansAPI: PATCH /api/plans/:id<br/>{...updates}
+        Note over PlansAPI: Admin can edit ANY plan
+        
+        Admin->>PlansAPI: DELETE /api/plans/:id
+        Note over PlansAPI: Admin can delete ANY plan<br/>(even if clients assigned)
+        
+        Admin->>PlansAPI: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+        Note over PlansAPI: Admin can assign ANY plan<br/>to ANY clients (bypass trainer check)
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: CLIENT MANAGEMENT
+        Admin->>ClientsAPI: GET /api/admin/clients
+        ClientsAPI->>DB: Find all clients<br/>(populate trainer, currentPlan)
+        
+        Admin->>ClientsAPI: GET /api/admin/clients/:id
+        ClientsAPI->>DB: Get client + planHistory
+        
+        Admin->>TrainersAPI: POST /api/admin/assign-client<br/>{clientId, trainerId}
+        TrainersAPI->>DB: Update client.trainerId<br/>Remove from old trainer.clientIds<br/>Add to new trainer.clientIds
+        
+        Admin->>TrainersAPI: POST /api/admin/assign-client<br/>{clientId, trainerId: null}
+        Note over TrainersAPI: Unassign client from trainer<br/>(client.trainerId = null)
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: TRAINER MANAGEMENT
+        Admin->>TrainersAPI: GET /api/admin/trainers
+        TrainersAPI->>DB: Find all trainers<br/>(populate subscription, clients)
+        
+        Admin->>TrainersAPI: PATCH /api/admin/trainers/:id<br/>{isActive: false}
+        Note over TrainersAPI: Suspend trainer<br/>→ Kill-switch activates<br/>→ All clients get 403
+        
+        Admin->>TrainersAPI: PATCH /api/admin/trainers/:id<br/>{subscriptionExpiresAt}
+        Note over TrainersAPI: Extend subscription<br/>→ Trainer stays active
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: USER MANAGEMENT
+        Admin->>AdminAPI: POST /api/admin/users<br/>{email, role, password}
+        AdminAPI->>DB: Create user (any role)
+        
+        Admin->>AdminAPI: PATCH /api/admin/users/:id
+        AdminAPI->>DB: Update user (role, email, etc.)
+        
+        Admin->>AdminAPI: DELETE /api/admin/users/:id
+        Note over AdminAPI: Delete user + cascade:<br/>- If TRAINER: Delete TrainerProfile<br/>- If CLIENT: Delete ClientProfile
+    end
+
+    Note over Admin,DB: Admin has FULL CONTROL over entire system
+            </div>
+        </section>
+        
+        <section id="killswitch" class="diagram-section">
+            <h2>7. Kill-Switch Flow (SaaS Protection)</h2>
+            <p>How clients are automatically blocked when trainer subscription expires</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Client App
+    participant Guard as SaasKillswitchGuard
+    participant DB as MongoDB
+    participant Trainer as TrainerProfile
+
+    Client->>Guard: Any API Request<br/>(with JWT token)
+    
+    Guard->>Guard: Extract user.role from JWT
+    
+    alt user.role === 'CLIENT'
+        Guard->>DB: Find ClientProfile by userId
+        DB-->>Guard: ClientProfile with trainerId
+        
+        Guard->>DB: Find TrainerProfile by trainerId
+        DB-->>Guard: TrainerProfile with<br/>isActive, subscriptionStatus,<br/>subscriptionExpiresAt
+        
+        alt isActive === false OR<br/>subscriptionStatus !== 'ACTIVE'
+            Guard-->>Client: 403 Forbidden<br/>"Your trainer's subscription<br/>is inactive"
+        else subscriptionExpiresAt < today
+            Guard->>DB: Auto-suspend trainer:<br/>isActive = false,<br/>subscriptionStatus = 'SUSPENDED'
+            Guard-->>Client: 403 Forbidden<br/>"Subscription has expired"
+        else All checks pass
+            Guard-->>Client: Allow request (200 OK)
+        end
+        
+    else user.role === 'TRAINER' OR 'ADMIN'
+        Note over Guard: Trainers and Admins<br/>bypass kill-switch
+        Guard-->>Client: Allow request (200 OK)
+    end
+
+    Note over Client,DB: Result: Clients automatically blocked<br/>if their trainer's subscription expires
+            </div>
+        </section>
+        
+        <section id="plan-history" class="diagram-section">
+            <h2>8. Plan History vs Current Plan Logic</h2>
+            <p>Decision tree for determining active plan based on date<br/><small style="color: #B3B3B3;">Note: Active plan = planStartDate &le; today &le; planEndDate</small></p>
+            <div class="mermaid">
+graph TD
+    A[Client Profile] --> B{Has planHistory?}
+    
+    B -->|Yes| C[Check planHistory]
+    B -->|No| D{Has currentPlanId?}
+    
+    C --> E{Find active plan by date}
+    E -->|Date range is active| F[Return Active Plan]
+    E -->|No active plan| G[Return null<br/>Plan expired or not started]
+    
+    D -->|Yes| H[Migrate to planHistory<br/>Backward compatibility]
+    D -->|No| I[Return null<br/>No plan assigned]
+    
+    H --> J{Plan still active by date?}
+    J -->|Yes| F
+    J -->|No| G
+    
+    F --> K[Client sees workouts<br/>for this week]
+    G --> L[Client sees No active plan<br/>Can view history]
+    I --> L
+    
+    style A fill:#00F0FF,stroke:#fff,stroke-width:2px
+    style F fill:#00FF00,stroke:#000,stroke-width:2px
+    style G fill:#FFA500,stroke:#000,stroke-width:2px
+    style L fill:#FF6B6B,stroke:#000,stroke-width:2px
+            </div>
+        </section>
+        
+        <section id="penalty" class="diagram-section">
+            <h2>9. Penalty System (Missed Workouts + Weekly Analysis)</h2>
+            <p>Real-time missed workout penalties and automated weekly analysis</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant API as Backend API
+    participant WorkoutService as WorkoutsService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+    participant Cron as Cron Job<br/>(Every Monday 23:59)
+
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: REAL-TIME MISSED WORKOUT PENALTY
+        Admin->>API: PATCH /api/admin/workouts/:id<br/>{isMissed: true}
+        
+        API->>WorkoutService: updateWorkoutLog(logId, dto)
+        
+        WorkoutService->>DB: Find existing WorkoutLog
+        DB-->>WorkoutService: WorkoutLog (isMissed: false)
+        
+        alt isMissed changed from false to true
+            WorkoutService->>GamificationService: addPenaltyToBalance(<br/>clientId, 1,<br/>"Missed workout penalty", planId)
+            
+            GamificationService->>DB: Update ClientProfile:<br/>balance += 1€<br/>monthlyBalance += 1€<br/>Add to penaltyHistory[]
+            
+            Note over GamificationService: 1€ penalty added immediately
+        end
+        
+        WorkoutService->>DB: Update WorkoutLog.isMissed = true
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: WEEKLY PENALTY ANALYSIS (Cron Job)
+        Cron->>GamificationService: calculateWeeklyPenalties()
+        
+        GamificationService->>DB: Find all ClientProfiles
+        
+        loop For each client
+            GamificationService->>WorkoutService: Get last week's workout logs<br/>(from Monday to Sunday)
+            
+            WorkoutService->>DB: Find WorkoutLogs where:<br/>workoutDate >= lastMonday<br/>workoutDate <= lastSunday<br/>clientId = client._id
+            
+            DB-->>WorkoutService: Array of WorkoutLogs
+            
+            WorkoutService->>WorkoutService: Count where isMissed === true
+            
+            alt Missed workouts > 2
+                GamificationService->>ClientService: Enable penalty mode
+                ClientService->>DB: Update ClientProfile:<br/>isPenaltyMode = true<br/>consecutiveMissedWorkouts += count<br/>currentStreak = 0
+                
+                GamificationService->>PlansService: Add "Penalty Cardio" workout<br/>to client's next week plan
+                
+                Note over DB: Penalty workout automatically<br/>added to next week's schedule
+                
+            else Missed workouts <= 2
+                GamificationService->>ClientService: Update streak
+                ClientService->>DB: Update ClientProfile:<br/>currentStreak += days_completed<br/>isPenaltyMode = false (if was true)
+            end
+        end
+        
+        GamificationService->>DB: Save PenaltyRecord documents
+    end
+    
+    Note over Admin,DB: Result: Real-time 1€ penalties for missed workouts,<br/>Weekly analysis for penalty mode and streaks
+            </div>
+        </section>
+        
+        <section id="checkin" class="diagram-section">
+            <h2>10. Check-In Flow (GPS + Photo Verification)</h2>
+            <p>Offline-first photo upload with GPS validation and trainer verification</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Camera as Camera API
+    participant GPS as GPS API
+    participant IsarDB as Isar (Local)
+    participant Sync as SyncManager
+    participant API as Backend API
+    participant MediaAPI as Media API<br/>(Cloudinary)
+    participant CheckInService as CheckInService
+    participant TrainerService as TrainersService
+    participant DB as MongoDB
+    participant Trainer as Trainer Dashboard
+
+    Note over Client: CHECK-IN GATE: Required before workout
+
+    Client->>Camera: Open camera<br/>(mandatory check-in)
+    Camera->>Client: Photo captured
+    
+    Client->>GPS: Get current location
+    GPS-->>Client: GPS coordinates<br/>(lat, lng, accuracy)
+    
+    Client->>IsarDB: Save CheckInCollection:<br/>photoLocalPath, gpsCoordinates,<br/>timestamp, isSynced: false
+    
+    Note over Client: Client can proceed<br/>even offline
+    
+    alt Internet available
+        Sync->>API: GET /api/media/signature
+        API-->>Sync: Upload signature<br/>(Cloudinary credentials)
+        
+        Sync->>MediaAPI: Upload photo directly<br/>(using signature)
+        MediaAPI-->>Sync: photoUrl (Cloudinary URL)
+        
+        Sync->>IsarDB: Update CheckInCollection:<br/>photoUrl, isSynced: true
+        
+        Sync->>API: POST /api/checkins<br/>{photoUrl, gpsCoordinates, timestamp}
+        
+        API->>CheckInService: createCheckIn(userId, dto)
+        
+        CheckInService->>DB: Find ClientProfile by userId
+        DB-->>CheckInService: ClientProfile with trainerId
+        
+        alt Client has trainer
+            CheckInService->>TrainerService: getProfileById(trainerId)
+            TrainerService->>DB: Find TrainerProfile by trainerId
+            DB-->>TrainerService: TrainerProfile with gymLocation
+            
+            CheckInService->>CheckInService: validateGpsLocation(<br/>trainerId,<br/>checkInLat, checkInLon)
+            
+            alt Trainer has gymLocation set
+                CheckInService->>CheckInService: Calculate distance<br/>(Haversine formula)
+                alt Distance <= radius (default 100m)
+                    Note over CheckInService: isGymLocation = true
+                else Distance > radius
+                    Note over CheckInService: isGymLocation = false<br/>(flagged for review)
+                end
+            else No gymLocation set
+                Note over CheckInService: isGymLocation = true<br/>(backward compatibility)
+            end
+            
+            alt GPS matches gym location
+                Note over CheckInService: isGymLocation = true<br/>(within radius)
+            else GPS doesn't match
+                Note over CheckInService: isGymLocation = false<br/>(flagged for review)
+            end
+        end
+        
+        CheckInService->>DB: Save CheckIn document<br/>(with isGymLocation flag)
+        
+        CheckInService->>Trainer: Notify trainer<br/>(new check-in pending verification)
+        
+    else No internet
+        Note over Sync: Queue for sync when online
+    end
+    
+    Trainer->>API: GET /api/trainers/clients/checkins<br/>(pending verification)
+    API-->>Trainer: List of check-ins<br/>(with isGymLocation flag)
+    
+    Trainer->>API: PATCH /api/checkins/:id/verify<br/>{verificationStatus: "VERIFIED"}
+    API->>CheckInService: verifyCheckIn(checkInId)
+    CheckInService->>DB: Update CheckIn.verificationStatus = "VERIFIED"
+    
+    Note over Client,Trainer: Result: Photo uploaded with GPS,<br/>trainer verifies authenticity<br/>Workout gate now open
+            </div>
+        </section>
+        
+        <section id="weighin" class="diagram-section">
+            <h2>11. Weigh-In Flow (Linked to Plan)</h2>
+            <p>Record weight on any day, linked to active plan (Monday recommended)</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard<br/>(WeighInCard)
+    participant WeighInPage as Weigh-In Page
+    participant API as Backend API
+    participant WeighInService as WeighInService
+    participant ClientsService as ClientsService
+    participant PlansService as PlansService
+    participant DB as MongoDB
+
+    Client->>Dashboard: View dashboard
+    Dashboard->>API: GET /api/checkins/weigh-in/latest
+    API->>WeighInService: getLatestWeighIn(userId)
+    WeighInService->>DB: Find latest WeighIn by clientId
+    DB-->>WeighInService: Latest WeighIn or null
+    WeighInService-->>API: Latest weigh-in data
+    API-->>Dashboard: Weigh-in data (weight, date, days since)
+    Dashboard-->>Client: Display WeighInCard<br/>(with "Record" button)
+
+    Client->>Dashboard: Click "Record" button
+    Dashboard->>WeighInPage: Navigate to /weigh-in
+
+    WeighInPage->>Client: Display form<br/>(weight input, notes,<br/>Monday recommendation)
+
+    Client->>WeighInPage: Enter weight, optional notes
+    Client->>WeighInPage: Submit weigh-in
+
+    WeighInPage->>API: POST /api/checkins/weigh-in<br/>{weight, date, notes, planId?}
+
+    API->>WeighInService: createWeighIn(clientId, weight, date, notes, planId)
+
+    WeighInService->>ClientsService: getProfile(clientId)
+    ClientsService->>DB: Find ClientProfile
+    DB-->>ClientsService: ClientProfile with planHistory
+
+    WeighInService->>WeighInService: getActivePlan(clientProfile)
+
+    alt Active plan found
+        WeighInService->>WeighInService: Link weigh-in to plan:<br/>planId = activePlan.planId<br/>planStartDate = activePlan.planStartDate
+        
+        WeighInService->>WeighInService: Check if Monday of plan week
+        alt Is Monday of plan week
+            Note over WeighInService: isMandatory = true
+        else Other day
+            Note over WeighInService: isMandatory = false<br/>(Monday recommended)
+        end
+    else No active plan
+        Note over WeighInService: planId = null<br/>(weigh-in without plan)
+    end
+
+    WeighInService->>DB: Find last weigh-in for spike detection
+    DB-->>WeighInService: Last WeighIn or null
+
+    alt Last weigh-in exists
+        WeighInService->>WeighInService: Calculate weight change %<br/>((current - last) / last * 100)
+        
+        alt Weight increase > 5%
+            Note over WeighInService: isWeightSpike = true<br/>aiFlagged = true<br/>aiMessage = "Weight increased by X%"
+        else Weight decrease > 5%
+            Note over WeighInService: aiFlagged = true<br/>aiMessage = "Weight decreased by X%"
+        end
+    end
+
+    WeighInService->>DB: Save WeighIn document<br/>(with planId, planStartDate,<br/>isMandatory, isWeightSpike)
+
+    WeighInService-->>API: WeighIn saved
+    API-->>WeighInPage: Success response
+
+    WeighInPage->>Dashboard: Return true (refresh signal)
+    Dashboard->>API: GET /api/checkins/weigh-in/latest<br/>(refresh data)
+    API-->>Dashboard: Updated weigh-in data
+    Dashboard-->>Client: Updated WeighInCard displayed
+
+    Note over Client,DB: Result: Weigh-in recorded, linked to plan,<br/>spike detected if >5% change,<br/>dashboard auto-refreshes
+            </div>
+        </section>
+        
+        <section id="balance" class="diagram-section">
+            <h2>12. Running Tab Balance System</h2>
+            <p>How balance accumulates and is displayed (plan costs + missed workout penalties)</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard<br/>(BalanceCard)
+    participant PaymentPage as Payment Page
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant PlansService as PlansService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+
+    rect rgb(30, 30, 30)
+        Note over PlansService,DB: PLAN ASSIGNMENT ADDS COST
+        PlansService->>GamificationService: addPenaltyToBalance(<br/>clientId, weeklyCost,<br/>"Weekly plan cost", planId)
+        
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 0€)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>balance += weeklyCost<br/>monthlyBalance += weeklyCost<br/>penaltyHistory.push({<br/>  date, amount: weeklyCost,<br/>  reason: "Weekly plan cost",<br/>  planId<br/>})
+        
+        DB-->>GamificationService: Updated (balance: 9€)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over WorkoutService,DB: MISSED WORKOUT ADDS PENALTY
+        WorkoutService->>GamificationService: addPenaltyToBalance(<br/>clientId, 1,<br/>"Missed workout penalty", planId)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>balance += 1€<br/>monthlyBalance += 1€<br/>penaltyHistory.push({<br/>  date, amount: 1,<br/>  reason: "Missed workout penalty",<br/>  planId<br/>})
+        
+        DB-->>GamificationService: Updated (balance: 10€)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: DISPLAY BALANCE ON DASHBOARD
+        Client->>Dashboard: View dashboard
+        Dashboard->>API: GET /api/gamification/penalty-status
+        API->>GamificationService: getPenaltyStatus(clientId)
+        
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 10€,<br/>monthlyBalance: 10€,<br/>penaltyHistory[])
+        
+        GamificationService-->>API: {balance, monthlyBalance,<br/>penaltyHistory}
+        API-->>Dashboard: Balance data
+        Dashboard-->>Client: Display BalanceCard<br/>(€10.00, "Pay Now" button)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: PAYMENT PAGE
+        Client->>PaymentPage: Click "Pay Now" button
+        PaymentPage->>API: GET /api/gamification/penalty-status
+        API-->>PaymentPage: Full balance details
+        
+        PaymentPage-->>Client: Display:<br/>- Total Balance: €10.00<br/>- Monthly Balance: €10.00<br/>- Payment History (all entries)<br/>- "Mark as Paid" button
+        
+        Client->>PaymentPage: Click "Mark as Paid"
+        PaymentPage->>API: POST /api/gamification/clear-balance
+        
+        API->>GamificationService: clearBalance(clientId)
+        GamificationService->>DB: Update ClientProfile:<br/>balance = 0<br/>monthlyBalance = 0<br/>lastBalanceReset = now
+        
+        GamificationService-->>API: Balance cleared
+        API-->>PaymentPage: Success
+        PaymentPage-->>Client: "No Balance Due" message
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: MONTHLY PAYWALL (V2): Day 1 Block
+        Client->>Dashboard: Open dashboard (Day 1 of month)
+        Dashboard->>Dashboard: Check if today is day 1
+        
+        alt Today is day 1 AND balance > 0
+            Dashboard->>API: GET /api/gamification/status
+            API->>GamificationService: getPenaltyStatus(clientId)
+            GamificationService->>DB: Find ClientProfile
+            DB-->>GamificationService: ClientProfile (balance: 10€)
+            GamificationService-->>API: {balance: 10€, blocked: true}
+            API-->>Dashboard: Balance data with blocked flag
+            
+            Dashboard->>Dashboard: Show non-dismissible PaywallDialog
+            Dashboard-->>Client: "Payment Required" dialog<br/>Workout buttons DISABLED
+            
+            Note over Client: Cannot start workout<br/>until balance cleared
+        else balance === 0 OR not day 1
+            Dashboard-->>Client: Normal dashboard<br/>No paywall
+        end
+    end
+
+    Note over Client,DB: Result: Balance accumulates from plan costs<br/>and missed workouts, displayed on dashboard<br/>and payment page, can be cleared manually.<br/>V2: Monthly paywall blocks workouts on day 1 if balance > 0
+            </div>
+        </section>
+        
+        <section id="paywall" class="diagram-section">
+            <h2>14. Monthly Paywall Flow (V2)</h2>
+            <p>How clients are blocked from workouts when balance is not cleared at month start</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard Page
+    participant PaywallDialog as Paywall Dialog
+    participant PaymentPage as Payment Page
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+
+    Note over Client: MONTH START: Day 1 of new month
+
+    Client->>Dashboard: Open dashboard
+    Dashboard->>Dashboard: Check if today is day 1
+    
+    alt Today is day 1
+        Dashboard->>API: GET /api/gamification/status
+        API->>GamificationService: getPenaltyStatus(clientId)
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 15€)
+        
+        GamificationService->>GamificationService: checkMonthlyPaywall(clientId)
+        
+        alt balance > 0
+            GamificationService-->>API: {balance: 15€, blocked: true}
+            API-->>Dashboard: Balance data with blocked flag
+            
+            Dashboard->>PaywallDialog: Show non-dismissible dialog
+            PaywallDialog-->>Client: "Payment Required"<br/>"Your balance for last month is 15€.<br/>Pay to continue training."
+            
+            Note over Client: Workout buttons DISABLED<br/>Cannot start workout
+            
+            Client->>PaywallDialog: Click "View Payment Details"
+            PaywallDialog->>PaymentPage: Navigate
+            PaymentPage->>API: GET /api/gamification/status
+            API-->>PaymentPage: Full balance details
+            
+            PaymentPage-->>Client: Display:<br/>- Total Balance: €15.00<br/>- Payment History<br/>- "Mark as Paid" button
+            
+            Client->>PaymentPage: Click "Mark as Paid"
+            PaymentPage->>API: POST /api/gamification/clear-balance
+            API->>GamificationService: clearBalance(clientId)
+            GamificationService->>DB: Update ClientProfile:<br/>balance = 0<br/>monthlyBalance = 0<br/>lastBalanceReset = now
+            
+            GamificationService-->>API: Balance cleared
+            API-->>PaymentPage: Success
+            PaymentPage->>Dashboard: Return (refresh)
+            Dashboard->>API: GET /api/gamification/status
+            API-->>Dashboard: {balance: 0€, blocked: false}
+            Dashboard-->>Client: Workout buttons ENABLED<br/>Can start workout
+        else balance === 0
+            Dashboard-->>Client: Normal dashboard<br/>No paywall
+        end
+    else Today is not day 1
+        Dashboard-->>Client: Normal dashboard<br/>No paywall check
+    end
+
+    Note over Client,DB: Result: Clients blocked on month start<br/>if balance > 0, must pay to continue
+            </div>
+        </section>
+        
+        <section id="unlock" class="diagram-section">
+            <h2>13. Weekly Unlock Mechanism</h2>
+            <p>Decision tree for determining if client can unlock next week (assign new plan)<br/><small style="color: #B3B3B3;">V2: Client can request next week via UI, trainer approves</small></p>
+            <div class="mermaid">
+graph TD
+    A[Plan Assignment Request] --> B{Client has active plan?}
+    
+    B -->|No| C[Allow assignment<br/>No unlock check needed]
+    B -->|Yes| D{Is same plan?}
+    
+    D -->|Yes| E[Skip unlock check<br/>Preserve existing dates<br/>Skip balance addition]
+    D -->|No| F[Check canUnlockNextWeek]
+    
+    F --> G{Get active plan from planHistory<br/>or currentPlanId backward compat}
+    G -->|Active plan found| H{Is current week ended?<br/>now greater than planEndDate}
+    G -->|No active plan| C
+    
+    H -->|Week not ended| K[canUnlock equals false<br/>Block assignment<br/>Week still active]
+    H -->|Week ended| I{Get workout logs for week<br/>Count completed workouts}
+    
+    I -->|All workouts completed| J[canUnlock equals true<br/>Allow new plan assignment]
+    I -->|Some workouts incomplete| K
+    
+    J --> L[Assign new plan<br/>Add to planHistory<br/>Update dates<br/>Add weeklyCost to balance<br/>Generate workout logs]
+    
+    K --> M[Throw BadRequestException<br/>Client must complete<br/>current week workouts first]
+    
+    E --> N[Update plan dates only<br/>No balance change]
+    N --> L
+    
+    C --> L
+    
+    O[V2 Client Request Next Week UI] --> P{canUnlockNextWeek?}
+    P -->|Yes| Q[Show Request Button<br/>Client clicks]
+    P -->|No| R[Button hidden<br/>Wait for week completion]
+    R --> O
+    Q --> S[POST request next week API]
+    S --> T[Set nextWeekRequested true<br/>Notify trainer]
+    T --> U[Trainer sees pending request<br/>in dashboard]
+    U --> A
+    
+    style A fill:#00F0FF,stroke:#fff,stroke-width:2px
+    style C fill:#00FF00,stroke:#000,stroke-width:2px
+    style E fill:#00FF00,stroke:#000,stroke-width:2px
+    style J fill:#00FF00,stroke:#000,stroke-width:2px
+    style K fill:#FF6B6B,stroke:#000,stroke-width:2px
+    style M fill:#FF6B6B,stroke:#000,stroke-width:2px
+    style L fill:#00F0FF,stroke:#fff,stroke-width:2px
+    style O fill:#FFA500,stroke:#000,stroke-width:2px
+    style Q fill:#FFA500,stroke:#000,stroke-width:2px
+    style S fill:#FFA500,stroke:#000,stroke-width:2px
+            </div>
+        </section>
+        
+        <section id="request-week" class="diagram-section">
+            <h2>15. Request Next Week Flow (V2)</h2>
+            <p>Client-initiated request for next week unlock (with trainer notification)</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard
+    participant UnlockButton as Unlock Next Week Button
+    participant API as Backend API
+    participant PlansService as PlansService
+    participant TrainersService as TrainersService
+    participant DB as MongoDB
+    participant Trainer as Trainer Dashboard
+
+    Client->>Dashboard: View dashboard
+    Dashboard->>API: GET /api/plans/unlock-next-week/:clientId
+    API->>PlansService: canUnlockNextWeek(clientId)
+    
+    PlansService->>DB: Find ClientProfile
+    DB-->>PlansService: ClientProfile with planHistory
+    
+    PlansService->>PlansService: Get active plan from planHistory
+    PlansService->>PlansService: Check if week ended (now > planEndDate)
+    PlansService->>PlansService: Count completed workouts (all non-rest-day)
+    
+    alt All workouts completed AND week ended
+        PlansService-->>API: {canUnlock: true}
+        API-->>Dashboard: Eligible for next week
+        Dashboard->>UnlockButton: Show "Request Next Week" button
+        UnlockButton-->>Client: Display button
+    else Workouts incomplete OR week not ended
+        PlansService-->>API: {canUnlock: false, reason: "..."}
+        API-->>Dashboard: Not eligible
+        Dashboard-->>Client: Button hidden
+    end
+    
+    Client->>UnlockButton: Click "Request Next Week"
+    UnlockButton->>API: POST /api/plans/request-next-week/:clientId
+    
+    API->>PlansService: requestNextWeek(clientId)
+    PlansService->>PlansService: Validate canUnlockNextWeek() again
+    PlansService->>DB: Update ClientProfile:<br/>nextWeekRequested = true<br/>nextWeekRequestDate = now
+    
+    PlansService->>TrainersService: Notify trainer (future: push notification)
+    TrainersService->>DB: Find TrainerProfile
+    TrainersService->>DB: Add notification flag (or send push)
+    
+    PlansService-->>API: Request saved
+    API-->>UnlockButton: Success response
+    UnlockButton-->>Client: "Request sent to your trainer"
+    
+    Note over Trainer: Trainer sees pending request<br/>in dashboard
+    
+    Trainer->>API: GET /api/trainers/pending-week-requests
+    API->>TrainersService: getPendingWeekRequests(trainerId)
+    TrainersService->>DB: Find clients where<br/>nextWeekRequested = true
+    DB-->>TrainersService: List of clients
+    TrainersService-->>API: Pending requests
+    API-->>Trainer: List of clients requesting next week
+    
+    Trainer->>API: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+    Note over Trainer: Trainer approves and assigns<br/>new week plan
+    
+    API->>PlansService: assignPlanToClients(...)
+    PlansService->>DB: Update ClientProfile:<br/>nextWeekRequested = false<br/>nextWeekRequestDate = null
+    PlansService->>DB: Add new plan to planHistory
+    
+    Note over Client,Trainer: Result: Client requested next week,<br/>trainer notified, trainer assigns plan
+            </div>
+        </section>
+        
+        <section id="ai-messages" class="diagram-section">
+            <h2>16. AI Message System Flow (V2-V3)</h2>
+            <p>Automated AI-generated messages based on client performance (psychological warfare)</p>
+            <div class="mermaid">
+sequenceDiagram
+    participant Cron as Cron Jobs
+    participant AIMessageService as AIMessageService
+    participant WorkoutService as WorkoutsService
+    participant WeighInService as WeighInService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+    participant PushService as Push Notification Service (V4)
+    participant Client as Mobile App
+    participant Dashboard as Dashboard
+
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: DAILY CHECK: MISSED WORKOUTS (20:00)
+        Cron->>AIMessageService: Check missed workouts (daily 20:00)
+        
+        AIMessageService->>WorkoutService: Get clients with >2 missed workouts<br/>in last 7 days
+        WorkoutService->>DB: Query WorkoutLogs (isMissed: true)
+        DB-->>WorkoutService: Clients with missed workouts
+        
+        loop For each client with >2 missed
+            AIMessageService->>AIMessageService: Check if message sent in last 24h
+            alt No recent message
+                AIMessageService->>AIMessageService: Generate AGGRESSIVE message:<br/>"2 missed workouts this week?<br/>That's not discipline, that's excuses."
+                AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: AGGRESSIVE,<br/>trigger: MISSED_WORKOUTS}
+                AIMessageService->>PushService: Send push notification (V4)
+                PushService-->>Client: Push notification received
+            end
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: DAILY CHECK: STREAKS (09:00)
+        Cron->>AIMessageService: Check streaks (daily 09:00)
+        
+        AIMessageService->>DB: Find clients with 7+ day streak
+        DB-->>AIMessageService: Clients with streaks
+        
+        loop For each client with 7+ day streak
+            AIMessageService->>AIMessageService: Generate MOTIVATIONAL message:<br/>"7 days straight! You're unstoppable.<br/>Keep this energy!"
+            AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: MOTIVATIONAL,<br/>trigger: STREAK}
+            AIMessageService->>PushService: Send push notification (V4)
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: MONDAY CHECK: WEIGHT SPIKES (10:00)
+        Cron->>AIMessageService: Check weight spikes (Monday 10:00)
+        
+        AIMessageService->>WeighInService: Get Monday weigh-ins with spike >5%
+        WeighInService->>DB: Find WeighIns where:<br/>date = Monday<br/>isWeightSpike = true
+        DB-->>WeighInService: Weigh-ins with spikes
+        
+        loop For each weigh-in with spike
+            AIMessageService->>AIMessageService: Generate WARNING message:<br/>"Weight up 3kg this week?<br/>Time to explain what happened."
+            AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: WARNING,<br/>trigger: WEIGHT_SPIKE}
+            AIMessageService->>PushService: Send push notification (V4)
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: CLIENT VIEWS MESSAGES
+        Client->>Dashboard: View dashboard
+        Dashboard->>API: GET /api/gamification/messages/:clientId
+        API->>AIMessageService: getMessages(clientId)
+        AIMessageService->>DB: Find AIMessages by clientId<br/>Sort by createdAt DESC
+        DB-->>AIMessageService: Array of messages
+        AIMessageService-->>API: Messages (latest first)
+        API-->>Dashboard: Messages data
+        
+        Dashboard->>Dashboard: Display AIMessageCard<br/>(tone-based styling)
+        Dashboard-->>Client: Latest message shown<br/>(AGGRESSIVE: red, MOTIVATIONAL: green, etc.)
+        
+        Client->>Dashboard: Tap message card
+        Dashboard->>API: GET /api/gamification/messages/:clientId
+        API-->>Dashboard: All messages (history)
+        Dashboard-->>Client: AI Messages page<br/>(full history)
+        
+        Client->>Dashboard: Tap message
+        Dashboard->>API: PATCH /api/gamification/messages/:id/read
+        API->>AIMessageService: markAsRead(messageId)
+        AIMessageService->>DB: Update AIMessage.isRead = true
+    end
+
+    Note over Cron,Client: Result: AI automatically generates messages<br/>based on performance, client sees in app<br/>Push notifications sent (V4)
+            </div>
+        </section>
+    </div>
+    
+    <a href="#" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">↑</a>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00F0FF',
+                primaryTextColor: '#FFFFFF',
+                primaryBorderColor: '#00F0FF',
+                lineColor: '#00F0FF',
+                secondaryColor: '#1E1E1E',
+                tertiaryColor: '#0A0A0A',
+                background: '#1E1E1E',
+                mainBkg: '#1E1E1E',
+                secondBkg: '#0A0A0A',
+                textColor: '#FFFFFF',
+                actorBorder: '#00F0FF',
+                actorBkg: '#1E1E1E',
+                actorTextColor: '#FFFFFF',
+                actorLineColor: '#00F0FF',
+                signalColor: '#00F0FF',
+                signalTextColor: '#FFFFFF',
+                labelBoxBkgColor: '#1E1E1E',
+                labelBoxBorderColor: '#00F0FF',
+                labelTextColor: '#FFFFFF',
+                loopTextColor: '#FFFFFF',
+                noteBorderColor: '#00F0FF',
+                noteBkgColor: '#1E1E1E',
+                noteTextColor: '#FFFFFF',
+                activationBorderColor: '#00F0FF',
+                activationBkgColor: '#1E1E1E',
+                sequenceNumberColor: '#FFFFFF',
+                cScale0: '#00F0FF',
+                cScale1: '#FF003C',
+                cScale2: '#FFA500'
+            },
+            flowchart: {
+                curve: 'basis',
+                padding: 20,
+                htmlLabels: true
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: true,
+                bottomMarginAdj: 1,
+                useMaxWidth: true,
+                rightAngles: false,
+                showSequenceNumbers: false
+            },
+            er: {
+                fontSize: 12
+            }
+        });
+    </script>
+</body>
+</html>
