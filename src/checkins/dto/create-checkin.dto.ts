@@ -40,8 +40,8 @@ export class CreateCheckInDto {
 
   @ValidateNested()
   @Type(() => GpsCoordinatesDto)
-  @IsNotEmpty()
-  gpsCoordinates: GpsCoordinatesDto;
+  @IsOptional()
+  gpsCoordinates?: GpsCoordinatesDto;
 
   @IsOptional()
   @IsNumber()

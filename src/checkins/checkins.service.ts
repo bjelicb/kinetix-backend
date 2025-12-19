@@ -79,8 +79,10 @@ export class CheckInsService {
 
     // Validate GPS location against trainer's gym location
     if (createCheckInDto.gpsCoordinates && clientProfile.trainerId) {
+      // Extract trainerId - handle both ObjectId and populated object
+      const trainerIdValue = (clientProfile.trainerId as any)?._id || clientProfile.trainerId;
       const isGymLocation = await this.validateGpsLocation(
-        clientProfile.trainerId,
+        trainerIdValue,
         createCheckInDto.gpsCoordinates.latitude,
         createCheckInDto.gpsCoordinates.longitude,
       );
