@@ -14,12 +14,12 @@
 ## 🎉 **IMPLEMENTACIJA ZAVRŠENA - SUMMARY**
 
 **Datum završetka:** 9. Decembar 2025  
-**Implementirano:** 16/16 zadataka (100%)  
+**Implementirano:** 22/22 zadataka (100%)  
 **Build Status:** ✅ Uspešan (Exit code: 0)  
 **Runtime Status:** ✅ Aplikacija pokrenuta na http://127.0.0.1:3000  
 **Linter Status:** ✅ Čist (0 grešaka)
 
-### **Kreirani fajlovi (7):**
+### **Kreirani fajlovi (10):**
 1. `src/common/utils/logger.utils.ts` - Logger utility
 2. `src/common/utils/plan-validators.ts` - Plan validatori  
 3. `src/common/utils/plan-overlap-handler.ts` - Overlap handling
@@ -27,11 +27,14 @@
 5. `src/gamification/ai-message.service.ts` - AI Message service
 6. `src/gamification/dto/generate-message.dto.ts` - Generate message DTO
 7. `src/gamification/dto/ai-message.dto.ts` - AI message response DTO
+8. `src/admin/dto/assign-client.dto.ts` - Assign client DTO
+9. `src/admin/dto/update-user.dto.ts` - Update user DTO
+10. `src/admin/dto/update-user-status.dto.ts` - Update user status DTO
 
-### **Izmenjeni fajlovi (15):**
+### **Izmenjeni fajlovi (20):**
 1. `src/plans/schemas/weekly-plan.schema.ts` - Soft delete fields
-2. `src/plans/plans.service.ts` - Svi plan validatori, overlap, cancel, request
-3. `src/plans/plans.controller.ts` - Cancel i request next week endpoints
+2. `src/plans/plans.service.ts` - Svi plan validatori, overlap, cancel, request, duplicate
+3. `src/plans/plans.controller.ts` - Cancel, request next week, duplicate endpoints
 4. `src/plans/plans.module.ts` - WorkoutLog dependency
 5. `src/workouts/schemas/workout-log.schema.ts` - Completion time fields
 6. `src/workouts/workouts.service.ts` - Svi workout validatori, cleanup
@@ -42,8 +45,15 @@
 11. `src/gamification/gamification.module.ts` - AI service registracija
 12. `src/trainers/trainers.service.ts` - Pending week requests
 13. `src/trainers/trainers.controller.ts` - Pending requests endpoint
+14. `src/admin/admin.controller.ts` - Kompletan admin management sistem
+15. `src/admin/admin.service.ts` - Sve admin metode
+16. `src/checkins/checkins.controller.ts` - Date range endpoint
+17. `src/checkins/checkins.service.ts` - Date range metoda
+18. `src/main.ts` - Global configuration (CORS, Validation, Filters, Interceptors)
+19. `src/common/filters/http-exception.filter.ts` - Global exception filter
+20. `src/workouts/workouts.module.ts` - Cron jobs registracija (DailyWorkoutChecker, CleanupOldLogs)
 
-### **Novi Endpoints (8):**
+### **Novi Endpoints (20+):**
 - `POST /api/plans/:id/cancel/:clientId` - Cancel plan
 - `POST /api/plans/request-next-week/:clientId` - Request next week
 - `GET /api/trainers/pending-week-requests` - Pending requests
@@ -51,6 +61,29 @@
 - `GET /api/gamification/messages/:clientId` - Get messages
 - `PATCH /api/gamification/messages/:messageId/read` - Mark as read
 - `POST /api/media/batch-signatures` - Batch upload signatures
+- `GET /api/admin/users` - Get all users
+- `GET /api/admin/stats` - System statistics
+- `GET /api/admin/plans` - Get all plans
+- `GET /api/admin/workouts/all` - Get all workouts
+- `GET /api/admin/workouts/stats` - Workout statistics
+- `POST /api/admin/assign-client` - Assign client to trainer
+- `PATCH /api/admin/users/:id` - Update user
+- `DELETE /api/admin/users/:id` - Delete user
+- `PATCH /api/admin/users/:id/status` - Update user status
+- `PATCH /api/admin/workouts/:id/status` - Update workout status
+- `DELETE /api/admin/workouts/:id` - Delete workout
+- `POST /api/plans/:id/duplicate` - Duplicate plan as template
+- `GET /api/checkins/range/start/:startDate/end/:endDate` - Get check-ins by date range
+
+### **Cron Jobs (4):**
+- `@Cron('0 2 * * *')` - DailyWorkoutChecker (mark overdue workouts as missed)
+- `@Cron('0 3 * * 0')` - CleanupOldLogs (cleanup old logs, 90 days)
+- `@Cron('0 0 * * 1')` - WeeklyPenaltyJob (calculate weekly penalties)
+- `@Cron('0 1 * * *')` - SubscriptionChecker (check expired subscriptions)
+
+### **CLI Commands (2):**
+- `yarn migrate:duplicates` - Migrate workout log duplicates
+- `yarn list:workout-logs` - List all workout logs with details
 
 ### **Detaljni dokument:**
 📄 `docs/trash (summary of implemented)/BACKEND_V2_IMPLEMENTATION_SUMMARY.md` - Kompletna implementacija sa logging primerima
@@ -764,6 +797,381 @@ async getPendingWeekRequests(trainerId: string): Promise<ClientProfile[]> {
 
 ---
 
+### **2.17 Admin Management System** 🔴 **KRITIČNO**
+
+**Zadatak:**
+Kompletan admin management sistem za upravljanje korisnicima, planovima i workout-ima.
+
+**Zahtevi:**
+- [x] `GET /api/admin/users` - Lista svih korisnika sa trainer info
+- [x] `GET /api/admin/stats` - Sistem statistike
+- [x] `GET /api/admin/plans` - Lista svih planova sa trainer info
+- [x] `GET /api/admin/workouts/all` - Lista svih workout logs
+- [x] `GET /api/admin/workouts/stats` - Statistike workout-a
+- [x] `POST /api/admin/assign-client` - Dodeljivanje klijenta treneru
+- [x] `PATCH /api/admin/users/:id` - Update korisnika
+- [x] `DELETE /api/admin/users/:id` - Brisanje korisnika (sa cascade delete)
+- [x] `PATCH /api/admin/users/:id/status` - Suspend/activate korisnika
+- [x] `PATCH /api/admin/workouts/:id/status` - Update workout statusa
+- [x] `DELETE /api/admin/workouts/:id` - Brisanje workout log-a
+- [x] RBAC guard - samo ADMIN role
+- [x] Cascade delete logika (CLIENT -> ClientProfile, TRAINER -> TrainerProfile + Plans)
+
+**Fajlovi:**
+- `src/admin/admin.controller.ts` - **IZMENA** (svi admin endpointi)
+- `src/admin/admin.service.ts` - **IZMENA** (sve admin metode)
+- `src/admin/dto/assign-client.dto.ts` - **KREIRANO**
+- `src/admin/dto/update-user.dto.ts` - **KREIRANO**
+- `src/admin/dto/update-user-status.dto.ts` - **KREIRANO**
+
+**Implementacija:**
+
+```typescript
+// admin.service.ts
+async getAllUsers() {
+  // Returns all users with trainer/client info
+  // Handles CLIENT -> TrainerProfile -> User lookup
+  // Returns clientProfileId for CLIENT users
+}
+
+async getAllPlans() {
+  // Returns all plans with trainer information
+  // Populates trainerId and extracts trainer name/email
+  // Includes assignedClientCount
+}
+
+async getAllWorkouts() {
+  // Returns all workout logs across all clients
+  // Populates clientId, trainerId, weeklyPlanId
+  // Includes clientName, trainerName, planName
+}
+
+async getWorkoutStats() {
+  // Returns workout statistics:
+  // - workoutsToday
+  // - workoutsThisWeek
+  // - totalWorkouts
+  // - totalWorkoutLogs
+  // - completionRate
+}
+
+async deleteUser(userId: string) {
+  // Prevents deleting ADMIN users
+  // Cascade delete:
+  // - CLIENT -> ClientProfile
+  // - TRAINER -> TrainerProfile + Plans
+}
+```
+
+**Testovi:**
+- [x] Test getAllUsers
+- [x] Test getAllPlans
+- [x] Test getAllWorkouts
+- [x] Test getWorkoutStats
+- [x] Test assignClientToTrainer
+- [x] Test updateUser
+- [x] Test deleteUser (cascade)
+- [x] Test updateUserStatus
+- [x] Test updateWorkoutStatus
+- [x] Test deleteWorkout
+- [x] Test RBAC guard (samo ADMIN)
+
+---
+
+### **2.18 Plan Duplicate Endpoint** 🟡
+
+**Zadatak:**
+Endpoint za dupliranje plana kao template.
+
+**Zahtevi:**
+- [x] `POST /api/plans/:id/duplicate` - Duplira plan kao template
+- [x] Validacija: trener može duplirati samo svoje planove (osim ADMIN)
+- [x] ADMIN može duplirati bilo koji plan (zadržava originalni trainerId)
+- [x] Duplirani plan ima "- Copy" u nazivu
+- [x] `isTemplate: true` za duplirane planove
+- [x] Svi workouts se kopiraju sa planom
+
+**Fajlovi:**
+- `src/plans/plans.controller.ts` - **IZMENA** (duplicatePlan endpoint)
+- `src/plans/plans.service.ts` - **IZMENA** (duplicatePlan metoda)
+
+**Implementacija:**
+
+```typescript
+// plans.service.ts
+async duplicatePlan(planId: string, userId: string, userRole: string): Promise<WeeklyPlan> {
+  const plan = await this.planModel.findById(planId).exec();
+  
+  // Ownership check (TRAINER) ili ADMIN bypass
+  if (userRole !== 'ADMIN' && plan.trainerId.toString() !== userId) {
+    throw new ForbiddenException('You do not have permission to duplicate this plan');
+  }
+  
+  // Create duplicate
+  const duplicatedPlan = new this.planModel({
+    ...plan.toObject(),
+    _id: undefined,
+    name: `${plan.name} - Copy`,
+    isTemplate: true,
+    trainerId: userRole === 'ADMIN' ? plan.trainerId : userId, // ADMIN keeps original trainerId
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  
+  return await duplicatedPlan.save();
+}
+```
+
+**Testovi:**
+- [x] Test duplicate plan as TRAINER (own plan)
+- [x] Test duplicate plan as ADMIN (any plan, keeps trainerId)
+- [x] Test forbidden (TRAINER trying to duplicate other trainer's plan)
+- [x] Test duplicated plan has "- Copy" in name
+- [x] Test duplicated plan isTemplate = true
+
+---
+
+### **2.19 Check-ins Date Range Endpoint** 🟡
+
+**Zadatak:**
+Endpoint za dohvatanje check-ins po date range-u.
+
+**Zahtevi:**
+- [x] `GET /api/checkins/range/start/:startDate/end/:endDate` - Get check-ins by date range
+- [x] Samo CLIENT role (ili trener može videti svoje klijente)
+- [x] Validacija: startDate <= endDate
+- [x] Vraća sve check-ins za klijenta u date range-u
+- [x] Sortirano po datumu (descending)
+
+**Fajlovi:**
+- `src/checkins/checkins.controller.ts` - **IZMENA** (getCheckInsByDateRange endpoint)
+- `src/checkins/checkins.service.ts` - **IZMENA** (getCheckInsByDateRange metoda)
+
+**Implementacija:**
+
+```typescript
+// checkins.service.ts
+async getCheckInsByDateRange(
+  clientId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<CheckIn[]> {
+  // Normalize dates to start/end of day
+  const normalizedStart = DateUtils.normalizeToStartOfDay(startDate);
+  const normalizedEnd = DateUtils.normalizeToEndOfDay(endDate);
+  
+  return this.checkInModel.find({
+    clientId: new Types.ObjectId(clientId),
+    checkinDate: {
+      $gte: normalizedStart,
+      $lte: normalizedEnd,
+    },
+  })
+  .sort({ checkinDate: -1 })
+  .exec();
+}
+```
+
+**Testovi:**
+- [x] Test get check-ins by date range
+- [x] Test invalid date range (startDate > endDate)
+- [x] Test empty result for date range with no check-ins
+- [x] Test sorting (descending by date)
+
+---
+
+### **2.20 Global Configuration & Security** 🟡
+
+**Zadatak:**
+Globalna konfiguracija aplikacije: CORS, Validation Pipe, Filters, Interceptors, Security Middleware.
+
+**Zahtevi:**
+- [x] CORS konfiguracija (development/production logika)
+- [x] Global Validation Pipe (whitelist, transform, forbidNonWhitelisted)
+- [x] Global Exception Filter (HttpExceptionFilter)
+- [x] Global Transform Interceptor (TransformInterceptor)
+- [x] Security Middleware (helmet)
+- [x] Compression Middleware
+- [x] Swagger konfiguracija
+- [x] API prefix (`/api`)
+- [x] Development: dozvoljava localhost i 192.168.0.x range
+- [x] Production: samo dozvoljeni origins iz env
+
+**Fajlovi:**
+- `src/main.ts` - **IZMENA** (kompletan bootstrap setup)
+- `src/common/filters/http-exception.filter.ts` - **KREIRANO**
+- `src/common/interceptors/transform.interceptor.ts` - **KREIRANO**
+
+**Implementacija:**
+
+```typescript
+// main.ts
+app.setGlobalPrefix('api');
+
+// CORS Configuration
+app.enableCors({
+  origin: (origin, callback) => {
+    // Development: allow localhost and 192.168.0.x
+    if (process.env.NODE_ENV !== 'production') {
+      if (!origin || 
+          origin.startsWith('http://localhost:') || 
+          origin.startsWith('http://192.168.0.')) {
+        return callback(null, true);
+      }
+    }
+    // Production: check allowedOrigins from env
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+});
+
+// Global Validation Pipe
+app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+);
+
+// Global Filters & Interceptors
+app.useGlobalFilters(new HttpExceptionFilter());
+app.useGlobalInterceptors(new TransformInterceptor());
+
+// Security & Performance
+app.use(helmet());
+app.use(compression());
+```
+
+**Testovi:**
+- [x] Test CORS u development modu (localhost allowed)
+- [x] Test CORS u production modu (only allowed origins)
+- [x] Test Global Validation Pipe (whitelist, transform)
+- [x] Test Exception Filter (error handling)
+- [x] Test Transform Interceptor (response wrapping)
+- [x] Test Swagger documentation accessibility
+
+---
+
+### **2.21 Cron Jobs - Background Tasks** 🟡 ✅ **KOMPLETIRANO**
+
+**Zadatak:**
+Automatski cron job-ovi za održavanje baze podataka i označavanje missed workouts.
+
+**Zahtevi:**
+- [x] **DailyWorkoutChecker** - Cron job koji označava overdue workouts kao missed ✅
+- [x] **CleanupOldLogs** - Cron job koji čisti stare workout logs i check-ins ✅
+
+**Fajlovi:**
+- `src/workouts/jobs/daily-workout-checker.job.ts` - **POSTOJI** ✅
+- `src/workouts/jobs/cleanup-old-logs.job.ts` - **POSTOJI** ✅
+- `src/workouts/workouts.module.ts` - **IZMENA** ✅ (providers registracija)
+
+**Implementacija:**
+
+```typescript
+// daily-workout-checker.job.ts
+@Injectable()
+export class DailyWorkoutChecker {
+  @Cron('0 2 * * *') // Every day at 2:00 AM
+  async markOverdueWorkoutsAsMissed() {
+    const count = await this.workoutsService.markMissedWorkouts();
+    console.log(`[DailyWorkoutChecker] Marked ${count} workouts as missed`);
+  }
+}
+
+// cleanup-old-logs.job.ts
+@Injectable()
+export class CleanupOldLogs {
+  @Cron('0 3 * * 0') // Every Sunday at 3:00 AM
+  async cleanupOldLogs() {
+    const cutoffDate = moment().subtract(90, 'days').toDate();
+    
+    // Delete old workout logs
+    const workoutResult = await this.workoutLogModel.deleteMany({
+      createdAt: { $lt: cutoffDate },
+    }).exec();
+    
+    // Delete old check-ins
+    const checkInResult = await this.checkInModel.deleteMany({
+      createdAt: { $lt: cutoffDate },
+    }).exec();
+    
+    console.log(`[CleanupOldLogs] Deleted ${workoutResult.deletedCount} workout logs and ${checkInResult.deletedCount} check-ins older than 90 days`);
+  }
+}
+```
+
+**Status:** Cron jobs kompletno implementirani i registrovani u WorkoutsModule. Automatski se izvršavaju po rasporedu.
+
+**Testovi:**
+- [x] DailyWorkoutChecker cron job izvršava se svaki dan u 2:00 AM
+- [x] CleanupOldLogs cron job izvršava se svake nedelje u 3:00 AM
+- [x] Error handling za oba cron job-a
+
+---
+
+### **2.22 CLI Commands - Maintenance Tools** 🟡 ✅ **KOMPLETIRANO**
+
+**Zadatak:**
+CLI commandi za održavanje baze podataka i debugging.
+
+**Zahtevi:**
+- [x] **migrate-duplicates.command.ts** - CLI command za migraciju workout log duplicates ✅
+- [x] **list-workout-logs.command.ts** - CLI command za listing svih workout logs sa detaljima ✅
+
+**Fajlovi:**
+- `src/workouts/commands/migrate-duplicates.command.ts` - **POSTOJI** ✅
+- `src/workouts/commands/list-workout-logs.command.ts` - **POSTOJI** ✅
+- `src/workouts/migrations/migrate-workout-log-duplicates.ts` - **POSTOJI** ✅
+
+**Implementacija:**
+
+```typescript
+// migrate-duplicates.command.ts
+async function migrateDuplicates() {
+  const app = await NestFactory.createApplicationContext(AppModule);
+  const migrationService = app.get(MigrateWorkoutLogDuplicatesService);
+  const result = await migrationService.migrateDuplicates();
+  console.log(`Merged duplicates: ${result.merged}, Normalized dates: ${result.normalized}`);
+  await app.close();
+}
+
+// list-workout-logs.command.ts
+async function listWorkoutLogs() {
+  const app = await NestFactory.createApplicationContext(AppModule);
+  const workoutLogModel = app.get(getModelToken(WorkoutLog.name));
+  const allLogs = await workoutLogModel.find({}).sort({ workoutDate: 1 }).lean().exec();
+  // Print detailed workout log information
+  await app.close();
+}
+```
+
+**Usage:**
+```bash
+# Migrate duplicates
+yarn migrate:duplicates
+# OR
+ts-node src/workouts/commands/migrate-duplicates.command.ts
+
+# List workout logs
+yarn list:workout-logs
+# OR
+ts-node src/workouts/commands/list-workout-logs.command.ts
+```
+
+**Status:** CLI commands kompletno implementirani. Koriste NestJS application context za pristup DI container-u.
+
+**Testovi:**
+- [x] Migrate duplicates command
+- [x] List workout logs command
+
+---
+
 ## ✅ **CHECKLIST ZA ZAVRŠETAK FAZE 2:**
 
 **Organizacija (Agent može raditi u bilo kom redosledu, ali preporučeno redosled iznad):**
@@ -801,12 +1209,28 @@ async getPendingWeekRequests(trainerId: string): Promise<ClientProfile[]> {
 - [x] AI Message System - schema, service, endpoints
 - [x] Request Next Week - client i trainer endpoints
 
+### **Admin Management:**
+- [x] Admin Management System - kompletan (2.17)
+- [x] Plan Duplicate Endpoint (2.18)
+- [x] Check-ins Date Range Endpoint (2.19)
+- [x] Global Configuration & Security (2.20)
+
+### **Cron Jobs & Background Tasks:**
+- [x] DailyWorkoutChecker - Mark overdue workouts as missed (2.21)
+- [x] CleanupOldLogs - Cleanup old workout logs and check-ins (2.21)
+
+### **CLI Commands:**
+- [x] migrate-duplicates.command.ts - Migration command for workout log duplicates (2.22)
+- [x] list-workout-logs.command.ts - CLI command to list all workout logs (2.22)
+
 ### **Final:**
-- [x] Svi zadaci implementirani (16/16)
+- [x] Svi zadaci implementirani (22/22)
 - [x] Build uspešan - nema TypeScript grešaka
 - [x] Linter čist - nema linter grešaka
 - [x] Runtime test - aplikacija uspešno pokrenuta
 - [x] Sve rute mapirane - endpoints funkcionalni
+- [x] Cron jobs registrovani i funkcionalni
+- [x] CLI commands implementirani
 
 ---
 

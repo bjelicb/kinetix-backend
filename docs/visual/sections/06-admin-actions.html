@@ -1,0 +1,381 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Admin Actions - Detailed Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">6. Admin Actions - Detailed Flow</p>
+            
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Admin Actions - Detailed Flow</strong> pokazuje detaljno kako admin zaobiđe sve guards i ownership checks.
+        Admin može da izvršava akcije koje normalni treneri ne mogu.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Admin bypass</code> - Admin može da zaobiđe sve provere vlasništva</li>
+        <li><code>Ownership checks</code> - Normalni treneri mogu da upravljaju samo svojim planovima i klijentima</li>
+        <li><code>Cascade delete</code> - Brisanje korisnika automatski briše i povezane profile (TrainerProfile ili ClientProfile)</li>
+        <li><code>Kill-switch activation</code> - Suspendovanje trenera blokira sve njegove klijente</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Admin Marko želi da dodeli plan trenera A klijentu trenera B (što normalno nije dozvoljeno).
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Admin poziva <code>POST /api/plans/:id/assign</code> sa clientIds trenera B</li>
+        <li>Backend proverava da li je korisnik admin (bypass ownership check)</li>
+        <li>Plan se dodeljuje klijentu bez provere da li plan pripada treneru B</li>
+        <li>Klijent dobija plan u svojoj planHistory</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Admin može da izvršava akcije koje normalni treneri ne mogu, što omogućava fleksibilno upravljanje sistemom.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant AdminAPI as Admin API
+    participant PlansAPI as Plans API
+    participant ClientsAPI as Clients API
+    participant TrainersAPI as Trainers API
+    participant DB as MongoDB
+
+    Note over Admin,DB: ADMIN BYPASSES ALL GUARDS AND OWNERSHIP CHECKS
+
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: PLAN MANAGEMENT
+        Admin->>PlansAPI: POST /api/plans<br/>{name, workouts, trainerId}
+        PlansAPI->>DB: Create plan (any trainer)
+        
+        Admin->>PlansAPI: PATCH /api/plans/:id<br/>{...updates}
+        Note over PlansAPI: Admin can edit ANY plan
+        
+        Admin->>PlansAPI: DELETE /api/plans/:id
+        Note over PlansAPI: Admin can delete ANY plan<br/>(even if clients assigned)
+        
+        Admin->>PlansAPI: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+        Note over PlansAPI: Admin can assign ANY plan<br/>to ANY clients (bypass trainer check)
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: CLIENT MANAGEMENT
+        Admin->>ClientsAPI: GET /api/admin/clients
+        ClientsAPI->>DB: Find all clients<br/>(populate trainer, currentPlan)
+        
+        Admin->>ClientsAPI: GET /api/admin/clients/:id
+        ClientsAPI->>DB: Get client + planHistory
+        
+        Admin->>TrainersAPI: POST /api/admin/assign-client<br/>{clientId, trainerId}
+        TrainersAPI->>DB: Update client.trainerId<br/>Remove from old trainer.clientIds<br/>Add to new trainer.clientIds
+        
+        Admin->>TrainersAPI: POST /api/admin/assign-client<br/>{clientId, trainerId: null}
+        Note over TrainersAPI: Unassign client from trainer<br/>(client.trainerId = null)
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: TRAINER MANAGEMENT
+        Admin->>TrainersAPI: GET /api/admin/trainers
+        TrainersAPI->>DB: Find all trainers<br/>(populate subscription, clients)
+        
+        Admin->>TrainersAPI: PATCH /api/admin/trainers/:id<br/>{isActive: false}
+        Note over TrainersAPI: Suspend trainer<br/>→ Kill-switch activates<br/>→ All clients get 403
+        
+        Admin->>TrainersAPI: PATCH /api/admin/trainers/:id<br/>{subscriptionExpiresAt}
+        Note over TrainersAPI: Extend subscription<br/>→ Trainer stays active
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: USER MANAGEMENT
+        Admin->>AdminAPI: POST /api/admin/users<br/>{email, role, password}
+        AdminAPI->>DB: Create user (any role)
+        
+        Admin->>AdminAPI: PATCH /api/admin/users/:id
+        AdminAPI->>DB: Update user (role, email, etc.)
+        
+        Admin->>AdminAPI: DELETE /api/admin/users/:id
+        Note over AdminAPI: Delete user + cascade:<br/>- If TRAINER: Delete TrainerProfile<br/>- If CLIENT: Delete ClientProfile
+    end
+
+    Note over Admin,DB: Admin has FULL CONTROL over entire system
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto admin bypass?</strong> Admin mora imati potpunu kontrolu da bi mogao da rešava probleme, migrira podatke, i upravlja sistemom.
+    </p>
+    <p>
+        <strong>Kako radi admin bypass:</strong>
+    </p>
+    <ul>
+        <li><strong>Guards provera:</strong> Admin guards proveravaju da li je korisnik admin pre nego što dozvole akciju</li>
+        <li><strong>Ownership skip:</strong> Ako je admin, ownership checks se preskaču (admin može da upravlja bilo čim)</li>
+        <li><strong>Cascade delete:</strong> Kada se briše korisnik, sistem automatski briše i povezane profile (TrainerProfile ili ClientProfile)</li>
+        <li><strong>Kill-switch kontrola:</strong> Admin može da suspenduje trenera, što aktivira kill-switch i blokira sve njegove klijente</li>
+    </ul>
+    <p>
+        <strong>Bezbednost:</strong> Admin akcije su zaštićene RBAC (Role-Based Access Control) - samo korisnici sa role='ADMIN' mogu da pristupe admin endpoint-ima.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

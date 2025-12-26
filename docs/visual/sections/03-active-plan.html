@@ -1,0 +1,378 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Get Active Plan Flow (with planStatus)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">3. Get Active Plan Flow (with planStatus)</p>
+            <span class="version-badge v2">âœ“ V2</span>
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Get Active Plan Flow</strong> pokazuje kako klijent dobija svoj trenutni plan sa određivanjem <code>planStatus</code>-a.
+        Ovo je kritičan flow jer određuje da li je plan otključan, zaključan, ili završen.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>currentPlanId</code> - ID plana koji je klijent otključao i platio</li>
+        <li><code>planStatus</code> - Dinamički status: 'current', 'future', ili 'previous'</li>
+        <li><code>planHistory[]</code> - Niz svih dodeljenih planova (prošlih i budućih)</li>
+        <li><code>planEndDate</code> - Datum završetka plana (koristi se za određivanje statusa)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar otvara aplikaciju i traži svoj trenutni plan.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Mobile app šalje <code>GET /api/clients/current-plan</code></li>
+        <li>Backend proverava da li Petar ima <code>currentPlanId</code></li>
+        <li>Ako ima, proverava da li je plan još aktivan (planEndDate >= today)</li>
+        <li>Vraća plan sa <code>planStatus: 'current'</code> (otključan) ili <code>'previous'</code> (završen)</li>
+        <li>Ako nema currentPlanId, traži future plan u planHistory i vraća <code>planStatus: 'future'</code> (zaključan)</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar vidi svoj plan sa jasnim statusom - da li može da trenira (current) ili mora da otključi (future).
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant API as Backend API
+    participant ClientService as ClientsService
+    participant PlanService as PlansService
+    participant DB as MongoDB
+
+    Client->>API: GET /api/clients/current-plan
+    API->>ClientService: getCurrentPlan(userId)
+    ClientService->>DB: Find ClientProfile by userId
+    DB-->>ClientService: ClientProfile with currentPlanId, planHistory
+    
+    alt currentPlanId exists
+        ClientService->>ClientService: Extract planId from currentPlanId
+        ClientService->>ClientService: Find plan in planHistory array
+        
+        alt Plan not in planHistory
+            ClientService->>DB: Update: currentPlanId = null
+            Note over ClientService: Invalid currentPlanId - clear it
+            ClientService->>ClientService: Continue to find future/previous plan
+        else Plan in planHistory
+            ClientService->>ClientService: Check if plan is completed<br/>(planEndDate < today)
+            
+            alt Plan is completed
+                ClientService->>DB: Update: currentPlanId = null
+                ClientService->>PlanService: getPlanById(planId)
+                PlanService-->>ClientService: Plan details
+                ClientService-->>API: Plan with planStatus: 'previous'
+                API-->>Client: Previous plan (completed)
+            else Plan not completed
+                ClientService->>PlanService: getPlanById(planId)
+                PlanService-->>ClientService: Plan details
+                ClientService-->>API: Plan with planStatus: 'current'
+                API-->>Client: Current plan (active, unlocked)
+            end
+        end
+    end
+    
+    alt No currentPlanId or was cleared
+        ClientService->>ClientService: Find future plan<br/>(planEndDate >= today)
+        
+        alt Future plan found
+            ClientService->>PlanService: getPlanById(futurePlan.planId)
+            PlanService-->>ClientService: Plan details
+            ClientService-->>API: Plan with planStatus: 'future'
+            API-->>Client: Future plan (locked, needs unlock)
+        else No future plan
+            ClientService->>ClientService: Find previous plan<br/>(planEndDate < today, most recent)
+            
+            alt Previous plan found
+                ClientService->>PlanService: getPlanById(previousPlan.planId)
+                PlanService-->>ClientService: Plan details
+                ClientService-->>API: Plan with planStatus: 'previous'
+                API-->>Client: Previous plan (completed)
+            else No plans
+                ClientService-->>API: null
+                API-->>Client: No plan assigned
+            end
+        end
+    end
+
+    Note over Client,DB: Result: Plan with planStatus determined:<br/>✅ 'current' = unlocked, active plan<br/>🔒 'future' = locked, needs unlock<br/>📜 'previous' = completed plan<br/>❌ null = no plan assigned
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Ovaj flow je srce sistema jer određuje šta klijent vidi u aplikaciji.
+    </p>
+    <p>
+        <strong>Kako radi planStatus logika:</strong>
+    </p>
+    <ul>
+        <li><strong>'current':</strong> Plan je otključan (currentPlanId postavljen) i još nije završen (planEndDate >= today). Klijent može da trenira.</li>
+        <li><strong>'future':</strong> Plan je dodeljen ali zaključan (currentPlanId = null). Klijent mora da klikne "Unlock Next Week" da bi otključao.</li>
+        <li><strong>'previous':</strong> Plan je završen (planEndDate < today). Može se gledati u istoriji ali ne može da se koristi za trening.</li>
+    </ul>
+    <p>
+        <strong>Validacija:</strong> Ako currentPlanId pokazuje na plan koji više nije u planHistory, sistem ga automatski briše (invalid state cleanup).
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

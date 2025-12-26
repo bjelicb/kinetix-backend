@@ -1,0 +1,409 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Running Tab Balance System</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">12. Running Tab Balance System</p>
+            <span class="version-badge v2">âœ“ V2</span>
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Running Tab Balance System</strong> pokazuje kako se balance akumulira i prikazuje klijentu.
+        Balance se sastoji od troškova planova i kazni za propuštene treninge.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>balance</code> - Ukupan balance (sve kazne i troškovi planova)</li>
+        <li><code>monthlyBalance</code> - Mesečni balance (kazne i troškovi za trenutni mesec)</li>
+        <li><code>penaltyHistory[]</code> - Istorija svih kazni i troškova</li>
+        <li><code>Monthly Paywall</code> - Blokada na početku meseca (day 1) ako balance > 0</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar ima balance od 10€ (9€ za plan + 1€ za propušteni trening). Prvi dan novog meseca.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar otvara aplikaciju 1. dana u mesecu</li>
+        <li>Dashboard proverava da li je danas day 1 i da li je balance > 0</li>
+        <li>Pošto jeste, prikazuje se PaywallDialog (non-dismissible)</li>
+        <li>Petar vidi poruku: "Payment Required - Your balance for last month is 10€"</li>
+        <li>Dugme "Start Workout" je onemogućeno dok se balance ne očisti</li>
+        <li>Petar klikne "View Payment Details" → otvara se Payment Page</li>
+        <li>Petar vidi detalje: Total Balance 10€, Monthly Balance 10€, Payment History</li>
+        <li>Petar klikne "Mark as Paid" → balance se resetuje na 0</li>
+        <li>Dashboard se osvežava, PaywallDialog nestaje, Petar može da trenira</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar mora da plati balance pre nego što može da nastavi sa treningom.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard<br/>(BalanceCard)
+    participant PaymentPage as Payment Page
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant PlansService as PlansService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+
+    rect rgb(30, 30, 30)
+        Note over PlansService,DB: PLAN ASSIGNMENT ADDS COST
+        PlansService->>GamificationService: addPenaltyToBalance(<br/>clientId, weeklyCost,<br/>"Weekly plan cost", planId)
+        
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 0€)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>balance += weeklyCost<br/>monthlyBalance += weeklyCost<br/>penaltyHistory.push({<br/>  date, amount: weeklyCost,<br/>  reason: "Weekly plan cost",<br/>  planId<br/>})
+        
+        DB-->>GamificationService: Updated (balance: 9€)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over WorkoutService,DB: MISSED WORKOUT ADDS PENALTY
+        WorkoutService->>GamificationService: addPenaltyToBalance(<br/>clientId, 1,<br/>"Missed workout penalty", planId)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>balance += 1€<br/>monthlyBalance += 1€<br/>penaltyHistory.push({<br/>  date, amount: 1,<br/>  reason: "Missed workout penalty",<br/>  planId<br/>})
+        
+        DB-->>GamificationService: Updated (balance: 10€)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: DISPLAY BALANCE ON DASHBOARD
+        Client->>Dashboard: View dashboard
+        Dashboard->>API: GET /api/gamification/penalty-status
+        API->>GamificationService: getPenaltyStatus(clientId)
+        
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 10€,<br/>monthlyBalance: 10€,<br/>penaltyHistory[])
+        
+        GamificationService-->>API: {balance, monthlyBalance,<br/>penaltyHistory}
+        API-->>Dashboard: Balance data
+        Dashboard-->>Client: Display BalanceCard<br/>(€10.00, "Pay Now" button)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: PAYMENT PAGE
+        Client->>PaymentPage: Click "Pay Now" button
+        PaymentPage->>API: GET /api/gamification/penalty-status
+        API-->>PaymentPage: Full balance details
+        
+        PaymentPage-->>Client: Display:<br/>- Total Balance: €10.00<br/>- Monthly Balance: €10.00<br/>- Payment History (all entries)<br/>- "Mark as Paid" button
+        
+        Client->>PaymentPage: Click "Mark as Paid"
+        PaymentPage->>API: POST /api/gamification/clear-balance
+        
+        API->>GamificationService: clearBalance(clientId)
+        GamificationService->>DB: Update ClientProfile:<br/>balance = 0<br/>monthlyBalance = 0<br/>lastBalanceReset = now
+        
+        GamificationService-->>API: Balance cleared
+        API-->>PaymentPage: Success
+        PaymentPage-->>Client: "No Balance Due" message
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: MONTHLY PAYWALL (V2): Day 1 Block
+        Client->>Dashboard: Open dashboard (Day 1 of month)
+        Dashboard->>Dashboard: Check if today is day 1
+        
+        alt Today is day 1 AND balance > 0
+            Dashboard->>API: GET /api/gamification/status
+            API->>GamificationService: getPenaltyStatus(clientId)
+            GamificationService->>DB: Find ClientProfile
+            DB-->>GamificationService: ClientProfile (balance: 10€)
+            GamificationService-->>API: {balance: 10€, blocked: true}
+            API-->>Dashboard: Balance data with blocked flag
+            
+            Dashboard->>Dashboard: Show non-dismissible PaywallDialog
+            Dashboard-->>Client: "Payment Required" dialog<br/>Workout buttons DISABLED
+            
+            Note over Client: Cannot start workout<br/>until balance cleared
+        else balance === 0 OR not day 1
+            Dashboard-->>Client: Normal dashboard<br/>No paywall
+        end
+    end
+
+    Note over Client,DB: Result: Balance accumulates from plan costs<br/>and missed workouts, displayed on dashboard<br/>and payment page, can be cleared manually.<br/>V2: Monthly paywall blocks workouts on day 1 if balance > 0
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Balance sistem primorava klijente da plate za planove i kazne. Monthly paywall blokira treninge dok se balance ne očisti.
+    </p>
+    <p>
+        <strong>Kako radi balance sistem:</strong>
+    </p>
+    <ul>
+        <li><strong>Plan assignment:</strong> Kada se plan dodeljuje, dodaje se weeklyCost na balance</li>
+        <li><strong>Missed workout:</strong> Kada se trening označi kao propušten, dodaje se 1€ na balance</li>
+        <li><strong>Balance display:</strong> Balance se prikazuje na dashboard-u u BalanceCard-u</li>
+        <li><strong>Payment page:</strong> Klijent može da vidi detalje balance-a i da ga očisti</li>
+        <li><strong>Monthly paywall:</strong> Na početku meseca (day 1), ako je balance > 0, prikazuje se PaywallDialog</li>
+    </ul>
+    <p>
+        <strong>Monthly paywall logika:</strong> Ako je danas 1. dan u mesecu i balance > 0, klijent je blokiran dok ne plati. PaywallDialog je non-dismissible - mora da se plati da bi se nastavilo sa treningom.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

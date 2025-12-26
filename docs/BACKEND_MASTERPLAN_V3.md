@@ -445,6 +445,10 @@ Retry-After: 60
 **Zadatak:**
 Automatski generisati i slati AI poruke na osnovu event-a
 
+**Napomena:** AI Message Service već postoji u `src/gamification/ai-message.service.ts`.
+Ova faza dodaje automatske cron job-ove koji generišu poruke na osnovu event-a.
+Template-based messaging je implementiran, LLM integracija je planirana za V4.
+
 **Zahtevi:**
 - [ ] Cron job: Check missed workouts (daily at 20:00)
   - Ako >2 missed u nedelji → generate aggressive message

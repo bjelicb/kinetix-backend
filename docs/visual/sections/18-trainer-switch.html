@@ -1,0 +1,382 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Trainer Switch Handling</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">18. Trainer Switch Handling</p>
+            <span class="version-badge v3">âš  V3</span>
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Trainer Switch Handling (V3 - PLANIRANO)</strong> - Kritično za data integrity kada se klijent prebacuje na drugog trenera.
+        Ovo je V3 feature koji omogućava bezbedno prebacivanje klijenta između trenera.
+    </p>
+    <p>
+        <strong>Status:</strong> 🟡 PLANIRANO (V3 Masterplan)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Trainer switch</code> - Prebacivanje klijenta sa jednog trenera na drugog</li>
+        <li><code>Close active plans</code> - Zatvaranje svih aktivnih planova od starog trenera</li>
+        <li><code>Clear currentPlanId</code> - Resetovanje currentPlanId da bi novi trener mogao da assign-uje planove</li>
+        <li><code>Data integrity</code> - Očuvanje svih podataka (workout logs, check-ins, weigh-ins) pri prebacivanju</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar se prebacuje sa trenera Marka na trenera Jovana.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Admin poziva <code>POST /api/admin/assign-client</code> sa {clientId: Petar, trainerId: Jovan}</li>
+        <li>Backend pronalazi Petrovog trenutnog trenera (Marka)</li>
+        <li>Backend zatvara sve aktivne planove od Marka (planEndDate = today)</li>
+        <li>Backend resetuje Petrov currentPlanId = null</li>
+        <li>Backend uklanja Petra iz Markovog clientIds[]</li>
+        <li>Backend dodaje Petra u Jovanov clientIds[]</li>
+        <li>Backend postavlja Petrov trainerId = Jovan</li>
+        <li>Jovan sada može da assign-uje nove planove Petru</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je prebačen na Jovana, svi podaci su očuvani, i Jovan može da assign-uje nove planove.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant API as Backend API
+    participant TrainersService as TrainersService
+    participant PlansService as PlansService
+    participant ClientsService as ClientsService
+    participant DB as MongoDB
+    participant OldTrainer as Old Trainer (Marko)
+    participant NewTrainer as New Trainer (Jovan)
+    participant Client as Client (Petar)
+
+    Note over Admin,Client: V3 FEATURE: TRAINER SWITCH (PLANNED)
+
+    Admin->>API: POST /api/admin/assign-client<br/>{clientId: Petar, trainerId: Jovan}
+    
+    API->>TrainersService: assignClientToTrainer(clientId, newTrainerId)
+    
+    TrainersService->>DB: Find ClientProfile by clientId
+    DB-->>TrainersService: ClientProfile with trainerId: Marko
+    
+    TrainersService->>TrainersService: oldTrainerId = client.trainerId
+    
+    alt oldTrainerId exists
+        TrainersService->>PlansService: Close all active plans<br/>for client from old trainer
+        
+        PlansService->>DB: Find all plans where:<br/>trainerId = oldTrainerId<br/>assignedClientIds includes clientId<br/>planEndDate >= today
+        
+        loop For each active plan
+            PlansService->>DB: Update WeeklyPlan:<br/>planEndDate = today<br/>(close plan immediately)
+        end
+        
+        PlansService->>ClientsService: Clear currentPlanId
+        ClientsService->>DB: Update ClientProfile:<br/>currentPlanId = null
+        
+        TrainersService->>DB: Update OldTrainerProfile:<br/>Remove clientId from clientIds[]
+        
+    end
+    
+    TrainersService->>DB: Update NewTrainerProfile:<br/>Add clientId to clientIds[]
+    
+    TrainersService->>DB: Update ClientProfile:<br/>trainerId = newTrainerId
+    
+    TrainersService-->>API: Client assigned successfully
+    API-->>Admin: Success response
+    
+    NewTrainer->>API: GET /api/trainers/clients<br/>(view clients)
+    API-->>NewTrainer: Client list includes Petar
+    
+    NewTrainer->>API: POST /api/plans/assign<br/>{clientIds: [Petar], ...}
+    API->>PlansService: assignPlanToClients(...)
+    PlansService->>DB: Add plan to Petar's planHistory
+    PlansService-->>API: Plan assigned
+    API-->>NewTrainer: Success
+    
+    Client->>API: GET /api/clients/profile
+    API-->>Client: Profile with trainerId: Jovan<br/>currentPlanId: null (ready for new plan)
+
+    Note over Admin,Client: Result: Client switched to new trainer,<br/>old plans closed, currentPlanId cleared,<br/>new trainer can assign plans
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Trainer Switch Handling omogućava bezbedno prebacivanje klijenta između trenera bez gubitka podataka. Ovo je kritično za data integrity.
+    </p>
+    <p>
+        <strong>Kako bi radio Trainer Switch (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>Close active plans:</strong> Svi aktivni planovi od starog trenera se zatvaraju (planEndDate = today)</li>
+        <li><strong>Clear currentPlanId:</strong> currentPlanId se resetuje na null da bi novi trener mogao da assign-uje planove</li>
+        <li><strong>Update trainer references:</strong> Klijent se uklanja iz starog trenerovog clientIds[] i dodaje u novog trenerovog clientIds[]</li>
+        <li><strong>Data preservation:</strong> Svi podaci (workout logs, check-ins, weigh-ins) ostaju očuvani</li>
+        <li><strong>New trainer assignment:</strong> Novi trener može da assign-uje nove planove klijentu</li>
+    </ul>
+    <p>
+        <strong>V3 Masterplan:</strong> Ovo je feature 3.7 u V3 Masterplan-u. Implementiraće se kada se završi V2.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

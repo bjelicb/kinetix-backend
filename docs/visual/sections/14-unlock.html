@@ -1,0 +1,365 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Weekly Unlock Mechanism (CLIENT-Initiated)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">14. Weekly Unlock Mechanism (CLIENT-Initiated)</p>
+            
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Weekly Unlock Mechanism (CLIENT-Initiated)</strong> pokazuje kako klijent direktno otključava narednu nedelju klikom na "Unlock Next Week" dugme.
+        <strong>VAŽNO:</strong> Nema potrebe za odobrenjem trenera - klijent otključava direktno.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Unlock Next Week</code> - Dugme koje klijent klikne da otključi narednu nedelju</li>
+        <li><code>canUnlockNextWeek()</code> - Provera da li klijent može da otključi (svi trenutni treningi završeni)</li>
+        <li><code>requestNextWeek()</code> - Funkcija koja postavlja currentPlanId na sledeći plan i naplaćuje balance</li>
+        <li><code>lastUnlockedDay</code> - Poslednji dan trenutnog plana (računa se na frontend-u)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je završio sve treninge za trenutnu nedelju. Želi da otključi narednu nedelju.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar otvara dashboard → vidi "Unlock Next Week" dugme</li>
+        <li>Petar klikne dugme → poziva se <code>GET /api/plans/can-unlock-next-week/:clientId</code></li>
+        <li>Backend proverava da li su svi trenutni treningi završeni → jesu</li>
+        <li>Backend vraća <code>{canUnlock: true}</code></li>
+        <li>Petar klikne "Unlock" → poziva se <code>POST /api/plans/request-next-week/:clientId</code></li>
+        <li>Backend pronalazi sledeći plan u planHistory (sorted by startDate)</li>
+        <li>Backend dodaje weeklyCost na balance (npr. 9€)</li>
+        <li>Backend postavlja <code>currentPlanId = nextPlan._id</code></li>
+        <li>Frontend invalidira providers i osvežava UI</li>
+        <li>Petar vidi nove otključane dane u kalendaru i ažurirani balance</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je otključio narednu nedelju, balance je naplaćen, i može da trenira.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[Client Views Dashboard/Calendar] --> B{Has currentPlanId?}
+    
+    B -->|No| C[Show: No Plan Assigned<br/>Waiting for trainer]
+    B -->|Yes| D{Check lastUnlockedDay}
+    
+    D --> E{Today > lastUnlockedDay?}
+    E -->|No| F[Unlock button HIDDEN<br/>Current week still active]
+    E -->|Yes| G[Call canUnlockNextWeek API]
+    
+    G --> H{Current plan workouts<br/>all completed?}
+    H -->|No| I[Unlock button HIDDEN<br/>Must complete current week first]
+    H -->|Yes| J[Show UNLOCK NEXT WEEK button]
+    
+    J --> K[Client clicks Unlock]
+    K --> L[POST /plans/request-next-week/:clientId]
+    
+    L --> M{Find next plan in planHistory<br/>after currentPlanId}
+    M -->|No next plan| N[Error: No next plan<br/>Trainer must assign]
+    M -->|Next plan found| O[Get plan.weeklyCost]
+    
+    O --> P[Add weeklyCost to balance<br/>monthlyBalance += cost]
+    P --> Q[Set currentPlanId = nextPlan._id]
+    Q --> R[Set nextWeekRequested = false]
+    
+    R --> S[Return success:<br/>currentPlanId updated]
+    S --> T[Mobile: Invalidate providers<br/>Refresh workouts, user, calendar]
+    T --> U[Calendar shows NEW unlocked days<br/>Balance card shows new balance<br/>Dashboard updates]
+    
+    N --> V[Show error to client:<br/>Contact trainer]
+    
+    C --> W[Wait for trainer to assign<br/>first plan]
+    F --> X[Continue current week]
+    I --> Y[Complete current workouts]
+    
+    style A fill:#00F0FF,stroke:#fff,stroke-width:2px
+    style J fill:#00FF00,stroke:#000,stroke-width:3px,color:#000
+    style K fill:#FFA500,stroke:#fff,stroke-width:2px
+    style Q fill:#00F0FF,stroke:#fff,stroke-width:2px
+    style U fill:#00FF00,stroke:#000,stroke-width:2px
+    style N fill:#FF6B6B,stroke:#000,stroke-width:2px
+    style I fill:#FF6B6B,stroke:#000,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Unlock mehanizam omogućava klijentima da kontrolišu kada otključavaju narednu nedelju. Klijent mora da završi trenutnu nedelju pre nego što može da otključi sledeću.
+    </p>
+    <p>
+        <strong>Kako radi unlock mehanizam:</strong>
+    </p>
+    <ul>
+        <li><strong>lastUnlockedDay check:</strong> Frontend računa poslednji dan trenutnog plana (last workout date)</li>
+        <li><strong>canUnlock check:</strong> Backend proverava da li su svi trenutni treningi završeni</li>
+        <li><strong>Unlock button:</strong> Prikazuje se samo ako je today > lastUnlockedDay i svi treningi su završeni</li>
+        <li><strong>requestNextWeek():</strong> Pronalazi sledeći plan u planHistory (sorted by startDate), postavlja currentPlanId, i naplaćuje balance</li>
+        <li><strong>Frontend refresh:</strong> Nakon unlock-a, frontend invalidira providers i osvežava UI</li>
+    </ul>
+    <p>
+        <strong>No trainer approval:</strong> Klijent otključava direktno, bez potrebe za odobrenjem trenera. Ovo omogućava fleksibilnost i kontrolu klijentu.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

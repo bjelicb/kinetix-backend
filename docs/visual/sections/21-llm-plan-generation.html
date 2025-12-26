@@ -1,0 +1,376 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - LLM Plan Generation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">21. LLM Plan Generation</p>
+            <span class="version-badge v4">âš¡ V4</span>
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>LLM Plan Generation (V4 - PLANIRANO)</strong> - AI-generisani planovi koristeći LLM (OpenAI/Anthropic).
+        Ovo je V4 feature (Phase 2) koji omogućava automatsko generisanje planova na osnovu ciljeva, nivoa i opreme.
+    </p>
+    <p>
+        <strong>Status:</strong> 🔵 PLANIRANO (V4 Masterplan - Phase 2, posle 6 meseci produkcije)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>POST /ai/generate-plan</code> - Endpoint za generisanje plana</li>
+        <li><code>LLM Integration</code> - OpenAI ili Anthropic API za generisanje planova</li>
+        <li><code>Goal-based generation</code> - Planovi se generišu na osnovu ciljeva klijenta</li>
+        <li><code>Equipment-aware</code> - Planovi uzimaju u obzir dostupnu opremu</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko želi da generiše plan za klijenta Petra koristeći AI.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Trener poziva <code>POST /ai/generate-plan</code> sa {clientId, goals, level, equipment}</li>
+        <li>Backend priprema prompt sa klijentovim podacima (goals, level, equipment, previous workouts)</li>
+        <li>Backend poziva LLM API (OpenAI/Anthropic) sa prompt-om</li>
+        <li>LLM generiše plan sa workout-ima, exercise-ima, sets, reps, RPE</li>
+        <li>Backend validira generisani plan (proverava da li su svi podaci validni)</li>
+        <li>Backend kreira WeeklyPlan dokument sa generisanim podacima</li>
+        <li>Trener pregleda plan i može da ga edit-uje pre assign-ovanja</li>
+        <li>Trener assign-uje plan klijentu</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Plan je generisan automatski pomoću AI-a, štedeći vreme treneru.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Trainer as Trainer Dashboard
+    participant API as Backend API
+    participant AIService as AIService
+    participant LLM as LLM API<br/>(OpenAI/Anthropic)
+    participant PlansService as PlansService
+    participant DB as MongoDB
+    participant Client as Client Profile
+
+    Note over Trainer,Client: V4 FEATURE: LLM PLAN GENERATION (PLANNED - Phase 2)
+
+    Trainer->>API: POST /ai/generate-plan<br/>{clientId, goals, level, equipment,<br/>previousWorkouts?}
+    
+    API->>AIService: generatePlan(clientId, params)
+    
+    AIService->>DB: Find ClientProfile by clientId
+    DB-->>AIService: ClientProfile with goals, level,<br/>previous workouts, stats
+    
+    AIService->>AIService: Build LLM prompt:<br/>- Client goals (weight loss, muscle gain, etc.)<br/>- Fitness level (beginner, intermediate, advanced)<br/>- Available equipment (gym, home, bodyweight)<br/>- Previous workout history<br/>- Current stats (weight, strength, etc.)
+    
+    AIService->>LLM: POST /v1/chat/completions<br/>{model: 'gpt-4', messages: [prompt]}
+    
+    LLM->>LLM: Generate plan based on prompt
+    LLM-->>AIService: Generated plan JSON:<br/>{workouts: [{exercises: [{name, sets, reps, RPE}]}]}
+    
+    AIService->>AIService: Validate generated plan:<br/>- Check all exercises exist in DB<br/>- Validate sets/reps/RPE ranges<br/>- Ensure plan is 7 days
+    
+    alt Plan is valid
+        AIService->>PlansService: createPlanFromAI(generatedPlan, trainerId)
+        PlansService->>DB: Create WeeklyPlan document<br/>(with AI-generated workouts)
+        PlansService-->>AIService: Plan created
+        AIService-->>API: Generated plan (ready for review)
+        API-->>Trainer: Plan generated successfully<br/>(can edit before assigning)
+        
+        Trainer->>API: PATCH /api/plans/:id<br/>{...edits} (optional)
+        API->>PlansService: updatePlan(planId, edits)
+        PlansService->>DB: Update plan with edits
+        
+        Trainer->>API: POST /api/plans/:id/assign<br/>{clientIds: [clientId]}
+        API->>PlansService: assignPlanToClients(...)
+        PlansService->>DB: Add plan to client's planHistory
+        PlansService-->>API: Plan assigned
+        API-->>Trainer: Success
+        
+    else Plan is invalid
+        AIService-->>API: Error: Invalid plan generated
+        API-->>Trainer: Error message<br/>"Please try again or create manually"
+    end
+
+    Note over Trainer,Client: Result: AI-generated plan created,<br/>trainer can review/edit,<br/>plan assigned to client
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> LLM Plan Generation omogućava automatsko generisanje planova pomoću AI-a, štedeći vreme treneru i omogućavajući personalizovane planove na osnovu ciljeva klijenta.
+    </p>
+    <p>
+        <strong>Kako bi radila LLM integracija (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>Prompt Building:</strong> Sistem priprema detaljan prompt sa klijentovim podacima (goals, level, equipment, previous workouts)</li>
+        <li><strong>LLM API Call:</strong> Poziva se LLM API (OpenAI GPT-4 ili Anthropic Claude) sa prompt-om</li>
+        <li><strong>Plan Generation:</strong> LLM generiše plan sa workout-ima, exercise-ima, sets, reps, RPE</li>
+        <li><strong>Validation:</strong> Sistem validira generisani plan (proverava da li su svi podaci validni)</li>
+        <li><strong>Plan Creation:</strong> Kreira se WeeklyPlan dokument sa generisanim podacima</li>
+        <li><strong>Review & Edit:</strong> Trener može da pregleda i edit-uje plan pre assign-ovanja</li>
+        <li><strong>Assignment:</strong> Plan se assign-uje klijentu kao normalan plan</li>
+    </ul>
+    <p>
+        <strong>V4 Masterplan:</strong> Ovo je feature 4.5 u V4 Masterplan-u (Phase 2 - posle 6 meseci produkcije). Implementiraće se kada se završi V3 i kada se prikupi dovoljno podataka za trening LLM-a.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

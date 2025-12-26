@@ -29,7 +29,29 @@ export class CheckInsController {
     @CurrentUser() user: JwtPayload,
     @Body() createCheckInDto: CreateCheckInDto,
   ) {
-    return this.checkInsService.createCheckIn(user.sub, createCheckInDto);
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[CheckInsController] POST /checkins - CREATE CHECK-IN REQUEST');
+    console.log('[CheckInsController] Timestamp:', new Date().toISOString());
+    console.log('[CheckInsController] Client ID (userId):', user.sub);
+    console.log('[CheckInsController] Request data:', {
+      checkinDate: createCheckInDto.checkinDate,
+      photoUrl: createCheckInDto.photoUrl ? 'PROVIDED' : 'NULL',
+      photoUrlLength: createCheckInDto.photoUrl?.length || 0,
+      gpsCoordinates: createCheckInDto.gpsCoordinates ? 'PROVIDED' : 'NULL',
+      thumbnailUrl: createCheckInDto.thumbnailUrl ? 'PROVIDED' : 'NULL',
+    });
+    console.log('[CheckInsController] ════════════════════════════════════════');
+    
+    const result = await this.checkInsService.createCheckIn(user.sub, createCheckInDto);
+    
+    console.log('[CheckInsController] ✅ CHECK-IN CREATED SUCCESSFULLY');
+    console.log('[CheckInsController] Check-in ID:', (result as any)._id || (result as any).id);
+    console.log('[CheckInsController] Check-in date:', (result as any).checkinDate);
+    console.log('[CheckInsController] Photo URL:', (result as any).photoUrl ? 'PROVIDED' : 'NULL');
+    console.log('[CheckInsController] Verification Status:', (result as any).verificationStatus);
+    console.log('[CheckInsController] ════════════════════════════════════════');
+    
+    return result;
   }
 
   @Get()

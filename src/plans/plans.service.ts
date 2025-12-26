@@ -43,6 +43,34 @@ export class PlansService {
     private gamificationService: GamificationService,
   ) {}
 
+  /**
+   * Helper method to normalize plan ID to string
+   * Handles: ObjectId, populated object with _id, string, null/undefined
+   */
+  private normalizePlanId(planId: any): string {
+    if (!planId) {
+      return '';
+    }
+    
+    // If it's an object with _id property (populated object)
+    if (typeof planId === 'object' && planId._id) {
+      return planId._id.toString();
+    }
+    
+    // If it's an ObjectId or has toString method
+    if (typeof planId === 'object' && typeof planId.toString === 'function') {
+      return planId.toString();
+    }
+    
+    // If it's already a string
+    if (typeof planId === 'string') {
+      return planId;
+    }
+    
+    // Fallback: convert to string
+    return String(planId);
+  }
+
   async createPlan(userId: string, dto: CreatePlanDto): Promise<WeeklyPlan> {
     let trainerProfileId: Types.ObjectId;
     
@@ -360,61 +388,305 @@ export class PlansService {
    * Returns true only if current week's workouts are ALL completed
    */
   async canUnlockNextWeek(clientId: string): Promise<boolean> {
+    AppLogger.logStart('CAN_UNLOCK_CHECK', { clientId });
+
     const client = await this.clientsService.getProfileById(clientId);
     
-    // Get active plan from planHistory using helper method
-    const activePlanEntry = this.clientsService.getActivePlanEntry(client);
-    
-    if (!activePlanEntry) {
-      // No active plan, can unlock (first week)
+    // If no currentPlanId, client can unlock first plan
+    if (!client.currentPlanId) {
+      AppLogger.logOperation('CAN_UNLOCK_CHECK_NO_CURRENT_PLAN', {
+        clientId,
+        canUnlock: true,
+        reason: 'No currentPlanId - can unlock first plan',
+      }, 'info');
+      
+      AppLogger.logComplete('CAN_UNLOCK_CHECK', {
+        clientId,
+        result: true,
+        reason: 'No currentPlanId',
+      });
+      
       return true;
     }
     
-    // Check if current week has ended
-    const now = DateUtils.normalizeToStartOfDay(new Date());
-    const weekEnd = DateUtils.normalizeToEndOfDay(new Date(activePlanEntry.planEndDate));
+    // Extract ID from currentPlanId (might be populated plan object or just ObjectId)
+    const currentPlanIdStr = (client.currentPlanId as any)?._id?.toString() || client.currentPlanId?.toString() || '';
     
-    if (now > weekEnd) {
-      // Week has ended, check if all workouts are completed
-      const planId = (activePlanEntry.planId as any)?._id?.toString() || activePlanEntry.planId.toString();
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_HAS_CURRENT_PLAN', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      currentPlanIdRaw: client.currentPlanId,
+      currentPlanIdType: typeof client.currentPlanId,
+    }, 'debug');
+    
+    // Get current unlocked plan entry from currentPlanId
+    const currentPlanEntry = this.clientsService.getActivePlanEntry(client);
+    
+    if (!currentPlanEntry) {
+      // currentPlanId exists but not found in planHistory (data inconsistency)
+      // Allow unlock to recover
+      AppLogger.logOperation('CAN_UNLOCK_CHECK_PLAN_ENTRY_NOT_FOUND', {
+        clientId,
+        currentPlanId: currentPlanIdStr,
+        canUnlock: true,
+        reason: 'currentPlanId exists but not in planHistory - data inconsistency, allow unlock to recover',
+      }, 'warn');
       
-      const workoutLogs = await this.workoutsService.getWorkoutLogsByClient(clientId);
-      
-      // Filter logs for this plan and week
-      const planStartDate = DateUtils.normalizeToStartOfDay(new Date(activePlanEntry.planStartDate));
-      const weekLogs = workoutLogs.filter(log => {
-        const logPlanId = (log.weeklyPlanId as any)?._id?.toString() || log.weeklyPlanId.toString();
-        const logDate = DateUtils.normalizeToStartOfDay(new Date(log.workoutDate));
-        
-        return logPlanId === planId &&
-               logDate >= planStartDate &&
-               logDate <= weekEnd;
+      AppLogger.logComplete('CAN_UNLOCK_CHECK', {
+        clientId,
+        result: true,
+        reason: 'Plan entry not found in history',
       });
       
-      // Get plan to check rest days
-      const plan = await this.planModel.findById(planId).exec();
-      if (!plan) {
-        return false;
-      }
-      
-      // Check if all non-rest-day workouts are completed
-      const allCompleted = weekLogs.every(log => {
-        // Find the workout day in plan
-        const workoutDay = (plan.workouts || []).find((w: any) => w.dayOfWeek === log.dayOfWeek);
-        
-        // Rest days don't need to be completed
-        if (workoutDay && workoutDay.isRestDay) {
-          return true;
-        }
-        
-        return log.isCompleted === true;
-      });
-      
-      return allCompleted;
+      return true;
     }
     
-    // Week hasn't ended yet, cannot unlock
-    return false;
+    // Get ALL workout logs for current plan
+    const allWorkoutLogs = await this.workoutsService.getWorkoutLogsByClient(clientId);
+    
+    // Log first few workout logs to see their structure
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_WORKOUT_LOGS_RAW', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      totalWorkoutLogs: allWorkoutLogs.length,
+      sampleLogs: allWorkoutLogs.slice(0, 3).map(log => ({
+        workoutDate: log.workoutDate,
+        dayOfWeek: log.dayOfWeek,
+        weeklyPlanId: log.weeklyPlanId,
+        weeklyPlanIdType: typeof log.weeklyPlanId,
+        weeklyPlanIdIsObject: typeof log.weeklyPlanId === 'object',
+        weeklyPlanId_id: (log.weeklyPlanId as any)?._id,
+        weeklyPlanId_idType: typeof (log.weeklyPlanId as any)?._id,
+        weeklyPlanId_idToString: (log.weeklyPlanId as any)?._id?.toString(),
+      })),
+    }, 'info');
+    
+    const currentPlanLogs = allWorkoutLogs.filter(log => {
+      // Handle both populated (object with _id) and non-populated (ObjectId) cases
+      let logPlanId: string;
+      const weeklyPlanId = log.weeklyPlanId as any;
+      
+      if (weeklyPlanId && typeof weeklyPlanId === 'object') {
+        // Populated case: { _id: ObjectId, name: string }
+        if (weeklyPlanId._id) {
+          logPlanId = weeklyPlanId._id.toString();
+        } else {
+          // Fallback: try to convert the object itself
+          logPlanId = String(weeklyPlanId);
+        }
+      } else if (weeklyPlanId) {
+        // Non-populated case: ObjectId or string
+        logPlanId = String(weeklyPlanId);
+      } else {
+        logPlanId = '';
+      }
+      
+      const matches = logPlanId === currentPlanIdStr;
+      
+      // Log first few comparisons for debugging
+      if (allWorkoutLogs.indexOf(log) < 3) {
+        AppLogger.logOperation('CAN_UNLOCK_CHECK_WORKOUT_LOG_COMPARISON', {
+          clientId,
+          workoutDate: log.workoutDate,
+          dayOfWeek: log.dayOfWeek,
+          logPlanId,
+          currentPlanIdStr,
+          matches,
+          weeklyPlanIdRaw: weeklyPlanId,
+          weeklyPlanIdType: typeof weeklyPlanId,
+        }, 'debug');
+      }
+      
+      return matches;
+    });
+    
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_WORKOUT_LOGS', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      totalWorkoutLogs: allWorkoutLogs.length,
+      currentPlanLogs: currentPlanLogs.length,
+    }, 'info');
+    
+    if (currentPlanLogs.length === 0) {
+      // No workout logs for current plan (shouldn't happen, but allow unlock)
+      AppLogger.logOperation('CAN_UNLOCK_CHECK_NO_WORKOUT_LOGS', {
+        clientId,
+        currentPlanId: currentPlanIdStr,
+        canUnlock: true,
+        reason: 'No workout logs for current plan - allow unlock',
+      }, 'warn');
+      
+      AppLogger.logComplete('CAN_UNLOCK_CHECK', {
+        clientId,
+        result: true,
+        reason: 'No workout logs',
+      });
+      
+      return true;
+    }
+    
+    // Get plan to check rest days
+    const plan = await this.planModel.findById(currentPlanIdStr).exec();
+    if (!plan) {
+      // Plan deleted, allow unlock
+      AppLogger.logOperation('CAN_UNLOCK_CHECK_PLAN_DELETED', {
+        clientId,
+        currentPlanId: currentPlanIdStr,
+        canUnlock: true,
+        reason: 'Plan deleted - allow unlock',
+      }, 'warn');
+      
+      AppLogger.logComplete('CAN_UNLOCK_CHECK', {
+        clientId,
+        result: true,
+        reason: 'Plan deleted',
+      });
+      
+      return true;
+    }
+
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_PLAN_LOADED', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      planName: (plan as any).name,
+      workoutsCount: (plan.workouts || []).length,
+      workouts: (plan.workouts || []).map((w: any) => ({
+        dayOfWeek: w.dayOfWeek,
+        name: w.name,
+        isRestDay: w.isRestDay,
+      })),
+    }, 'info');
+    
+    // Find the last workout log date from current plan
+    const lastWorkoutDate = currentPlanLogs.reduce((latest, log) => {
+      const logDate = new Date(log.workoutDate);
+      return logDate > latest ? logDate : latest;
+    }, new Date(0));
+
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_WORKOUT_LOGS_DETAILS', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      workoutLogs: currentPlanLogs.map(log => ({
+        workoutDate: log.workoutDate,
+        dayOfWeek: log.dayOfWeek,
+        workoutName: (log as any).workoutName || 'Unknown',
+        isCompleted: log.isCompleted,
+        isMissed: log.isMissed,
+      })),
+    }, 'info');
+    
+    const today = DateUtils.normalizeToStartOfDay(new Date());
+    const lastWorkoutDateNormalized = DateUtils.normalizeToStartOfDay(lastWorkoutDate);
+    
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_DATE_COMPARISON', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      today: today.toISOString(),
+      lastWorkoutDate: lastWorkoutDateNormalized.toISOString(),
+      lastWorkoutDatePassed: today > lastWorkoutDateNormalized,
+      daysDifference: Math.floor((today.getTime() - lastWorkoutDateNormalized.getTime()) / (1000 * 60 * 60 * 24)),
+    }, 'info');
+    
+    // Check if last workout day has passed
+    if (today <= lastWorkoutDateNormalized) {
+      // Last workout day hasn't passed yet, cannot unlock
+      AppLogger.logOperation('CAN_UNLOCK_CHECK_RESULT', {
+        clientId,
+        currentPlanId: currentPlanIdStr,
+        canUnlock: false,
+        reason: 'Last workout day has not passed yet',
+        lastWorkoutDate: lastWorkoutDateNormalized.toISOString(),
+        today: today.toISOString(),
+      }, 'info');
+      
+      AppLogger.logComplete('CAN_UNLOCK_CHECK', {
+        clientId,
+        result: false,
+        reason: 'Current week still active',
+      });
+      
+      return false;
+    }
+    
+    // Last workout day has passed, check if all non-rest-day workouts are completed
+    const incompleteWorkouts = currentPlanLogs.filter(log => {
+      // Find the workout day in plan - normalize both to numbers for comparison
+      const logDayOfWeek = typeof log.dayOfWeek === 'number' ? log.dayOfWeek : Number(log.dayOfWeek);
+      const workoutDay = (plan.workouts || []).find((w: any) => {
+        const wDayOfWeek = typeof w.dayOfWeek === 'number' ? w.dayOfWeek : Number(w.dayOfWeek);
+        return wDayOfWeek === logDayOfWeek;
+      });
+      
+      // Rest days don't need to be completed
+      if (workoutDay && workoutDay.isRestDay) {
+        AppLogger.logOperation('CAN_UNLOCK_CHECK_WORKOUT_DETAIL', {
+          clientId,
+          workoutDate: log.workoutDate,
+          dayOfWeek: log.dayOfWeek,
+          workoutName: (log as any).workoutName || 'Unknown',
+          isCompleted: log.isCompleted,
+          isRestDay: true,
+          isIncomplete: false,
+          workoutDayFound: true,
+          reason: 'Rest day - skipped',
+        }, 'debug');
+        return false; // Not incomplete (rest day)
+      }
+      
+      // Check if workout is completed (must be exactly true)
+      const isCompleted = log.isCompleted === true;
+      const isIncomplete = !isCompleted;
+      
+      // Log each workout for debugging
+      AppLogger.logOperation('CAN_UNLOCK_CHECK_WORKOUT_DETAIL', {
+        clientId,
+        workoutDate: log.workoutDate,
+        dayOfWeek: log.dayOfWeek,
+        workoutName: (log as any).workoutName || 'Unknown',
+        isCompleted: log.isCompleted,
+        isCompletedType: typeof log.isCompleted,
+        isCompletedStrict: isCompleted,
+        isRestDay: workoutDay?.isRestDay || false,
+        isIncomplete,
+        workoutDayFound: !!workoutDay,
+        workoutDayDayOfWeek: workoutDay?.dayOfWeek,
+      }, 'info');
+      
+      return isIncomplete;
+    });
+    
+    const allCompleted = incompleteWorkouts.length === 0;
+    
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_COMPLETION_STATUS', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      totalWorkouts: currentPlanLogs.length,
+      incompleteWorkouts: incompleteWorkouts.length,
+      allCompleted,
+      incompleteWorkoutDates: incompleteWorkouts.map(log => ({
+        date: log.workoutDate,
+        dayOfWeek: log.dayOfWeek,
+        isCompleted: log.isCompleted,
+      })),
+    }, 'info');
+    
+    AppLogger.logOperation('CAN_UNLOCK_CHECK_RESULT', {
+      clientId,
+      currentPlanId: currentPlanIdStr,
+      canUnlock: allCompleted,
+      reason: allCompleted 
+        ? 'All workouts completed and last workout day has passed' 
+        : `Incomplete workouts: ${incompleteWorkouts.length}`,
+      incompleteWorkoutsCount: incompleteWorkouts.length,
+    }, 'info');
+    
+    AppLogger.logComplete('CAN_UNLOCK_CHECK', {
+      clientId,
+      result: allCompleted,
+      reason: allCompleted ? 'All workouts completed' : `${incompleteWorkouts.length} incomplete workouts`,
+    });
+    
+    return allCompleted;
   }
 
   /**
@@ -445,6 +717,14 @@ export class PlansService {
     userRole: string,
     dto: AssignPlanDto,
   ): Promise<any> {
+    AppLogger.logStart('PLAN_ASSIGN', {
+      planId,
+      userId,
+      userRole,
+      clientIds: dto.clientIds,
+      startDate: dto.startDate,
+    });
+
     // Validate that clients can unlock next week (if they have an active plan)
     // BUT: Allow assign if it's the same plan (re-assign)
     for (const clientId of dto.clientIds) {
@@ -485,9 +765,15 @@ export class PlansService {
       .exec();
 
     if (!plan) {
-      console.log(`[PlansService] Plan not found: ${planId}`);
+      AppLogger.logError('PLAN_ASSIGN', { planId }, new NotFoundException('Plan not found'));
       throw new NotFoundException('Plan not found');
     }
+
+    AppLogger.logOperation('PLAN_ASSIGN_PLAN_FOUND', {
+      planId,
+      planName: (plan as any).name,
+      weeklyCost: (plan as any).weeklyCost || 0,
+    }, 'info');
 
     const planTrainerId = (plan.trainerId as any)?._id || plan.trainerId;
     
@@ -497,14 +783,21 @@ export class PlansService {
       const trainerProfile = await this.trainersService.getProfile(userId);
       const trainerProfileId = (trainerProfile as any)._id;
       
-      console.log(`[PlansService] Plan trainerId: ${planTrainerId}, Current user trainerProfileId: ${trainerProfileId}`);
+      AppLogger.logOperation('PLAN_ASSIGN_OWNERSHIP_CHECK', {
+        planId,
+        planTrainerId: planTrainerId.toString(),
+        userTrainerProfileId: trainerProfileId.toString(),
+      }, 'debug');
       
       if (planTrainerId.toString() !== trainerProfileId.toString()) {
-        console.log(`[PlansService] Forbidden: Plan trainerId doesn't match current user`);
+        AppLogger.logError('PLAN_ASSIGN', { planId, userId }, new ForbiddenException('You can only assign your own plans'));
         throw new ForbiddenException('You can only assign your own plans');
       }
     } else {
-      console.log(`[PlansService] User is ADMIN, skipping ownership check`);
+      AppLogger.logOperation('PLAN_ASSIGN_ADMIN_SKIP_OWNERSHIP', {
+        planId,
+        userId,
+      }, 'debug');
     }
 
     // Parse startDate as UTC (append T00:00:00.000Z if date-only string to prevent timezone conversion)
@@ -512,6 +805,12 @@ export class PlansService {
     const startDate = DateUtils.normalizeToStartOfDay(new Date(dateString));
     const endDate = DateUtils.addDays(startDate, 7); // 7 days cycle
     const normalizedEndDate = DateUtils.normalizeToEndOfDay(endDate);
+
+    AppLogger.logOperation('PLAN_ASSIGN_DATES_CALCULATED', {
+      planId,
+      startDate: startDate.toISOString(),
+      endDate: normalizedEndDate.toISOString(),
+    }, 'debug');
 
     // Validate start date
     PlanValidators.validateStartDate(startDate, planId);
@@ -545,10 +844,16 @@ export class PlansService {
           clientProfileIds.push(newClientProfile._id);
         }
       } catch (error) {
-        console.error(`[PlansService] Error processing clientId ${clientId}:`, error);
+        AppLogger.logError('PLAN_ASSIGN_CLIENT_RESOLVE', { planId, clientId }, error as Error);
         throw error;
       }
     }
+
+    AppLogger.logOperation('PLAN_ASSIGN_CLIENTS_RESOLVED', {
+      planId,
+      totalClients: clientProfileIds.length,
+      clientProfileIds: clientProfileIds.map(id => id.toString()),
+    }, 'info');
     
     // Separate clients who already have this plan from new clients
     const existingClients: Types.ObjectId[] = [];
@@ -562,6 +867,12 @@ export class PlansService {
         newClients.push(clientProfileId);
       }
     }
+
+    AppLogger.logOperation('PLAN_ASSIGN_CLIENTS_SEPARATED', {
+      planId,
+      existingClients: existingClients.length,
+      newClients: newClients.length,
+    }, 'info');
     
     // Update only new clients (don't touch existing clients' dates)
     for (const clientProfileId of newClients) {
@@ -630,30 +941,50 @@ export class PlansService {
           trainerId: finalTrainerId,
         };
         
+        // Get client before update to check currentPlanId
+        const clientBeforeUpdate = await this.clientsService.getProfileById(clientProfileId);
+        const currentPlanIdBefore = this.normalizePlanId(clientBeforeUpdate.currentPlanId);
+        
+        AppLogger.logOperation('PLAN_ASSIGN_BEFORE_UPDATE', {
+          planId,
+          clientProfileId: clientProfileId.toString(),
+          currentPlanIdBefore,
+          willSetCurrentPlanId: false, // We NEVER set currentPlanId during assign
+        }, 'info');
+
         await this.clientModel.findByIdAndUpdate(clientProfileId, {
           $push: { planHistory: historyEntry },
           $set: {
             trainerId: finalTrainerId,
+            // NOTE: currentPlanId is NOT set here! Plan must be unlocked via requestNextWeek()
           },
         }).exec();
+
+        // Verify currentPlanId was NOT changed
+        const clientAfterUpdate = await this.clientsService.getProfileById(clientProfileId);
+        const currentPlanIdAfter = this.normalizePlanId(clientAfterUpdate.currentPlanId);
         
-        // Add plan cost to client's running tab balance
-        const planCost = (plan as any).weeklyCost || 0;
-        if (planCost > 0) {
-          try {
-            await this.gamificationService.addPenaltyToBalance(
-              clientProfileId,
-              planCost,
-              'Weekly plan cost',
-              new Types.ObjectId(planId),
-            );
-          } catch (error) {
-            console.error(`[PlansService] Error adding plan cost to balance for client ${clientProfileId}:`, error);
-            // Don't throw - plan assignment should succeed even if balance update fails
-          }
-        }
+        AppLogger.logOperation('PLAN_ASSIGN_PLANHISTORY_UPDATED', {
+          planId,
+          clientProfileId: clientProfileId.toString(),
+          planStartDate: startDate.toISOString(),
+          planEndDate: normalizedEndDate.toISOString(),
+          currentPlanIdBefore,
+          currentPlanIdAfter,
+          currentPlanIdUnchanged: currentPlanIdBefore === currentPlanIdAfter,
+        }, 'info');
+        
+        // NOTE: Balance is NOT charged here!
+        // Balance is charged when client UNLOCKS the plan via requestNextWeek()
+        // This allows admin to assign multiple future plans without charging client
+        AppLogger.logOperation('PLAN_ASSIGN_BALANCE_NOT_CHARGED', {
+          planId,
+          clientProfileId: clientProfileId.toString(),
+          weeklyCost: (plan as any).weeklyCost || 0,
+          reason: 'Balance charged on unlock via requestNextWeek()',
+        }, 'info');
       } catch (error) {
-        console.error(`[PlansService] Error updating client profile ${clientProfileId}:`, error);
+        AppLogger.logError('PLAN_ASSIGN_CLIENT_UPDATE', { planId, clientProfileId: clientProfileId.toString() }, error as Error);
         throw error;
       }
     }
@@ -672,12 +1003,24 @@ export class PlansService {
     }
     
     // Only generate logs for new clients (not existing ones)
+    AppLogger.logOperation('PLAN_ASSIGN_GENERATING_WORKOUT_LOGS', {
+      planId,
+      newClientsCount: newClients.length,
+      newClientIds: newClients.map(id => id.toString()),
+    }, 'info');
+
     for (const clientProfileId of newClients) {
       try {
         const client = await this.clientsService.getProfileById(clientProfileId);
         await this.workoutsService.generateWeeklyLogs(client, planForLogs as any, startDate);
+        
+        AppLogger.logOperation('PLAN_ASSIGN_WORKOUT_LOGS_GENERATED', {
+          planId,
+          clientProfileId: clientProfileId.toString(),
+          startDate: startDate.toISOString(),
+        }, 'info');
       } catch (error) {
-        console.error(`[PlansService] ❌ Error generating logs for client ${clientProfileId}:`, error);
+        AppLogger.logError('PLAN_ASSIGN_WORKOUT_LOGS_GENERATION', { planId, clientProfileId: clientProfileId.toString() }, error as Error);
         throw error;
       }
     }
@@ -689,6 +1032,16 @@ export class PlansService {
       startDate,
       endDate: normalizedEndDate,
     };
+
+    AppLogger.logComplete('PLAN_ASSIGN', {
+      planId,
+      assignedClients: clientProfileIds.length,
+      newClients: newClients.length,
+      existingClients: existingClients.length,
+      startDate: startDate.toISOString(),
+      endDate: normalizedEndDate.toISOString(),
+    });
+
     return response;
   }
 
@@ -776,16 +1129,136 @@ export class PlansService {
         clientProfileId,
       }, 'debug');
 
+      // Get client to check if this plan is currently active
+      const client = await this.clientsService.getProfileById(clientProfileId);
+      const currentPlanIdStr = this.normalizePlanId(client.currentPlanId);
+      const planIdStr = new Types.ObjectId(planId).toString();
+      
+      // Check if currentPlanId matches the plan being cancelled
+      // Use both string comparison and ObjectId comparison for robustness
+      let isCurrentPlan = false;
+      if (currentPlanIdStr) {
+        try {
+          // Try string comparison first
+          isCurrentPlan = currentPlanIdStr === planIdStr;
+          
+          // If string comparison fails, try ObjectId comparison
+          if (!isCurrentPlan && client.currentPlanId) {
+            try {
+              const currentPlanIdObj = new Types.ObjectId(client.currentPlanId);
+              const planIdObj = new Types.ObjectId(planId);
+              isCurrentPlan = currentPlanIdObj.equals(planIdObj);
+            } catch (e) {
+              // If ObjectId conversion fails, fall back to string comparison
+              isCurrentPlan = currentPlanIdStr === planIdStr;
+            }
+          }
+        } catch (e) {
+          // Fall back to simple string comparison
+          isCurrentPlan = currentPlanIdStr === planIdStr;
+        }
+      }
+      
+      AppLogger.logOperation('PLAN_CANCEL_CHECK_CURRENT_PLAN', {
+        planId,
+        clientProfileId,
+        currentPlanId: currentPlanIdStr,
+        currentPlanIdRaw: client.currentPlanId,
+        planIdStr,
+        isCurrentPlan,
+        currentPlanIdType: typeof client.currentPlanId,
+        planIdType: typeof planId,
+      }, 'info');
+
+      // Build update object
+      const updateObj: any = {
+        $pull: { planHistory: { planId: new Types.ObjectId(planId) } },
+      };
+
+      // IMPORTANT: Always clear currentPlanId if it matches the plan being cancelled
+      // This ensures that when a plan is unassigned, currentPlanId is properly cleared
+      if (isCurrentPlan) {
+        updateObj.$set = { currentPlanId: null };
+        AppLogger.logOperation('PLAN_CANCEL_CLEARING_CURRENT_PLAN', {
+          planId,
+          clientProfileId,
+          currentPlanIdBefore: currentPlanIdStr,
+          reason: 'Plan matches currentPlanId - clearing currentPlanId',
+        }, 'info');
+      } else {
+        // Also check if plan is in planHistory and will be removed
+        // If currentPlanId points to a plan that's being removed, clear it
+        const planInHistory = client.planHistory?.some(entry => {
+          const entryPlanId = this.normalizePlanId(entry.planId);
+          return entryPlanId === planIdStr;
+        });
+        
+        if (planInHistory && currentPlanIdStr === planIdStr) {
+          // Plan is in history and matches currentPlanId - clear it
+          updateObj.$set = { currentPlanId: null };
+          AppLogger.logOperation('PLAN_CANCEL_CLEARING_CURRENT_PLAN', {
+            planId,
+            clientProfileId,
+            currentPlanIdBefore: currentPlanIdStr,
+            reason: 'Plan is in history and matches currentPlanId - clearing currentPlanId',
+          }, 'info');
+        } else {
+          AppLogger.logOperation('PLAN_CANCEL_NOT_CURRENT_PLAN', {
+            planId,
+            clientProfileId,
+            currentPlanId: currentPlanIdStr,
+            planInHistory,
+            reason: 'Plan does not match currentPlanId - currentPlanId will not be cleared',
+          }, 'debug');
+        }
+      }
+
       await this.clientModel.updateOne(
         { _id: new Types.ObjectId(clientProfileId) },
-        {
-          $pull: { planHistory: { planId: new Types.ObjectId(planId) } },
-        }
+        updateObj
       ).exec();
+
+      // Verify that currentPlanId was cleared if it matched
+      const verifyClient = await this.clientsService.getProfileById(clientProfileId);
+      const verifyCurrentPlanId = this.normalizePlanId(verifyClient.currentPlanId);
+      const verifyPlanInHistory = verifyClient.planHistory?.some(entry => {
+        const entryPlanId = this.normalizePlanId(entry.planId);
+        return entryPlanId === planIdStr;
+      });
+      
+      AppLogger.logOperation('PLAN_CANCEL_VERIFY', {
+        planId,
+        clientProfileId,
+        currentPlanIdAfter: verifyCurrentPlanId,
+        planInHistoryAfter: verifyPlanInHistory,
+        wasCurrentPlanCleared: isCurrentPlan && (!verifyCurrentPlanId || verifyCurrentPlanId === ''),
+        planWasRemovedFromHistory: !verifyPlanInHistory,
+      }, 'info');
+      
+      // If currentPlanId still points to the cancelled plan, force clear it
+      if (verifyCurrentPlanId === planIdStr) {
+        AppLogger.logWarning('PLAN_CANCEL_CURRENT_PLAN_STILL_SET', {
+          planId,
+          clientProfileId,
+          currentPlanIdAfter: verifyCurrentPlanId,
+          reason: 'currentPlanId still points to cancelled plan - forcing clear',
+        });
+        
+        await this.clientModel.updateOne(
+          { _id: new Types.ObjectId(clientProfileId) },
+          { $set: { currentPlanId: null } }
+        ).exec();
+        
+        AppLogger.logOperation('PLAN_CANCEL_FORCE_CLEARED_CURRENT_PLAN', {
+          planId,
+          clientProfileId,
+        }, 'warn');
+      }
 
       AppLogger.logOperation('PLAN_CANCEL_CLIENT_UPDATED', {
         planId,
         clientId,
+        currentPlanIdCleared: isCurrentPlan,
       }, 'debug');
 
       // Remove from plan's assignedClientIds
@@ -820,23 +1293,32 @@ export class PlansService {
   /**
    * Request next week - Client initiates request for next week's plan
    */
-  async requestNextWeek(clientId: string): Promise<void> {
+  async requestNextWeek(clientId: string): Promise<{ currentPlanId: string; balance: number; monthlyBalance: number }> {
     AppLogger.logStart('NEXT_WEEK_REQUEST', {
       clientId,
     });
 
     try {
-      // Validate that client can unlock next week
+      // 1. Get client profile
+      const client = await this.clientsService.getProfileById(clientId);
+      
+      // 2. Validate that client can unlock next week
+      // Extract currentPlanId string (handle populated object)
+      const currentPlanIdForLog = (client.currentPlanId as any)?._id?.toString() || client.currentPlanId?.toString() || null;
       AppLogger.logOperation('NEXT_WEEK_REQUEST_VALIDATE', {
         clientId,
-      }, 'debug');
+        currentPlanId: currentPlanIdForLog,
+        currentPlanIdRaw: client.currentPlanId,
+        currentPlanIdType: typeof client.currentPlanId,
+        planHistoryLength: client.planHistory?.length || 0,
+      }, 'info');
 
       const canUnlock = await this.canUnlockNextWeek(clientId);
 
       if (!canUnlock) {
         AppLogger.logWarning('NEXT_WEEK_REQUEST_INVALID', {
           clientId,
-          reason: 'Current week not completed or no active plan',
+          reason: 'Current week not completed',
         });
         throw new BadRequestException(
           'Cannot request next week. Current week must be completed first.'
@@ -847,22 +1329,287 @@ export class PlansService {
         clientId,
       }, 'debug');
 
-      // Set request flag
+      // 3. Find next plan in planHistory (sorted by startDate)
+      if (!client.planHistory || client.planHistory.length === 0) {
+        throw new BadRequestException('No plans assigned. Please contact your trainer.');
+      }
+
+      const sortedPlans = [...client.planHistory].sort((a, b) => 
+        new Date(a.planStartDate).getTime() - new Date(b.planStartDate).getTime()
+      );
+
+      let nextPlan;
+      if (!client.currentPlanId) {
+        // First unlock - take first plan that is not completed yet (planEndDate >= today)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const futurePlan = sortedPlans.find(entry => {
+          const planEndDate = new Date(entry.planEndDate);
+          planEndDate.setHours(23, 59, 59, 999);
+          return planEndDate >= today;
+        });
+        
+        if (!futurePlan) {
+          throw new BadRequestException('No future plan available. Your trainer has not assigned a future plan yet.');
+        }
+        
+        nextPlan = futurePlan;
+        
+        AppLogger.logOperation('NEXT_WEEK_REQUEST_FIRST_UNLOCK', {
+          clientId,
+          nextPlanId: nextPlan.planId.toString(),
+          planStartDate: nextPlan.planStartDate,
+          planEndDate: nextPlan.planEndDate,
+          reason: 'First plan that is not completed yet',
+        }, 'info');
+      } else {
+        // Find current plan and get next one
+        // Normalize currentPlanId to string (handle populated object, ObjectId, string)
+        const currentPlanIdStr = this.normalizePlanId(client.currentPlanId);
+        
+        AppLogger.logOperation('NEXT_WEEK_REQUEST_FINDING_CURRENT_PLAN', {
+          clientId,
+          currentPlanIdRaw: client.currentPlanId,
+          currentPlanIdStr,
+          currentPlanIdType: typeof client.currentPlanId,
+          planHistoryLength: sortedPlans.length,
+          planHistoryEntries: sortedPlans.map((p, idx) => {
+            const normalizedPlanId = this.normalizePlanId(p.planId);
+            return {
+              index: idx,
+              planIdRaw: p.planId,
+              planIdNormalized: normalizedPlanId,
+              planIdType: typeof p.planId,
+              planIdIsObject: typeof p.planId === 'object',
+              planId_id: (p.planId as any)?._id?.toString(),
+              planStartDate: p.planStartDate,
+              matches: normalizedPlanId === currentPlanIdStr,
+            };
+          }),
+        }, 'info');
+        
+        const currentIndex = sortedPlans.findIndex((p) => {
+          // Normalize planId from planHistory entry
+          const planIdStr = this.normalizePlanId(p.planId);
+          const matches = planIdStr === currentPlanIdStr;
+          
+          AppLogger.logOperation('NEXT_WEEK_REQUEST_PLAN_COMPARISON', {
+            clientId,
+            planIdStr,
+            currentPlanIdStr,
+            matches,
+            planStartDate: p.planStartDate,
+          }, 'debug');
+          
+          return matches;
+        });
+
+        if (currentIndex === -1) {
+          // Data inconsistency: currentPlanId exists but not in planHistory
+          // Try to recover by adding it to planHistory
+          AppLogger.logWarning('NEXT_WEEK_REQUEST_CURRENT_PLAN_NOT_FOUND', {
+            clientId,
+            currentPlanIdStr,
+            planHistoryEntries: sortedPlans.map(p => ({
+              planId: this.normalizePlanId(p.planId),
+              planIdType: typeof p.planId,
+              planId_id: (p.planId as any)?._id?.toString(),
+            })),
+            attemptingRecovery: true,
+          });
+          
+          // Try to get plan details to add to history
+          try {
+            const currentPlan = await this.planModel.findById(currentPlanIdStr).exec();
+            if (currentPlan) {
+              // Find the most recent plan entry to get dates
+              const mostRecentEntry = sortedPlans[sortedPlans.length - 1];
+              const recoveryEntry = {
+                planId: new Types.ObjectId(currentPlanIdStr),
+                planStartDate: mostRecentEntry?.planEndDate ? new Date(new Date(mostRecentEntry.planEndDate).getTime() + 1) : new Date(),
+                planEndDate: new Date(new Date(mostRecentEntry?.planEndDate || new Date()).getTime() + 7 * 24 * 60 * 60 * 1000),
+                assignedAt: new Date(),
+                trainerId: client.trainerId || mostRecentEntry?.trainerId,
+              };
+              
+              await this.clientModel.findByIdAndUpdate(clientId, {
+                $push: { planHistory: recoveryEntry },
+              }).exec();
+              
+              AppLogger.logOperation('NEXT_WEEK_REQUEST_DATA_RECOVERY', {
+                clientId,
+                currentPlanIdStr,
+                recoveryEntry,
+              }, 'warn');
+              
+              // Re-fetch client to get updated planHistory
+              const updatedClient = await this.clientsService.getProfileById(clientId);
+              const updatedSortedPlans = [...updatedClient.planHistory].sort((a, b) => 
+                new Date(a.planStartDate).getTime() - new Date(b.planStartDate).getTime()
+              );
+              
+              // Try to find current plan again
+              const recoveredIndex = updatedSortedPlans.findIndex((p) => {
+                const planIdStr = this.normalizePlanId(p.planId);
+                return planIdStr === currentPlanIdStr;
+              });
+              
+              if (recoveredIndex === -1) {
+                AppLogger.logError('NEXT_WEEK_REQUEST_RECOVERY_FAILED', {
+                  clientId,
+                  currentPlanIdStr,
+                }, new Error('Data recovery failed - still cannot find current plan'));
+                throw new BadRequestException('Current plan not found in history. Data recovery failed.');
+              }
+              
+              // Use recovered index
+              nextPlan = updatedSortedPlans[recoveredIndex + 1];
+              
+              if (!nextPlan) {
+                throw new BadRequestException('No next plan available. Your trainer has not assigned the next week yet.');
+              }
+              
+              AppLogger.logOperation('NEXT_WEEK_REQUEST_RECOVERY_SUCCESS', {
+                clientId,
+                currentPlanIdStr,
+                nextPlanId: this.normalizePlanId(nextPlan.planId),
+              }, 'info');
+            } else {
+              throw new BadRequestException('Current plan not found in database. Data inconsistency.');
+            }
+          } catch (recoveryError) {
+            AppLogger.logError('NEXT_WEEK_REQUEST_RECOVERY_ERROR', {
+              clientId,
+              currentPlanIdStr,
+            }, recoveryError as Error);
+            throw new BadRequestException('Current plan not found in history. Data inconsistency.');
+          }
+        } else {
+          // Current plan found in history - get next plan
+          nextPlan = sortedPlans[currentIndex + 1];
+          
+          if (!nextPlan) {
+            throw new BadRequestException('No next plan available. Your trainer has not assigned the next week yet.');
+          }
+
+          AppLogger.logOperation('NEXT_WEEK_REQUEST_NEXT_PLAN_FOUND', {
+            clientId,
+            currentPlanId: currentPlanIdStr,
+            nextPlanId: this.normalizePlanId(nextPlan.planId),
+          }, 'info');
+        }
+      }
+
+      // 4. Get plan details for weeklyCost
+      // Normalize nextPlan.planId to string for findById
+      const nextPlanIdStr = this.normalizePlanId(nextPlan.planId);
+      const plan = await this.planModel.findById(nextPlanIdStr).exec();
+      if (!plan) {
+        throw new NotFoundException('Plan not found. It may have been deleted.');
+      }
+
+      const weeklyCost = (plan as any).weeklyCost || 0;
+
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_PLAN_DETAILS', {
+        clientId,
+        planId: nextPlan.planId.toString(),
+        planName: plan.name,
+        weeklyCost,
+      }, 'info');
+
+      // Get current balance before charging
+      const oldBalance = client.balance || 0;
+      const oldMonthlyBalance = client.monthlyBalance || 0;
+      const oldCurrentPlanId = client.currentPlanId?.toString() || null;
+
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_BALANCE_BEFORE', {
+        clientId,
+        oldBalance,
+        oldMonthlyBalance,
+        weeklyCost,
+        willCharge: weeklyCost > 0,
+      }, 'info');
+
+      // 5. Charge balance (if weeklyCost > 0)
+      if (weeklyCost > 0) {
+        // Normalize nextPlan.planId to ObjectId for addPenaltyToBalance
+        const nextPlanIdForPenalty = new Types.ObjectId(this.normalizePlanId(nextPlan.planId));
+        await this.gamificationService.addPenaltyToBalance(
+          new Types.ObjectId(clientId),
+          weeklyCost,
+          'Weekly plan cost - Unlocked next week',
+          nextPlanIdForPenalty,
+        );
+
+        // Get updated balance after charging
+        const updatedClient = await this.clientsService.getProfileById(clientId);
+        const newBalance = updatedClient.balance || 0;
+        const newMonthlyBalance = updatedClient.monthlyBalance || 0;
+
+        AppLogger.logOperation('NEXT_WEEK_REQUEST_BALANCE_CHARGED', {
+          clientId,
+          planId: this.normalizePlanId(nextPlan.planId),
+          weeklyCost,
+          oldBalance,
+          newBalance,
+          oldMonthlyBalance,
+          newMonthlyBalance,
+          balanceIncrease: newBalance - oldBalance,
+        }, 'info');
+      } else {
+        AppLogger.logOperation('NEXT_WEEK_REQUEST_BALANCE_SKIPPED', {
+          clientId,
+          planId: this.normalizePlanId(nextPlan.planId),
+          reason: 'weeklyCost is 0',
+        }, 'info');
+      }
+
+      // 6. Set currentPlanId (unlock the plan)
       await this.clientModel.findByIdAndUpdate(clientId, {
         $set: {
-          nextWeekRequested: true,
-          nextWeekRequestDate: new Date(),
+          currentPlanId: nextPlan.planId,
+          nextWeekRequested: false, // Reset flag
+          nextWeekRequestDate: null,
         }
       }).exec();
 
-      AppLogger.logOperation('NEXT_WEEK_REQUEST_SAVED', {
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_CURRENT_PLAN_UPDATED', {
         clientId,
-        requestDate: new Date().toISOString(),
+        oldCurrentPlanId,
+        newCurrentPlanId: nextPlan.planId.toString(),
+        planName: plan.name,
+      }, 'info');
+
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_UNLOCKED', {
+        clientId,
+        unlockedPlanId: nextPlan.planId.toString(),
+        planName: plan.name,
+      }, 'info');
+
+      // 7. Get final client state to return
+      const finalClient = await this.clientsService.getProfileById(clientId);
+      const finalBalance = finalClient.balance || 0;
+      const finalMonthlyBalance = finalClient.monthlyBalance || 0;
+      const finalCurrentPlanId = finalClient.currentPlanId?.toString() || '';
+
+      AppLogger.logOperation('NEXT_WEEK_REQUEST_RESPONSE_DATA', {
+        clientId,
+        currentPlanId: finalCurrentPlanId,
+        balance: finalBalance,
+        monthlyBalance: finalMonthlyBalance,
       }, 'info');
 
       AppLogger.logComplete('NEXT_WEEK_REQUEST', {
         clientId,
+        unlockedPlanId: nextPlan.planId.toString(),
       });
+
+      return {
+        currentPlanId: finalCurrentPlanId,
+        balance: finalBalance,
+        monthlyBalance: finalMonthlyBalance,
+      };
     } catch (error) {
       AppLogger.logError('NEXT_WEEK_REQUEST', { clientId }, error);
       throw error;

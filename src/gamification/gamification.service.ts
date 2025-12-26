@@ -6,6 +6,7 @@ import { ClientProfile, ClientProfileDocument } from '../clients/schemas/client-
 import { ClientsService } from '../clients/clients.service';
 import { TrainersService } from '../trainers/trainers.service';
 import { PenaltyStatusDto } from './dto/penalty-status.dto';
+import { AppLogger } from '../common/utils/logger.utils';
 
 @Injectable()
 export class GamificationService {
@@ -127,11 +128,16 @@ export class GamificationService {
     reason: string,
     planId?: Types.ObjectId,
   ): Promise<void> {
-    console.log(`[GamificationService] addPenaltyToBalance START - clientId: ${clientProfileId}, amount: ${amount}, reason: ${reason}`);
+    AppLogger.logStart('BALANCE_CHARGE', {
+      clientId: clientProfileId.toString(),
+      amount,
+      reason,
+      planId: planId?.toString(),
+    });
     
     const client = await this.clientProfileModel.findById(clientProfileId).exec();
     if (!client) {
-      console.error(`[GamificationService] Client profile not found: ${clientProfileId}`);
+      AppLogger.logError('BALANCE_CHARGE', { clientId: clientProfileId.toString() }, new NotFoundException('Client profile not found'));
       throw new NotFoundException('Client profile not found');
     }
 
@@ -149,7 +155,25 @@ export class GamificationService {
     const updatedBalance = oldBalance + amount;
     const updatedMonthlyBalance = oldMonthlyBalance + amount;
 
-    console.log(`[GamificationService] Balance update: ${oldBalance}€ -> ${updatedBalance}€ (monthly: ${oldMonthlyBalance}€ -> ${updatedMonthlyBalance}€)`);
+    AppLogger.logOperation('BALANCE_UPDATE', {
+      clientId: clientProfileId.toString(),
+      oldBalance,
+      newBalance: updatedBalance,
+      oldMonthlyBalance,
+      newMonthlyBalance: updatedMonthlyBalance,
+      amount,
+      balanceIncrease: amount,
+    }, 'info');
+
+    AppLogger.logOperation('PENALTY_HISTORY_ADDED', {
+      clientId: clientProfileId.toString(),
+      entry: {
+        date: penaltyEntry.date.toISOString(),
+        amount: penaltyEntry.amount,
+        reason: penaltyEntry.reason,
+        planId: penaltyEntry.planId?.toString(),
+      },
+    }, 'info');
 
     await this.clientProfileModel.findByIdAndUpdate(
       clientProfileId,
@@ -164,7 +188,12 @@ export class GamificationService {
       },
     ).exec();
 
-    console.log(`[GamificationService] addPenaltyToBalance SUCCESS - New balance: ${updatedBalance}€`);
+    AppLogger.logComplete('BALANCE_CHARGE', {
+      clientId: clientProfileId.toString(),
+      newBalance: updatedBalance,
+      newMonthlyBalance: updatedMonthlyBalance,
+      amount,
+    });
   }
 
   /**
@@ -243,16 +272,27 @@ export class GamificationService {
    * Clear client's balance (after payment)
    */
   async clearBalance(clientProfileId: string | Types.ObjectId): Promise<void> {
+    console.log(`[GamificationService] clearBalance START - clientProfileId: ${clientProfileId}`);
+    
+    // Get current balance before clearing
+    const clientBefore = await this.clientProfileModel.findById(clientProfileId).exec();
+    const balanceBefore = clientBefore?.balance || 0;
+    const monthlyBalanceBefore = clientBefore?.monthlyBalance || 0;
+    console.log(`[GamificationService] clearBalance - Current balance: ${balanceBefore}€, monthlyBalance: ${monthlyBalanceBefore}€`);
+    
+    const resetDate = new Date();
     await this.clientProfileModel.findByIdAndUpdate(
       clientProfileId,
       {
         $set: {
           balance: 0,
           monthlyBalance: 0,
-          lastBalanceReset: new Date(),
+          lastBalanceReset: resetDate,
         },
       },
     ).exec();
+    
+    console.log(`[GamificationService] clearBalance SUCCESS - Balance cleared: ${balanceBefore}€ -> 0€, monthlyBalance cleared: ${monthlyBalanceBefore}€ -> 0€, lastBalanceReset set to: ${resetDate.toISOString()}`);
   }
 
   /**

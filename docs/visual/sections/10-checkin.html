@@ -1,0 +1,403 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Check-In Flow (GPS + Photo Verification)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">10. Check-In Flow (GPS + Photo Verification)</p>
+            
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Check-In Flow (GPS + Photo Verification)</strong> pokazuje kako klijent mora da se check-in-uje pre treninga.
+        Check-in zahteva foto dokaz i GPS validaciju da bi se sprečilo varanje.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Check-In Gate</code> - Obavezan check-in pre početka treninga</li>
+        <li><code>GPS validation</code> - Provera da li je klijent u teretani (Haversine formula)</li>
+        <li><code>Photo verification</code> - Trener verifikuje da li je foto autentičan</li>
+        <li><code>isGymLocation</code> - Flag koji označava da li je check-in u teretani (unutar radius-a)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar želi da počne trening. Mora prvo da se check-in-uje.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar klikne "Start Workout" → aplikacija traži check-in</li>
+        <li>Petar otvara kameru i snima foto dokaz</li>
+        <li>Aplikacija uzima GPS koordinate (lat, lng)</li>
+        <li>Podaci se čuvaju lokalno u Isar DB (offline-first)</li>
+        <li>Kada ima internet, foto se upload-uje na Cloudinary</li>
+        <li>Backend proverava da li je GPS u teretani (Haversine formula, radius 100m)</li>
+        <li>Trener vidi check-in u dashboard-u i verifikuje autentičnost</li>
+        <li>Nakon verifikacije, Petar može da počne trening</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar mora da se check-in-uje pre svakog treninga, što sprečava varanje.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Camera as Camera API
+    participant GPS as GPS API
+    participant IsarDB as Isar (Local)
+    participant Sync as SyncManager
+    participant API as Backend API
+    participant MediaAPI as Media API<br/>(Cloudinary)
+    participant CheckInService as CheckInService
+    participant TrainerService as TrainersService
+    participant DB as MongoDB
+    participant Trainer as Trainer Dashboard
+
+    Note over Client: CHECK-IN GATE: Required before workout
+
+    Client->>Camera: Open camera<br/>(mandatory check-in)
+    Camera->>Client: Photo captured
+    
+    Client->>GPS: Get current location
+    GPS-->>Client: GPS coordinates<br/>(lat, lng, accuracy)
+    
+    Client->>IsarDB: Save CheckInCollection:<br/>photoLocalPath, gpsCoordinates,<br/>timestamp, isSynced: false
+    
+    Note over Client: Client can proceed<br/>even offline
+    
+    alt Internet available
+        Sync->>API: GET /api/media/signature
+        API-->>Sync: Upload signature<br/>(Cloudinary credentials)
+        
+        Sync->>MediaAPI: Upload photo directly<br/>(using signature)
+        MediaAPI-->>Sync: photoUrl (Cloudinary URL)
+        
+        Sync->>IsarDB: Update CheckInCollection:<br/>photoUrl, isSynced: true
+        
+        Sync->>API: POST /api/checkins<br/>{photoUrl, gpsCoordinates, timestamp}
+        
+        API->>CheckInService: createCheckIn(userId, dto)
+        
+        CheckInService->>DB: Find ClientProfile by userId
+        DB-->>CheckInService: ClientProfile with trainerId
+        
+        alt Client has trainer
+            CheckInService->>TrainerService: getProfileById(trainerId)
+            TrainerService->>DB: Find TrainerProfile by trainerId
+            DB-->>TrainerService: TrainerProfile with gymLocation
+            
+            CheckInService->>CheckInService: validateGpsLocation(<br/>trainerId,<br/>checkInLat, checkInLon)
+            
+            alt Trainer has gymLocation set
+                CheckInService->>CheckInService: Calculate distance<br/>(Haversine formula)
+                alt Distance <= radius (default 100m)
+                    Note over CheckInService: isGymLocation = true
+                else Distance > radius
+                    Note over CheckInService: isGymLocation = false<br/>(flagged for review)
+                end
+            else No gymLocation set
+                Note over CheckInService: isGymLocation = true<br/>(backward compatibility)
+            end
+            
+            alt GPS matches gym location
+                Note over CheckInService: isGymLocation = true<br/>(within radius)
+            else GPS doesn't match
+                Note over CheckInService: isGymLocation = false<br/>(flagged for review)
+            end
+        end
+        
+        CheckInService->>DB: Save CheckIn document<br/>(with isGymLocation flag)
+        
+        CheckInService->>Trainer: Notify trainer<br/>(new check-in pending verification)
+        
+    else No internet
+        Note over Sync: Queue for sync when online
+    end
+    
+    Trainer->>API: GET /api/trainers/clients/checkins<br/>(pending verification)
+    API-->>Trainer: List of check-ins<br/>(with isGymLocation flag)
+    
+    Trainer->>API: PATCH /api/checkins/:id/verify<br/>{verificationStatus: "VERIFIED"}
+    API->>CheckInService: verifyCheckIn(checkInId)
+    CheckInService->>DB: Update CheckIn.verificationStatus = "VERIFIED"
+    
+    Note over Client,Trainer: Result: Photo uploaded with GPS,<br/>trainer verifies authenticity<br/>Workout gate now open
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Check-in sistem sprečava varanje. Klijent mora da se check-in-uje pre svakog treninga sa foto dokazom i GPS validacijom.
+    </p>
+    <p>
+        <strong>Kako radi check-in:</strong>
+    </p>
+    <ul>
+        <li><strong>Mandatory check-in:</strong> "Start Workout" dugme je onemogućeno dok se klijent ne check-in-uje</li>
+        <li><strong>Photo proof:</strong> Klijent mora da snimi foto dokaz (offline-first, čuva se lokalno)</li>
+        <li><strong>GPS validation:</strong> Sistem proverava da li je klijent u teretani (Haversine formula, radius 100m)</li>
+        <li><strong>Trainer verification:</strong> Trener verifikuje autentičnost check-in-a u dashboard-u</li>
+        <li><strong>isGymLocation flag:</strong> Označava da li je check-in u teretani (true) ili van teretane (false, flagged for review)</li>
+    </ul>
+    <p>
+        <strong>Offline-first:</strong> Check-in se može snimiti i bez interneta. Foto se upload-uje kada se konekcija uspostavi.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -68,10 +68,17 @@ export class GamificationController {
   @Roles(UserRole.CLIENT)
   @UseGuards(SaasKillswitchGuard)
   async clearBalance(@CurrentUser() user: JwtPayload) {
+    console.log(`[GamificationController] clearBalance START - userId: ${user.sub}`);
     const client = await this.clientsService.getProfile(user.sub);
     const clientProfileId = (client as any)._id;
     
+    const balanceBefore = client.balance || 0;
+    const monthlyBalanceBefore = client.monthlyBalance || 0;
+    console.log(`[GamificationController] clearBalance - clientProfileId: ${clientProfileId}, balance before: ${balanceBefore}€, monthlyBalance before: ${monthlyBalanceBefore}€`);
+    
     await this.gamificationService.clearBalance(clientProfileId);
+    
+    console.log(`[GamificationController] clearBalance SUCCESS - Balance cleared from ${balanceBefore}€ to 0€, monthlyBalance cleared from ${monthlyBalanceBefore}€ to 0€`);
     return { message: 'Balance cleared successfully' };
   }
 
@@ -81,6 +88,12 @@ export class GamificationController {
   @Roles(UserRole.TRAINER, UserRole.ADMIN)
   async generateMessage(@Body() dto: GenerateMessageDto) {
     return this.aiMessageService.generateMessage(dto);
+  }
+
+  @Get('messages/all')
+  @Roles(UserRole.ADMIN)
+  async getAllMessages() {
+    return this.aiMessageService.getAllMessages();
   }
 
   @Get('messages/:clientId')

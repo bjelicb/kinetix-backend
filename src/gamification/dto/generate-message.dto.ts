@@ -1,5 +1,5 @@
 import { IsEnum, IsString, IsOptional, IsObject } from 'class-validator';
-import { AIMessageTrigger } from '../schemas/ai-message.schema';
+import { AIMessageTrigger, AIMessageTone } from '../schemas/ai-message.schema';
 
 export class GenerateMessageDto {
   @IsString()
@@ -7,6 +7,14 @@ export class GenerateMessageDto {
 
   @IsEnum(AIMessageTrigger)
   trigger: AIMessageTrigger;
+
+  @IsOptional()
+  @IsString()
+  customMessage?: string;
+
+  @IsOptional()
+  @IsEnum(AIMessageTone)
+  tone?: AIMessageTone;
 
   @IsOptional()
   @IsObject()

@@ -108,6 +108,17 @@ export class ClientsController {
     return this.workoutsService.getWorkoutHistory(user.sub);
   }
 
+  @Get('workouts/all')
+  @Roles(UserRole.CLIENT)
+  @ApiOperation({ summary: 'Get all workout logs (completed, pending, missed) for the client' })
+  @ApiResponse({ status: 200, description: 'All workout logs retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Client role required or subscription inactive' })
+  async getAllWorkoutLogs(@CurrentUser() user: JwtPayload) {
+    const profile = await this.clientsService.getProfile(user.sub);
+    return this.workoutsService.getAllWorkoutLogsEnriched(profile._id.toString());
+  }
+
   @Get('trainer')
   @Roles(UserRole.CLIENT)
   @ApiOperation({ summary: 'Get assigned trainer information' })

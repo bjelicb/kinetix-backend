@@ -72,10 +72,18 @@ export class CheckInsService {
   }
 
   async createCheckIn(clientId: string, createCheckInDto: CreateCheckInDto): Promise<CheckIn> {
+    console.log('[CheckInsService] createCheckIn() START');
+    console.log('[CheckInsService] Client ID:', clientId);
+    
     const clientProfile = await this.clientsService.getProfile(clientId);
     if (!clientProfile) {
+      console.log('[CheckInsService] ❌ ERROR: Client profile not found');
       throw new NotFoundException('Client profile not found.');
     }
+    
+    const clientProfileId = (clientProfile as any)._id || clientProfile.userId;
+    console.log('[CheckInsService] Client Profile ID:', clientProfileId);
+    console.log('[CheckInsService] Trainer ID:', clientProfile.trainerId);
 
     // Validate GPS location against trainer's gym location
     if (createCheckInDto.gpsCoordinates && clientProfile.trainerId) {
@@ -87,6 +95,12 @@ export class CheckInsService {
         createCheckInDto.gpsCoordinates.longitude,
       );
       
+      console.log('[CheckInsService] GPS Validation:', {
+        isGymLocation,
+        checkInLat: createCheckInDto.gpsCoordinates.latitude,
+        checkInLon: createCheckInDto.gpsCoordinates.longitude,
+      });
+      
       // Set isGymLocation flag (for verification)
       (createCheckInDto as any).isGymLocation = isGymLocation;
       
@@ -95,7 +109,7 @@ export class CheckInsService {
     }
 
     const checkIn = new this.checkInModel({
-      clientId: (clientProfile as any)._id || clientProfile.userId,
+      clientId: clientProfileId,
       trainerId: clientProfile.trainerId,
       workoutLogId: createCheckInDto.workoutLogId ? new Types.ObjectId(createCheckInDto.workoutLogId) : undefined,
       checkinDate: new Date(createCheckInDto.checkinDate),
@@ -109,7 +123,14 @@ export class CheckInsService {
       verificationStatus: VerificationStatus.PENDING,
     });
 
-    return checkIn.save();
+    console.log('[CheckInsService] Saving check-in to MongoDB...');
+    const savedCheckIn = await checkIn.save();
+    console.log('[CheckInsService] ✅ CHECK-IN SAVED TO MONGODB');
+    console.log('[CheckInsService] Saved check-in ID:', savedCheckIn._id);
+    console.log('[CheckInsService] Saved check-in date:', savedCheckIn.checkinDate);
+    console.log('[CheckInsService] Photo URL:', savedCheckIn.photoUrl ? 'PROVIDED' : 'NULL');
+    
+    return savedCheckIn;
   }
 
   async getCheckInsByClient(clientId: string): Promise<CheckIn[]> {

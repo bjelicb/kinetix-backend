@@ -3,6 +3,7 @@ import { Document, Types } from 'mongoose';
 import { ClientProfile } from '../../clients/schemas/client-profile.schema';
 import { TrainerProfile } from '../../trainers/schemas/trainer-profile.schema';
 import { WeeklyPlan } from '../../plans/schemas/weekly-plan.schema';
+import { DateUtils } from '../../common/utils/date.utils';
 
 export type WorkoutLogDocument = WorkoutLog & Document;
 
@@ -83,6 +84,19 @@ export class WorkoutLog {
 }
 
 export const WorkoutLogSchema = SchemaFactory.createForClass(WorkoutLog);
+
+// Pre-save hook: Auto-normalize workoutDate to start of day
+// This ensures ALL workout dates are normalized, regardless of how they're created
+// NOTE: This does NOT trigger for findByIdAndUpdate() or updateMany() - those need explicit normalization
+WorkoutLogSchema.pre('save', async function() {
+  if (this.workoutDate) {
+    const normalized = DateUtils.normalizeToStartOfDay(this.workoutDate);
+    if (this.workoutDate.getTime() !== normalized.getTime()) {
+      console.log(`[WorkoutLogSchema] Auto-normalizing workoutDate from ${this.workoutDate.toISOString()} to ${normalized.toISOString()}`);
+      this.workoutDate = normalized;
+    }
+  }
+});
 
 // Compound index for duplicate detection
 WorkoutLogSchema.index({ clientId: 1, workoutDate: 1 }, { unique: true });

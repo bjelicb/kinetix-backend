@@ -19,6 +19,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
+import { AppLogger } from '../common/utils/logger.utils';
 
 @ApiTags('plans')
 @ApiBearerAuth('JWT-auth')
@@ -85,6 +86,14 @@ export class PlansController {
     @Param('id') id: string,
     @Body() dto: AssignPlanDto,
   ) {
+    AppLogger.logOperation('CONTROLLER_PLAN_ASSIGN', {
+      userId: user.sub,
+      userRole: user.role,
+      planId: id,
+      clientIds: dto.clientIds,
+      startDate: dto.startDate,
+    }, 'info');
+    
     return this.plansService.assignPlanToClients(id, user.sub, user.role, dto);
   }
 
@@ -120,6 +129,12 @@ export class PlansController {
     @CurrentUser() user: JwtPayload,
     @Param('clientId') clientId: string,
   ) {
+    AppLogger.logOperation('CONTROLLER_CAN_UNLOCK_CHECK', {
+      userId: user.sub,
+      userRole: user.role,
+      clientIdParam: clientId,
+    }, 'info');
+    
     // If user is CLIENT, use their userId to get clientProfileId
     let clientProfileId = clientId;
     if (user.role === 'CLIENT') {
@@ -127,13 +142,34 @@ export class PlansController {
       try {
         const client = await this.plansService['clientsService'].getProfile(user.sub);
         clientProfileId = (client as any)._id.toString();
-      } catch {
+        AppLogger.logOperation('CONTROLLER_CAN_UNLOCK_CLIENT_PROFILE_RESOLVED', {
+          userId: user.sub,
+          clientIdParam: clientId,
+          clientProfileId,
+        }, 'info');
+      } catch (e) {
         // If not found, use the provided clientId (might already be clientProfileId)
         clientProfileId = clientId;
+        AppLogger.logOperation('CONTROLLER_CAN_UNLOCK_CLIENT_PROFILE_NOT_FOUND', {
+          userId: user.sub,
+          clientIdParam: clientId,
+          error: e instanceof Error ? e.message : String(e),
+          usingClientIdParam: true,
+        }, 'warn');
       }
     }
     
+    AppLogger.logOperation('CONTROLLER_CAN_UNLOCK_CALLING_SERVICE', {
+      clientProfileId,
+    }, 'info');
+    
     const canUnlock = await this.plansService.canUnlockNextWeek(clientProfileId);
+    
+    AppLogger.logOperation('CONTROLLER_CAN_UNLOCK_RESULT', {
+      clientProfileId,
+      canUnlock,
+    }, 'info');
+    
     return { canUnlock };
   }
 
@@ -150,8 +186,28 @@ export class PlansController {
     const client = await this.plansService['clientsService'].getProfile(user.sub);
     const clientProfileId = (client as any)._id.toString();
     
-    await this.plansService.requestNextWeek(clientProfileId);
-    return { message: 'Next week request submitted successfully' };
+    AppLogger.logOperation('CONTROLLER_UNLOCK_REQUEST', {
+      userId: user.sub,
+      userRole: user.role,
+      clientIdParam: clientId,
+      clientProfileId,
+    }, 'info');
+    
+    const result = await this.plansService.requestNextWeek(clientProfileId);
+    
+    AppLogger.logOperation('CONTROLLER_UNLOCK_RESPONSE', {
+      clientProfileId,
+      currentPlanId: result.currentPlanId,
+      balance: result.balance,
+      monthlyBalance: result.monthlyBalance,
+    }, 'info');
+    
+    return {
+      message: 'Next week request submitted successfully',
+      currentPlanId: result.currentPlanId,
+      balance: result.balance,
+      monthlyBalance: result.monthlyBalance,
+    };
   }
 }
 

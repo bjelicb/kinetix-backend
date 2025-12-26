@@ -1,0 +1,1995 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Entity Relationship Diagram (ERD)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #9D4EDD;
+            --primary-glow: rgba(157, 78, 221, 0.3);
+            --bg-dark: #0A0A0A;
+            --bg-medium: #1E1E1E;
+            --bg-card: rgba(30, 30, 30, 0.8);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B3B3B3;
+            --text-muted: #808080;
+            --border-color: rgba(157, 78, 221, 0.2);
+            --success: #00F0FF;
+            --warning: #FFA500;
+            --error: #FF003C;
+            --info: #00F0FF;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 50%, #0F0F1A 100%);
+            background-attachment: fixed;
+            position: relative;
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(157, 78, 221, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 50px 40px;
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.15) 0%, rgba(157, 78, 221, 0.05) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            box-shadow: 0 0 50px var(--primary-glow);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(157, 78, 221, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        @keyframes slideInRight {
+            from { 
+                opacity: 0; 
+                transform: translateX(-30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0); 
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px var(--primary-glow); 
+            }
+            50% { 
+                box-shadow: 0 0 40px var(--primary-glow), 0 0 60px var(--primary-glow); 
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        h1 {
+            font-size: 4em;
+            color: var(--primary);
+            text-shadow: 
+                0 0 30px var(--primary-glow), 
+                0 0 60px var(--primary-glow),
+                0 0 90px rgba(157, 78, 221, 0.3),
+                2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.1;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-badges {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .badge {
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 
+                0 2px 10px rgba(0, 0, 0, 0.3),
+                0 0 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .badge:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .badge:hover::before {
+            left: 100%;
+        }
+        
+        .badge.v1 { background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15)); color: #00BFFF; border: 2px solid #00BFFF; }
+        .badge.v2 { background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(0, 180, 220, 0.15)); color: var(--success); border: 2px solid var(--success); }
+        .badge.v3 { background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15)); color: var(--warning); border: 2px solid var(--warning); }
+        .badge.v4 { background: linear-gradient(135deg, rgba(157, 78, 221, 0.25), rgba(120, 50, 180, 0.15)); color: var(--primary); border: 2px solid var(--primary); }
+        
+        /* Search and Filter Bar */
+        .search-filter-bar {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.95) 100%);
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.3), 
+                0 0 30px rgba(157, 78, 221, 0.1),
+                0 8px 40px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 14px 45px 14px 20px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(20, 20, 20, 0.3) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 
+                0 0 20px var(--primary-glow),
+                inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.4) 100%);
+        }
+        
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(30, 30, 30, 0.3) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(157, 78, 221, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .filter-btn:hover::before {
+            left: 100%;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px) scale(1.05);
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.2) 0%, rgba(157, 78, 221, 0.1) 100%);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, #8B3DD0 100%);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px var(--primary-glow), 0 4px 15px rgba(157, 78, 221, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        /* Card Styles */
+        .card {
+            margin-bottom: 40px;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.15) 0%, rgba(30, 30, 30, 0.95) 50%, rgba(157, 78, 221, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 30px var(--primary-glow),
+                0 8px 40px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary) 0%, transparent 50%, var(--primary) 100%);
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+            width: 4px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 8px 40px rgba(0, 0, 0, 0.5),
+                0 0 50px var(--primary-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            border-color: rgba(157, 78, 221, 0.4);
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+            width: 4px;
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+        
+        .card.collapsible {
+            cursor: pointer;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-header h3 {
+            font-size: 1.6em;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-header .toggle-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+            color: var(--text-secondary);
+        }
+        
+        .card.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .card-content {
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+        
+        .card.collapsed .card-content {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.2) 0%, rgba(30, 30, 30, 0.95) 50%, rgba(157, 78, 221, 0.1) 100%);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(157, 78, 221, 0.2),
+                0 8px 40px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .summary-card::before {
+            background: linear-gradient(180deg, var(--primary) 0%, #8B3DD0 50%, var(--primary) 100%);
+        }
+        
+        .summary-card h3 {
+            color: var(--primary);
+        }
+        
+        .example-card {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.2) 0%, rgba(30, 30, 30, 0.95) 50%, rgba(255, 165, 0, 0.1) 100%);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(255, 165, 0, 0.15),
+                0 8px 40px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .example-card::before {
+            background: linear-gradient(180deg, var(--warning) 0%, #FF8C00 50%, var(--warning) 100%);
+        }
+        
+        .example-card h3 {
+            color: var(--warning);
+        }
+        
+        .explanation-card {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(30, 30, 30, 0.95) 50%, rgba(0, 240, 255, 0.1) 100%);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(0, 240, 255, 0.15),
+                0 8px 40px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .explanation-card::before {
+            background: linear-gradient(180deg, var(--success) 0%, #00B8D4 50%, var(--success) 100%);
+        }
+        
+        .explanation-card h3 {
+            color: var(--success);
+        }
+        
+        .architecture-card {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(30, 30, 30, 0.95) 50%, rgba(0, 240, 255, 0.1) 100%);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(0, 240, 255, 0.15),
+                0 8px 40px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .architecture-card::before {
+            background: linear-gradient(180deg, var(--info) 0%, #00B8D4 50%, var(--info) 100%);
+        }
+        
+        .architecture-card h3 {
+            color: var(--info);
+        }
+        
+        .card p, .card ul {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .card code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            border: 1px solid var(--border-color);
+        }
+        
+        .card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .card ul li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .card ul li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        /* Diagram Container */
+        .overview-diagram-container {
+            margin: 40px 0;
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%);
+            padding: 60px 50px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 8px 40px rgba(0, 0, 0, 0.4),
+                0 0 50px rgba(157, 78, 221, 0.15),
+                0 12px 60px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            margin-bottom: 60px;
+        }
+        
+        .overview-diagram-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary) 20%, #8B3DD0 50%, var(--primary) 80%, transparent);
+            border-radius: 24px 24px 0 0;
+            opacity: 0.6;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .overview-diagram-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary) 20%, #8B3DD0 50%, var(--primary) 80%, transparent);
+            border-radius: 0 0 24px 24px;
+            opacity: 0.6;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .overview-mermaid {
+            font-size: 18px;
+        }
+        
+        .diagram-container {
+            margin: 40px calc(-50vw + 50%);
+            width: 100vw;
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.98) 100%);
+            padding: 80px 60px;
+            border-radius: 0;
+            border: none;
+            border-top: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            overflow-x: auto;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 8px 40px rgba(0, 0, 0, 0.4),
+                0 0 50px rgba(157, 78, 221, 0.15),
+                0 12px 60px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .overview-diagram-container {
+            animation: fadeInUp 0.7s ease-out;
+        }
+        
+        .diagram-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary) 20%, #8B3DD0 50%, var(--primary) 80%, transparent);
+            opacity: 0.6;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .diagram-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary) 20%, #8B3DD0 50%, var(--primary) 80%, transparent);
+            opacity: 0.6;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .diagram-header h3 {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.5);
+        }
+        
+        .diagram-legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+            min-width: 100%;
+        }
+        
+        .mermaid svg {
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        /* Interactive Entity Cards */
+        .entity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .entity-card {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.95) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+            opacity: 0;
+            animation-fill-mode: forwards;
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(157, 78, 221, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            display: block !important;
+            visibility: visible !important;
+            z-index: 1;
+        }
+        
+        .entity-card:nth-child(1) { animation-delay: 0.1s; }
+        .entity-card:nth-child(2) { animation-delay: 0.15s; }
+        .entity-card:nth-child(3) { animation-delay: 0.2s; }
+        .entity-card:nth-child(4) { animation-delay: 0.25s; }
+        .entity-card:nth-child(5) { animation-delay: 0.3s; }
+        .entity-card:nth-child(6) { animation-delay: 0.35s; }
+        .entity-card:nth-child(7) { animation-delay: 0.4s; }
+        .entity-card:nth-child(8) { animation-delay: 0.45s; }
+        .entity-card:nth-child(9) { animation-delay: 0.5s; }
+        
+        .entity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .entity-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary) 0%, transparent 50%, var(--primary) 100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .entity-card:hover {
+            border-color: rgba(157, 78, 221, 0.5);
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.5),
+                0 0 50px var(--primary-glow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 10;
+        }
+        
+        .entity-card:hover::before {
+            opacity: 1;
+            height: 3px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .entity-card:hover::after {
+            opacity: 0.8;
+            width: 3px;
+        }
+        
+        .entity-card.selected {
+            border-color: rgba(157, 78, 221, 0.6);
+            box-shadow: 
+                0 0 40px var(--primary-glow),
+                0 10px 50px rgba(157, 78, 221, 0.4);
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 10;
+        }
+        
+        .entity-card.selected::before {
+            opacity: 1;
+            height: 3px;
+        }
+        
+        .entity-card.selected::after {
+            opacity: 1;
+            width: 3px;
+        }
+        
+        .entity-card.hidden {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        .entity-card.filtered-out {
+            opacity: 0.3;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+        
+        /* Prevent any hover effects from hiding the card */
+        .entity-card:hover.hidden {
+            display: none !important;
+        }
+        
+        .entity-card:not(.hidden):hover {
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        .entity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .entity-name {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.3px;
+            text-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+        }
+        
+        .entity-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            background: rgba(157, 78, 221, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .entity-description {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .entity-fields {
+            margin-top: 15px;
+        }
+        
+        .field-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            font-size: 0.85em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .field-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .field-type {
+            color: var(--text-muted);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .field-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-left: 8px;
+        }
+        
+        .field-badge.pk {
+            background: rgba(157, 78, 221, 0.3);
+            color: var(--primary);
+        }
+        
+        .field-badge.fk {
+            background: rgba(0, 191, 255, 0.3);
+            color: var(--info);
+        }
+        
+        .field-badge.indexed {
+            background: rgba(0, 240, 255, 0.3);
+            color: var(--success);
+        }
+        
+        /* Architecture Flow */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.95) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            animation: slideInRight 0.6s ease-out;
+            opacity: 0;
+            animation-fill-mode: forwards;
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(157, 78, 221, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .flow-step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary) 0%, transparent 50%, var(--primary) 100%);
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .flow-step:hover::before {
+            opacity: 1;
+            width: 4px;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+        
+        .flow-step:nth-child(1) { animation-delay: 0.1s; }
+        .flow-step:nth-child(3) { animation-delay: 0.2s; }
+        .flow-step:nth-child(5) { animation-delay: 0.3s; }
+        .flow-step:nth-child(7) { animation-delay: 0.4s; }
+        .flow-step:nth-child(9) { animation-delay: 0.5s; }
+        .flow-step:nth-child(11) { animation-delay: 0.6s; }
+        
+        .flow-step:hover {
+            transform: translateX(10px) scale(1.02);
+            box-shadow: 
+                0 5px 30px rgba(0, 0, 0, 0.5),
+                0 0 40px var(--primary-glow);
+            border-color: rgba(157, 78, 221, 0.4);
+        }
+        
+        .flow-step:hover::before {
+            opacity: 1;
+            width: 4px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        
+        .flow-number {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, #8B3DD0 50%, var(--primary) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            font-weight: 800;
+            flex-shrink: 0;
+            box-shadow: 
+                0 0 25px var(--primary-glow), 
+                0 4px 20px rgba(157, 78, 221, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .flow-number::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #8B3DD0, var(--primary));
+            opacity: 0.5;
+            z-index: -1;
+            filter: blur(8px);
+        }
+        
+        .flow-content {
+            flex: 1;
+        }
+        
+        .flow-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+            text-shadow: 0 0 10px rgba(157, 78, 221, 0.4);
+        }
+        
+        .flow-description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+        
+        .flow-arrow {
+            font-size: 2em;
+            color: var(--primary);
+            opacity: 0.5;
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: var(--bg-medium);
+            color: var(--text-primary);
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            font-size: 0.9em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .entity-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-filter-bar {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8B3DD0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-database"></i> KINETIX</h1>
+            <p class="subtitle">Entity Relationship Diagram (ERD) - Database Architecture</p>
+            <div class="header-badges">
+                <span class="badge v1"><i class="fas fa-code-branch"></i> V1 Core</span>
+                <span class="badge v2"><i class="fas fa-robot"></i> V2 AI</span>
+                <span class="badge v3"><i class="fas fa-chart-line"></i> V3 Analytics</span>
+                <span class="badge v4"><i class="fas fa-credit-card"></i> V4 Payments</span>
+            </div>
+        </header>
+        
+        <!-- Search and Filter Bar -->
+        <div class="search-filter-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search entities, fields, relationships...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="core">Core</button>
+                <button class="filter-btn" data-filter="profile">Profiles</button>
+                <button class="filter-btn" data-filter="activity">Activity</button>
+                <button class="filter-btn" data-filter="business">Business</button>
+            </div>
+        </div>
+        
+        <!-- Summary Card -->
+        <div class="card summary-card collapsible" data-card="summary">
+            <div class="card-header">
+                <h3><i class="fas fa-info-circle"></i> Šta je ovo?</h3>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="card-content">
+                <p>
+                    <strong>Entity Relationship Diagram (ERD)</strong> pokazuje kompletnu strukturu baze podataka Kinetix sistema. 
+                    Ovo je mapa svih tabela (collections), kako su povezane, i šta svako polje znači.
+                </p>
+                <p>
+                    <strong>Zašto je ovo važno?</strong> Kada radiš na backend-u, moraš da znaš gde se podaci čuvaju, kako su povezani, 
+                    i kako da ih dohvatiš. Ova sekcija ti daje kompletan pregled arhitekture sistema.
+                </p>
+                <p>
+                    <strong>Kako koristiti ovu dokumentaciju:</strong>
+                </p>
+                <ul>
+                    <li>Koristi <strong>search</strong> da brzo nađeš entitete ili polja</li>
+                    <li>Klikni na <strong>entity kartice</strong> da vidiš detalje</li>
+                    <li>Hover preko <strong>veza</strong> u dijagramu da vidiš objašnjenja</li>
+                    <li>Pročitaj <strong>architecture flow</strong> sekciju da razumeš kako sistem funkcioniše</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Example Card -->
+        <div class="card example-card collapsible" data-card="example">
+            <div class="card-header">
+                <h3><i class="fas fa-lightbulb"></i> Primer iz prakse</h3>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="card-content">
+                <p>
+                    <strong>Scenario:</strong> Treba da dohvatiš sve klijente jednog trenera sa njihovim trenutnim planovima.
+                </p>
+                <p>
+                    <strong>Kako to radi:</strong>
+                </p>
+                <ul>
+                    <li>1. Pronađi <code>TrainerProfile</code> po <code>userId</code></li>
+                    <li>2. Koristi <code>trainerId</code> da nađeš sve <code>ClientProfile</code> dokumente</li>
+                    <li>3. Za svaki <code>ClientProfile</code>, koristi <code>currentPlanId</code> da dohvatiš <code>WeeklyPlan</code></li>
+                    <li>4. Koristi <code>.populate('currentPlanId')</code> u Mongoose-u da automatski učitava plan</li>
+                </ul>
+                <p>
+                    <strong>Rezultat:</strong> Imaš kompletnu listu klijenata sa njihovim aktivnim planovima u jednom upitu.
+                </p>
+                <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, rgba(255, 165, 0, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%); border-radius: 12px; border: 1px solid rgba(255, 165, 0, 0.3); box-shadow: 0 0 20px rgba(255, 165, 0, 0.1); position: relative; overflow: hidden;">
+                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--warning) 0%, transparent 50%, var(--warning) 100%); opacity: 0.8;"></div>
+                    <strong style="color: var(--warning); display: block; margin-left: 10px;">💡 Pro Tip:</strong>
+                    <p style="margin-top: 8px; color: var(--text-secondary); margin-left: 10px;">
+                        Koristi <code>ClientProfile.find({ trainerId }).populate('currentPlanId')</code> za najbrži upit.
+                        MongoDB će automatski učitati povezane dokumente preko reference.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Architecture Flow -->
+        <div class="card architecture-card">
+            <div class="card-header">
+                <h3><i class="fas fa-sitemap"></i> Arhitektura sistema - Data Flow</h3>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom: 25px; color: var(--text-secondary);">
+                    Ovo je visokonivo pregled kako podaci teku kroz sistem. Svaki korak predstavlja ključnu tačku u arhitekturi.
+                </p>
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <div class="flow-number">1</div>
+                        <div class="flow-content">
+                            <div class="flow-title">User Registration & Authentication</div>
+                            <div class="flow-description">
+                                Korisnik se registruje → <code>User</code> dokument se kreira → Automatski se kreira <code>TrainerProfile</code> ili <code>ClientProfile</code> na osnovu role.
+                                <br><strong>Key Fields:</strong> <code>User.role</code> određuje tip profila, <code>User.id</code> se koristi kao FK u profilima.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; color: var(--primary); font-size: 2em;">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">2</div>
+                        <div class="flow-content">
+                            <div class="flow-title">Trainer-Client Relationship</div>
+                            <div class="flow-description">
+                                Trainer dodeljuje klijenta → <code>ClientProfile.trainerId</code> se postavlja → <code>TrainerProfile.clientIds[]</code> se ažurira (bidirectional relationship).
+                                <br><strong>Important:</strong> Ovo se održava ručno u kodu - MongoDB ne forsira referentni integritet.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; color: var(--primary); font-size: 2em;">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">3</div>
+                        <div class="flow-content">
+                            <div class="flow-title">Plan Creation & Assignment</div>
+                            <div class="flow-description">
+                                Trainer kreira <code>WeeklyPlan</code> → Plan se dodeljuje klijentu → <code>ClientProfile.currentPlanId</code> se postavlja → <code>WeeklyPlan.assignedClientIds[]</code> se ažurira.
+                                <br><strong>Plan Status:</strong> Dinamički se računa u <code>getCurrentPlan()</code> - nije čuvan u bazi!
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; color: var(--primary); font-size: 2em;">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">4</div>
+                        <div class="flow-content">
+                            <div class="flow-title">Workout Execution Flow</div>
+                            <div class="flow-description">
+                                Klijent dolazi u teretanu → <code>CheckIn</code> se kreira (GPS + Photo validation) → <code>WorkoutLog</code> se generiše iz <code>WeeklyPlan</code> → 
+                                Klijent završava trening → <code>WorkoutLog.isCompleted = true</code> → Ako se preskoči, <code>isMissed = true</code> → Penalty se dodaje.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; color: var(--primary); font-size: 2em;">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">5</div>
+                        <div class="flow-content">
+                            <div class="flow-title">Penalty & Balance System</div>
+                            <div class="flow-description">
+                                Missed workout → <code>GamificationService.addPenaltyToBalance()</code> → <code>ClientProfile.balance</code> i <code>monthlyBalance</code> se povećavaju → 
+                                Na kraju meseca, ako <code>monthlyBalance > 0</code> → Paywall se aktivira → Klijent mora da plati da bi nastavio.
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; color: var(--primary); font-size: 2em;">↓</div>
+                    <div class="flow-step">
+                        <div class="flow-number">6</div>
+                        <div class="flow-content">
+                            <div class="flow-title">Plan Renewal & Unlock</div>
+                            <div class="flow-description">
+                                Plan se završava → <code>planEndDate < today</code> → Klijent može da zatraži sledeći nedelju → <code>nextWeekRequested = true</code> → 
+                                Trainer odobrava → Novi plan se dodeljuje → <code>currentPlanId</code> se ažurira → <code>planHistory[]</code> se dodaje entry.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Overview Diagram -->
+        <div class="overview-diagram-container">
+            <div class="diagram-header">
+                <h3 style="color: var(--primary); font-size: 1.8em; font-weight: 700;">
+                    <i class="fas fa-sitemap"></i> System Overview - High-Level Architecture
+                </h3>
+                <p style="color: var(--text-secondary); margin-top: 10px; font-size: 1.1em;">
+                    Simplified view of core entities and relationships
+                </p>
+            </div>
+            <div class="mermaid overview-mermaid">
+erDiagram
+    USER ||--o| TRAINER_PROFILE : "has"
+    USER ||--o| CLIENT_PROFILE : "has"
+    
+    TRAINER_PROFILE ||--o{ CLIENT_PROFILE : "manages"
+    TRAINER_PROFILE ||--o{ WEEKLY_PLAN : "creates"
+    
+    CLIENT_PROFILE ||--o| WEEKLY_PLAN : "current plan"
+    CLIENT_PROFILE ||--o{ WORKOUT_LOG : "logs"
+    CLIENT_PROFILE ||--o{ CHECK_IN : "performs"
+    
+    WEEKLY_PLAN ||--o{ WORKOUT_LOG : "generates"
+    
+    USER {
+        string id PK
+        string email
+        string role
+    }
+    
+    TRAINER_PROFILE {
+        ObjectId id PK
+        ObjectId userId FK
+        boolean isActive
+        array clientIds
+    }
+    
+    CLIENT_PROFILE {
+        ObjectId id PK
+        ObjectId userId FK
+        ObjectId trainerId FK
+        ObjectId currentPlanId FK
+        number balance
+    }
+    
+    WEEKLY_PLAN {
+        ObjectId id PK
+        ObjectId trainerId FK
+        array workouts
+    }
+    
+    WORKOUT_LOG {
+        ObjectId id PK
+        ObjectId clientId FK
+        ObjectId weeklyPlanId FK
+        boolean isCompleted
+    }
+    
+    CHECK_IN {
+        ObjectId id PK
+        ObjectId clientId FK
+        string photoUrl
+    }
+            </div>
+        </div>
+        
+        <!-- Main Diagram -->
+        <div class="diagram-container">
+            <div class="diagram-header">
+                <h3 style="color: var(--primary); font-size: 1.5em;"><i class="fas fa-project-diagram"></i> Entity Relationship Diagram</h3>
+                <div class="diagram-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--info);"></div>
+                        <span>Reference (ref:)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--success);"></div>
+                        <span>[I] Indexed</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--warning);"></div>
+                        <span>[U] Unique</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--error);"></div>
+                        <span>[C] Compound</span>
+                    </div>
+                </div>
+            </div>
+            <p style="margin-bottom: 15px; color: var(--text-secondary); font-size: 0.95em;">
+                <strong>Collection Names:</strong> Mongoose automatically pluralizes class names. 
+                V1: <code>users</code>, <code>trainerprofiles</code>, <code>clientprofiles</code>, <code>weeklyplans</code>, <code>workoutlogs</code>, <code>checkins</code>, <code>weighins</code>, <code>penaltyrecords</code> | 
+                V2: <code>aimessages</code> | 
+                V4: <code>clientpayments</code>, <code>monthlyinvoices</code>, <code>planeffectivenesses</code>
+            </p>
+            <div class="mermaid">
+erDiagram
+    USER ||--o| TRAINER_PROFILE : has
+    USER ||--o| CLIENT_PROFILE : has
+    
+    TRAINER_PROFILE ||--o{ WEEKLY_PLAN : creates
+    TRAINER_PROFILE ||--o{ CLIENT_PROFILE : manages
+    
+    CLIENT_PROFILE ||--o{ PLAN_HISTORY : has "embedded array"
+    CLIENT_PROFILE ||--o{ WORKOUT_LOG : logs
+    CLIENT_PROFILE ||--o{ CHECK_IN : performs
+    CLIENT_PROFILE ||--o{ WEIGH_IN : records
+    CLIENT_PROFILE ||--o{ PENALTY_RECORD : has
+    CLIENT_PROFILE ||--o{ AI_MESSAGE : receives
+    
+    WEEKLY_PLAN ||--o{ WORKOUT_DAY : contains "embedded array"
+    WEEKLY_PLAN ||--o{ PLAN_HISTORY : assigned_to "via ClientProfile"
+    WEEKLY_PLAN ||--o{ WORKOUT_LOG : generates
+    WEEKLY_PLAN ||--o{ WEIGH_IN : linked_to
+    
+    WORKOUT_DAY ||--o{ EXERCISE : contains "embedded array"
+    WORKOUT_LOG ||--o{ COMPLETED_EXERCISE : tracks "embedded array"
+    
+    USER {
+        string id PK "Collection: users"
+        string email
+        string passwordHash
+        string role "TRAINER|CLIENT|ADMIN"
+        string firstName
+        string lastName
+        string phone
+        string profilePictureUrl
+        boolean isEmailVerified
+    }
+    
+    TRAINER_PROFILE {
+        ObjectId id PK "Collection: trainerprofiles"
+        ObjectId userId FK "ref: User"
+        string businessName
+        boolean isActive "Kill-switch control"
+        string subscriptionStatus "ACTIVE|SUSPENDED|CANCELLED"
+        Date subscriptionExpiresAt
+        string subscriptionTier "BASIC|PRO|ENTERPRISE"
+        array clientIds "ref: ClientProfile"
+        object gymLocation "GPS: lat, lng, radius"
+        string stripeCustomerId "Future"
+        string stripeSubscriptionId "Future"
+    }
+    
+    CLIENT_PROFILE {
+        ObjectId id PK "Collection: clientprofiles"
+        ObjectId userId FK "ref: User [Unique]"
+        ObjectId trainerId FK "ref: TrainerProfile [nullable, indexed]"
+        ObjectId currentPlanId FK "ref: WeeklyPlan [nullable] - UNLOCKED PLAN (CLIENT paid for)<br/>⚠️ Can be null: planStatus determined dynamically"
+        Date planStartDate "nullable"
+        Date planEndDate "nullable"
+        array planHistory "Embedded: stores all plans"
+        boolean isPenaltyMode
+        int consecutiveMissedWorkouts
+        int currentStreak
+        int totalWorkoutsCompleted
+        number weight "kg"
+        number height "cm"
+        string fitnessGoal "WEIGHT_LOSS|MUSCLE_GAIN|ENDURANCE|GENERAL_FITNESS"
+        number balance "Running tab balance in euros"
+        number monthlyBalance "Current month's balance"
+        Date lastBalanceReset "When balance was cleared"
+        array penaltyHistory "Embedded: Balance transaction history"
+        boolean nextWeekRequested "V2: Client requested next week"
+        Date nextWeekRequestDate "V2: When request was made"
+    }
+    
+    PLAN_HISTORY {
+        ObjectId planId FK "ref: WeeklyPlan (embedded in ClientProfile)"
+        Date planStartDate
+        Date planEndDate
+        Date assignedAt
+        ObjectId trainerId FK "ref: TrainerProfile"
+    }
+    
+    WEEKLY_PLAN {
+        ObjectId id PK "Collection: weeklyplans"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed]"
+        string name
+        string description
+        string difficulty "BEGINNER|INTERMEDIATE|ADVANCED"
+        array workouts "Embedded: 7 WorkoutDay objects"
+        array assignedClientIds "ref: ClientProfile"
+        boolean isTemplate
+        number weeklyCost "Cost in euros per week (default 0)"
+        boolean isDeleted "V2: Soft delete flag"
+        Date deletedAt "V2: When plan was deleted"
+    }
+    
+    WORKOUT_DAY {
+        int dayOfWeek "1-7 (Monday-Sunday)"
+        boolean isRestDay
+        string name
+        array exercises "Embedded: Exercise objects"
+        int estimatedDuration "minutes"
+        string notes
+    }
+    
+    EXERCISE {
+        string name "Embedded in WorkoutDay"
+        int sets
+        string reps "e.g. '8-12' or number"
+        int restSeconds
+        string notes
+        string videoUrl "YouTube link"
+    }
+    
+    WORKOUT_LOG {
+        ObjectId id PK "Collection: workoutlogs"
+        ObjectId clientId FK "ref: ClientProfile [indexed in compound]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed in compound]"
+        ObjectId weeklyPlanId FK "ref: WeeklyPlan [indexed]"
+        Date workoutDate "[Compound Unique with clientId]"
+        int weekNumber
+        int dayOfWeek "1-7"
+        array completedExercises "Embedded: CompletedExercise objects"
+        boolean isCompleted
+        boolean isMissed "Triggers 1€ penalty"
+        Date completedAt
+        Date workoutStartTime "V2: When workout started"
+        boolean suspiciousCompletion "V2: Flag if completed too fast (<5min)"
+        number difficultyRating "1-5"
+        string clientNotes
+    }
+    
+    CHECK_IN {
+        ObjectId id PK "Collection: checkins"
+        ObjectId clientId FK "ref: ClientProfile [Compound Unique with checkinDate]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed in compound]"
+        ObjectId workoutLogId FK "ref: WorkoutLog [nullable]"
+        Date checkinDate "[Compound Unique with clientId]"
+        string photoUrl "Cloudinary URL"
+        string thumbnailUrl "Cloudinary thumbnail"
+        object gpsCoordinates "Embedded: lat, lng, accuracy"
+        boolean isGymLocation "GPS validation flag (vs trainer.gymLocation)"
+        string verificationStatus "PENDING|VERIFIED|REJECTED [indexed with trainerId]"
+        ObjectId verifiedBy "ref: User [nullable]"
+        Date verifiedAt
+        string rejectionReason
+        number aiConfidenceScore "0-1 (future)"
+        array detectedActivities "Future: AI detection"
+        string clientNotes
+    }
+    
+    WEIGH_IN {
+        ObjectId id PK "Collection: weighins"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        ObjectId planId FK "ref: WeeklyPlan [nullable, indexed]"
+        Date planStartDate "Plan week start date"
+        number weight "Weight in kg"
+        Date date "Weigh-in date (any day, Monday recommended) [Compound Unique with clientId]"
+        string photoUrl "Optional scale photo"
+        string notes "Client explanation if spike"
+        boolean isMandatory "True if Monday of plan week"
+        boolean isWeightSpike "Flag if >5% increase"
+        boolean aiFlagged "AI detected anomaly"
+        string aiMessage "AI explanation request"
+    }
+    
+    PENALTY_RECORD {
+        ObjectId id PK "Collection: penaltyrecords"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        Date weekStartDate "[Compound Unique with clientId]"
+        Date weekEndDate
+        int totalMissedWorkouts
+        string penaltyType
+    }
+    
+    AI_MESSAGE {
+        ObjectId id PK "Collection: aimessages"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        string message "AI-generated message text"
+        string tone "AGGRESSIVE|EMPATHETIC|MOTIVATIONAL|WARNING"
+        string trigger "MISSED_WORKOUTS|STREAK|WEIGHT_SPIKE|SICK_DAY"
+        boolean isRead "V2: Client read status"
+        Date createdAt "V2: When message was generated"
+    }
+            </div>
+        </div>
+        
+        <!-- Interactive Entity Cards -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-cubes"></i> Entity Details</h3>
+            </div>
+            <div class="card-content">
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    Klikni na entity karticu da vidiš detalje. Hover preko polja da vidiš tip i constraint-e.
+                </p>
+                <div class="entity-grid" id="entityGrid">
+                    <!-- Entities will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Explanations -->
+        <div class="card explanation-card collapsible" data-card="explanations">
+            <div class="card-header">
+                <h3><i class="fas fa-book"></i> Detaljno objašnjenje</h3>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
+            <div class="card-content">
+                <h4 style="color: var(--text-primary); margin-top: 25px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
+                    <i class="fas fa-link"></i> Reference Relationships (MongoDB ref:)
+                </h4>
+                <p style="margin-bottom: 15px;">Ovo su veze između različitih collections. Kada vidiš <code>ref: User</code>, to znači da MongoDB čuva samo ID, a podaci se učitavaju sa <code>.populate()</code>.</p>
+                <ul>
+                    <li><strong>users → trainerprofiles:</strong> <code>TrainerProfile.userId</code> refs <code>User._id</code> [Unique Index]</li>
+                    <li><strong>users → clientprofiles:</strong> <code>ClientProfile.userId</code> refs <code>User._id</code> [Unique Index]</li>
+                    <li><strong>trainerprofiles → clientprofiles:</strong> <code>ClientProfile.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed, nullable]</li>
+                    <li><strong>trainerprofiles → weeklyplans:</strong> <code>WeeklyPlan.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed]</li>
+                    <li><strong>clientprofiles → weeklyplans:</strong> <code>ClientProfile.currentPlanId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
+                    <li><strong>clientprofiles.planHistory[]:</strong> Embedded array with <code>planId</code> refs <code>WeeklyPlan._id</code></li>
+                    <li><strong>clientprofiles.planHistory[]:</strong> Embedded array with <code>trainerId</code> refs <code>TrainerProfile._id</code></li>
+                    <li><strong>weeklyplans → clientprofiles:</strong> <code>WeeklyPlan.assignedClientIds[]</code> array refs <code>ClientProfile._id</code></li>
+                    <li><strong>workoutlogs → clientprofiles:</strong> <code>WorkoutLog.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound]</li>
+                    <li><strong>workoutlogs → trainerprofiles:</strong> <code>WorkoutLog.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed in compound]</li>
+                    <li><strong>workoutlogs → weeklyplans:</strong> <code>WorkoutLog.weeklyPlanId</code> refs <code>WeeklyPlan._id</code> [Indexed]</li>
+                    <li><strong>checkins → clientprofiles:</strong> <code>CheckIn.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound, unique]</li>
+                    <li><strong>checkins → trainerprofiles:</strong> <code>CheckIn.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed in compound]</li>
+                    <li><strong>checkins → workoutlogs:</strong> <code>CheckIn.workoutLogId</code> refs <code>WorkoutLog._id</code> [nullable]</li>
+                    <li><strong>checkins → users:</strong> <code>CheckIn.verifiedBy</code> refs <code>User._id</code> [nullable]</li>
+                    <li><strong>weighins → clientprofiles:</strong> <code>WeighIn.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                    <li><strong>weighins → weeklyplans:</strong> <code>WeighIn.planId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
+                    <li><strong>penaltyrecords → clientprofiles:</strong> <code>PenaltyRecord.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                    <li><strong>aimessages → clientprofiles:</strong> <code>AIMessage.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                </ul>
+                
+                <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
+                    <i class="fas fa-box"></i> Embedded Documents
+                </h4>
+                <p style="margin-bottom: 15px;">Ovo su podaci koji se čuvaju direktno u parent dokumentu, ne kao odvojena collection. Ovo je brže za čitanje, ali teže za query-ovanje.</p>
+                <ul>
+                    <li><strong>weeklyplans.workouts[]:</strong> Embedded array of <code>WorkoutDay</code> objects (7 days)</li>
+                    <li><strong>WorkoutDay.exercises[]:</strong> Embedded array of <code>Exercise</code> objects within WorkoutDay</li>
+                    <li><strong>workoutlogs.completedExercises[]:</strong> Embedded array of <code>CompletedExercise</code> objects</li>
+                    <li><strong>clientprofiles.planHistory[]:</strong> Embedded array of plan history entries (planId, dates, trainerId)</li>
+                    <li><strong>clientprofiles.penaltyHistory[]:</strong> Embedded array of balance transactions (date, amount, reason, planId)</li>
+                    <li><strong>checkins.gpsCoordinates:</strong> Embedded <code>GpsCoordinates</code> object (lat, lng, accuracy)</li>
+                    <li><strong>trainerprofiles.gymLocation:</strong> Embedded object (lat, lng, address, radius)</li>
+                </ul>
+                
+                <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
+                    <i class="fas fa-tachometer-alt"></i> Database Indexes (Performance Optimization)
+                </h4>
+                <p style="margin-bottom: 15px;">Indexi ubrzavaju pretrage. Kada vidiš [Indexed], to znači da MongoDB može brzo da nađe dokumente po tom polju.</p>
+                <ul>
+                    <li><strong>users:</strong> <code>email</code> [Unique] - One user per email</li>
+                    <li><strong>clientprofiles:</strong> <code>userId</code> [Unique], <code>trainerId</code> [Single], <code>trainerId + currentPlanId</code> [Compound], <code>currentPlanId</code> [Single]</li>
+                    <li><strong>trainerprofiles:</strong> <code>userId</code> [Unique], <code>isActive</code> [Single], <code>subscriptionExpiresAt</code> [Single]</li>
+                    <li><strong>weeklyplans:</strong> <code>trainerId</code> [Single], <code>trainerId + isTemplate</code> [Compound], <code>isTemplate</code> [Single]</li>
+                    <li><strong>workoutlogs:</strong> <code>clientId + workoutDate</code> [Compound, Unique], <code>trainerId</code> [Single], <code>trainerId + workoutDate</code> [Compound], <code>weeklyPlanId</code> [Single], <code>isCompleted</code> [Single], <code>isMissed</code> [Single]</li>
+                    <li><strong>checkins:</strong> <code>clientId + checkinDate</code> [Compound, Unique], <code>trainerId + verificationStatus</code> [Compound]</li>
+                    <li><strong>weighins:</strong> <code>clientId + date</code> [Compound, Unique], <code>planId + planStartDate</code> [Compound], <code>clientId + planId + date</code> [Compound]</li>
+                    <li><strong>penaltyrecords:</strong> <code>clientId + weekStartDate</code> [Compound, Unique]</li>
+                    <li><strong>aimessages:</strong> <code>clientId</code> [Single], <code>clientId + isRead</code> [Compound], <code>clientId + createdAt</code> [Compound]</li>
+                </ul>
+                
+                <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
+                    <i class="fas fa-code"></i> Populate Patterns
+                </h4>
+                <p style="margin-bottom: 15px;">Kada koristiš <code>.populate()</code>, Mongoose automatski učitava povezane dokumente. Ovo su najčešći pattern-i:</p>
+                <ul>
+                    <li><strong>Get Client Profile:</strong> <code>.populate('userId')</code>, <code>.populate('trainerId')</code>, <code>.populate('currentPlanId')</code></li>
+                    <li><strong>Get Weekly Plan:</strong> <code>.populate('trainerId')</code>, <code>.populate('assignedClientIds')</code></li>
+                    <li><strong>Get Workout Log:</strong> <code>.populate('clientId')</code>, <code>.populate('trainerId')</code>, <code>.populate('weeklyPlanId')</code></li>
+                    <li><strong>Get Trainer Clients:</strong> <code>.populate('clientIds')</code> - All clients for trainer</li>
+                    <li><strong>Admin Queries:</strong> Multiple populate chains for full data hierarchy</li>
+                </ul>
+                
+                <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
+                    <i class="fas fa-exchange-alt"></i> Bidirectional Relationships
+                </h4>
+                <p style="margin-bottom: 15px;">Neke veze su obostrane - oba dokumenta imaju reference jedan na drugog. Ovo se održava ručno u kodu.</p>
+                <ul>
+                    <li><strong>TRAINER ↔ CLIENT:</strong> <code>TrainerProfile.clientIds[]</code> → Array of ClientProfile._id | <code>ClientProfile.trainerId</code> → Single TrainerProfile._id | <em>Maintained manually in code (not enforced by DB)</em></li>
+                    <li><strong>WEEKLY_PLAN ↔ CLIENT:</strong> <code>WeeklyPlan.assignedClientIds[]</code> → Array of ClientProfile._id | <code>ClientProfile.currentPlanId</code> → Single WeeklyPlan._id (current, nullable) | <code>ClientProfile.planHistory[]</code> → Array with planId references (all history)</li>
+                </ul>
+                
+                <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
+                    <i class="fas fa-calculator"></i> Plan Status System (Dynamic)
+                </h4>
+                <p style="margin-bottom: 15px;">
+                    <strong>planStatus</strong> se računa dinamički u <code>getCurrentPlan()</code> funkciji. 
+                    <strong>VAŽNO:</strong> planStatus se NE čuva u bazi - računa se u realnom vremenu na osnovu trenutnog datuma.
+                </p>
+                <ul>
+                    <li><code>'current'</code> - Plan je otključan (currentPlanId postavljen, planEndDate >= today)</li>
+                    <li><code>'future'</code> - Plan je zaključan (currentPlanId null, planEndDate >= today) - čeka unlock</li>
+                    <li><code>'previous'</code> - Plan je završen (planEndDate < today) - istorija</li>
+                </ul>
+                <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, rgba(255, 165, 0, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%); border-radius: 12px; border: 1px solid rgba(255, 165, 0, 0.3); box-shadow: 0 0 20px rgba(255, 165, 0, 0.1); position: relative; overflow: hidden;">
+                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--warning) 0%, transparent 50%, var(--warning) 100%); opacity: 0.8;"></div>
+                    <strong style="color: var(--warning); display: block; margin-left: 10px;">💡 Tip:</strong>
+                    <p style="margin-top: 8px; color: var(--text-secondary); margin-left: 10px;">
+                        Uvek koristi <code>getCurrentPlan()</code> umesto direktnog čitanja <code>currentPlanId</code> jer automatski računa planStatus.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Entity data
+        const entities = [
+            {
+                id: 'user',
+                name: 'User',
+                category: 'core',
+                description: 'Core user authentication and account management',
+                collection: 'users',
+                fields: [
+                    { name: 'id', type: 'string', isPrimary: true, description: 'Collection: users' },
+                    { name: 'email', type: 'string', indexed: true, unique: true },
+                    { name: 'passwordHash', type: 'string' },
+                    { name: 'role', type: 'string', description: 'TRAINER|CLIENT|ADMIN' },
+                    { name: 'firstName', type: 'string' },
+                    { name: 'lastName', type: 'string' },
+                    { name: 'phone', type: 'string' },
+                    { name: 'profilePictureUrl', type: 'string' },
+                    { name: 'isEmailVerified', type: 'boolean' }
+                ]
+            },
+            {
+                id: 'trainerProfile',
+                name: 'TrainerProfile',
+                category: 'profile',
+                description: 'Trainer-specific profile with subscription and client management',
+                collection: 'trainerprofiles',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'userId', type: 'ObjectId', isForeign: true, ref: 'User', unique: true, indexed: true },
+                    { name: 'businessName', type: 'string' },
+                    { name: 'isActive', type: 'boolean', description: 'Kill-switch control', indexed: true },
+                    { name: 'subscriptionStatus', type: 'string', description: 'ACTIVE|SUSPENDED|CANCELLED' },
+                    { name: 'subscriptionExpiresAt', type: 'Date', indexed: true },
+                    { name: 'subscriptionTier', type: 'string', description: 'BASIC|PRO|ENTERPRISE' },
+                    { name: 'clientIds', type: 'array', description: 'ref: ClientProfile' },
+                    { name: 'gymLocation', type: 'object', description: 'GPS: lat, lng, radius' },
+                    { name: 'stripeCustomerId', type: 'string', description: 'Future' },
+                    { name: 'stripeSubscriptionId', type: 'string', description: 'Future' }
+                ]
+            },
+            {
+                id: 'clientProfile',
+                name: 'ClientProfile',
+                category: 'profile',
+                description: 'Client profile with plan management, balance, and activity tracking',
+                collection: 'clientprofiles',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'userId', type: 'ObjectId', isForeign: true, ref: 'User', unique: true, indexed: true },
+                    { name: 'trainerId', type: 'ObjectId', isForeign: true, ref: 'TrainerProfile', nullable: true, indexed: true },
+                    { name: 'currentPlanId', type: 'ObjectId', isForeign: true, ref: 'WeeklyPlan', nullable: true, indexed: true, description: 'UNLOCKED PLAN (CLIENT paid for)' },
+                    { name: 'planStartDate', type: 'Date', nullable: true },
+                    { name: 'planEndDate', type: 'Date', nullable: true },
+                    { name: 'planHistory', type: 'array', description: 'Embedded: stores all plans' },
+                    { name: 'balance', type: 'number', description: 'Running tab balance in euros' },
+                    { name: 'monthlyBalance', type: 'number', description: 'Current month\'s balance' },
+                    { name: 'penaltyHistory', type: 'array', description: 'Embedded: Balance transaction history' },
+                    { name: 'weight', type: 'number', description: 'kg' },
+                    { name: 'height', type: 'number', description: 'cm' },
+                    { name: 'fitnessGoal', type: 'string', description: 'WEIGHT_LOSS|MUSCLE_GAIN|ENDURANCE|GENERAL_FITNESS' },
+                    { name: 'currentStreak', type: 'int' },
+                    { name: 'totalWorkoutsCompleted', type: 'int' },
+                    { name: 'nextWeekRequested', type: 'boolean', description: 'V2: Client requested next week' }
+                ]
+            },
+            {
+                id: 'weeklyPlan',
+                name: 'WeeklyPlan',
+                category: 'activity',
+                description: 'Weekly workout plans created by trainers, contains 7 WorkoutDay objects',
+                collection: 'weeklyplans',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'trainerId', type: 'ObjectId', isForeign: true, ref: 'TrainerProfile', indexed: true },
+                    { name: 'name', type: 'string' },
+                    { name: 'description', type: 'string' },
+                    { name: 'difficulty', type: 'string', description: 'BEGINNER|INTERMEDIATE|ADVANCED' },
+                    { name: 'workouts', type: 'array', description: 'Embedded: 7 WorkoutDay objects' },
+                    { name: 'assignedClientIds', type: 'array', description: 'ref: ClientProfile' },
+                    { name: 'isTemplate', type: 'boolean', indexed: true },
+                    { name: 'weeklyCost', type: 'number', description: 'Cost in euros per week (default 0)' },
+                    { name: 'isDeleted', type: 'boolean', description: 'V2: Soft delete flag' }
+                ]
+            },
+            {
+                id: 'workoutLog',
+                name: 'WorkoutLog',
+                category: 'activity',
+                description: 'Individual workout session logs tracking completion and performance',
+                collection: 'workoutlogs',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true, compound: true },
+                    { name: 'trainerId', type: 'ObjectId', isForeign: true, ref: 'TrainerProfile', indexed: true, compound: true },
+                    { name: 'weeklyPlanId', type: 'ObjectId', isForeign: true, ref: 'WeeklyPlan', indexed: true },
+                    { name: 'workoutDate', type: 'Date', unique: true, compound: true, description: 'Compound Unique with clientId' },
+                    { name: 'isCompleted', type: 'boolean', indexed: true },
+                    { name: 'isMissed', type: 'boolean', indexed: true, description: 'Triggers 1€ penalty' },
+                    { name: 'completedExercises', type: 'array', description: 'Embedded: CompletedExercise objects' },
+                    { name: 'suspiciousCompletion', type: 'boolean', description: 'V2: Flag if completed too fast (<5min)' }
+                ]
+            },
+            {
+                id: 'checkIn',
+                name: 'CheckIn',
+                category: 'activity',
+                description: 'GPS and photo validation for gym check-ins',
+                collection: 'checkins',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', unique: true, compound: true },
+                    { name: 'trainerId', type: 'ObjectId', isForeign: true, ref: 'TrainerProfile', indexed: true, compound: true },
+                    { name: 'workoutLogId', type: 'ObjectId', isForeign: true, ref: 'WorkoutLog', nullable: true },
+                    { name: 'checkinDate', type: 'Date', unique: true, compound: true, description: 'Compound Unique with clientId' },
+                    { name: 'photoUrl', type: 'string', description: 'Cloudinary URL' },
+                    { name: 'gpsCoordinates', type: 'object', description: 'Embedded: lat, lng, accuracy' },
+                    { name: 'isGymLocation', type: 'boolean', description: 'GPS validation flag' },
+                    { name: 'verificationStatus', type: 'string', description: 'PENDING|VERIFIED|REJECTED', indexed: true, compound: true }
+                ]
+            },
+            {
+                id: 'weighIn',
+                name: 'WeighIn',
+                category: 'activity',
+                description: 'Weight tracking with AI anomaly detection',
+                collection: 'weighins',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true },
+                    { name: 'planId', type: 'ObjectId', isForeign: true, ref: 'WeeklyPlan', nullable: true, indexed: true },
+                    { name: 'weight', type: 'number', description: 'Weight in kg' },
+                    { name: 'date', type: 'Date', unique: true, compound: true, description: 'Compound Unique with clientId' },
+                    { name: 'isWeightSpike', type: 'boolean', description: 'Flag if >5% increase' },
+                    { name: 'aiFlagged', type: 'boolean', description: 'AI detected anomaly' }
+                ]
+            },
+            {
+                id: 'penaltyRecord',
+                name: 'PenaltyRecord',
+                category: 'business',
+                description: 'Weekly penalty tracking for missed workouts',
+                collection: 'penaltyrecords',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true },
+                    { name: 'weekStartDate', type: 'Date', unique: true, compound: true, description: 'Compound Unique with clientId' },
+                    { name: 'weekEndDate', type: 'Date' },
+                    { name: 'totalMissedWorkouts', type: 'int' },
+                    { name: 'penaltyType', type: 'string' }
+                ]
+            },
+            {
+                id: 'aiMessage',
+                name: 'AIMessage',
+                category: 'activity',
+                description: 'AI-generated motivational messages based on client behavior',
+                collection: 'aimessages',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true },
+                    { name: 'message', type: 'string', description: 'AI-generated message text' },
+                    { name: 'tone', type: 'string', description: 'AGGRESSIVE|EMPATHETIC|MOTIVATIONAL|WARNING' },
+                    { name: 'trigger', type: 'string', description: 'MISSED_WORKOUTS|STREAK|WEIGHT_SPIKE|SICK_DAY' },
+                    { name: 'isRead', type: 'boolean', description: 'V2: Client read status', indexed: true, compound: true }
+                ]
+            }
+        ];
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    erTextColor: '#FFFFFF',
+                    erLineColor: '#9D4EDD'
+                },
+                er: {
+                    fontSize: 16,
+                    useMaxWidth: false
+                },
+                flowchart: {
+                    useMaxWidth: false
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render Mermaid diagrams
+        function renderMermaid() {
+            initMermaid();
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        }
+        
+        // Render entity cards
+        function renderEntityCards() {
+            const grid = document.getElementById('entityGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = entities.map(entity => {
+                const categoryColors = {
+                    core: { color: '#00BFFF', bg: 'rgba(0, 191, 255, 0.1)' },
+                    profile: { color: '#9D4EDD', bg: 'rgba(157, 78, 221, 0.1)' },
+                    activity: { color: '#00F0FF', bg: 'rgba(0, 240, 255, 0.1)' },
+                    business: { color: '#FFA500', bg: 'rgba(255, 165, 0, 0.1)' }
+                };
+                const colors = categoryColors[entity.category] || categoryColors.core;
+                
+                return `
+                    <div class="entity-card" data-entity-id="${entity.id}" data-category="${entity.category}">
+                        <div class="entity-header">
+                            <div class="entity-name" style="color: ${colors.color};">${entity.name}</div>
+                            <div class="entity-badge" style="background: ${colors.bg}; border-color: ${colors.color}; color: ${colors.color};">
+                                ${entity.collection}
+                            </div>
+                        </div>
+                        <div class="entity-description">${entity.description}</div>
+                        <div class="entity-fields">
+                            ${entity.fields.slice(0, 5).map(field => `
+                                <div class="field-item">
+                                    <span class="field-name">
+                                        ${field.name}
+                                        ${field.isPrimary ? '<span class="field-badge pk">PK</span>' : ''}
+                                        ${field.isForeign ? '<span class="field-badge fk">FK</span>' : ''}
+                                        ${field.indexed ? '<span class="field-badge indexed">I</span>' : ''}
+                                    </span>
+                                    <span class="field-type">${field.type}</span>
+                                </div>
+                            `).join('')}
+                            ${entity.fields.length > 5 ? `<div style="text-align: center; color: var(--text-muted); font-size: 0.85em; margin-top: 10px;">+${entity.fields.length - 5} more fields</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add click handlers
+            document.querySelectorAll('.entity-card').forEach(card => {
+                // Prevent any style changes on hover
+                card.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('hidden')) {
+                        this.style.display = 'block';
+                        this.style.visibility = 'visible';
+                        this.style.opacity = '1';
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('hidden')) {
+                        this.style.display = 'block';
+                        this.style.visibility = 'visible';
+                        this.style.opacity = '1';
+                    }
+                });
+                
+                card.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    document.querySelectorAll('.entity-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+        }
+        
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) return;
+            
+            searchInput.addEventListener('input', function(e) {
+                const term = e.target.value.toLowerCase().trim();
+                const entityCards = document.querySelectorAll('.entity-card');
+                const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+                
+                entityCards.forEach(card => {
+                    const cardText = card.textContent.toLowerCase();
+                    const matchesSearch = term === '' || cardText.includes(term);
+                    const matchesFilter = activeFilter === 'all' || card.dataset.category === activeFilter;
+                    
+                    if (matchesSearch && matchesFilter) {
+                        card.classList.remove('hidden');
+                        card.classList.remove('filtered-out');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        }
+        
+        // Filter functionality
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
+                    
+                    document.querySelectorAll('.entity-card').forEach(card => {
+                        const matchesFilter = filter === 'all' || card.dataset.category === filter;
+                        const matchesSearch = searchTerm === '' || card.textContent.toLowerCase().includes(searchTerm);
+                        
+                        if (matchesFilter && matchesSearch) {
+                            card.classList.remove('hidden');
+                            card.classList.remove('filtered-out');
+                        } else {
+                            card.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Collapsible cards
+        function setupCollapsible() {
+            document.querySelectorAll('.card.collapsible').forEach(card => {
+                const header = card.querySelector('.card-header');
+                if (!header) return;
+                
+                header.addEventListener('click', function() {
+                    card.classList.toggle('collapsed');
+                });
+            });
+        }
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMermaid();
+            renderEntityCards();
+            setupSearch();
+            setupFilters();
+            setupCollapsible();
+        });
+    </script>
+</body>
+</html>

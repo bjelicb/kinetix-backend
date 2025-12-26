@@ -1,0 +1,498 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Monthly Paywall Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">13. Monthly Paywall Flow</p>
+            <span class="version-badge v2">âœ“ V2</span>
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Monthly Paywall Flow (V2)</strong> pokazuje kako se klijenti blokiraju na početku meseca ako imaju neplaćen balance.
+        Ovo je kritičan mehanizam za primoravanje plaćanja.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Paywall Condition</code> - Blokada se prikazuje kada je <code>monthlyBalance < 0</code> (bez obzira na dan u mesecu)</li>
+        <li><code>Non-dismissible dialog</code> - PaywallDialog se ne može zatvoriti dok se balance ne očisti</li>
+        <li><code>Workout buttons disabled</code> - Dugmad za trening su onemogućena dok se balance ne plati</li>
+        <li><code>PaywallService.checkPaywall()</code> - Proverava <code>monthlyBalance < 0</code> i prikazuje paywall ako je uslov ispunjen</li>
+        <li><code>Auto-refresh</code> - Paywall se proverava kada se vrati sa payment page i kada se app vrati u fokus</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario 1:</strong> Klijent Petar ima monthlyBalance od -50€. Otvara aplikaciju bilo kog dana u mesecu.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar otvara aplikaciju (bilo koji dan u mesecu)</li>
+        <li>Dashboard poziva <code>GET /api/gamification/status</code> i dobija balance podatke</li>
+        <li>Dashboard poziva <code>PaywallService.checkPaywall()</code> sa balance podacima</li>
+        <li><code>PaywallService</code> proverava <code>monthlyBalance < 0</code> → jeste (-50€) → prikazuje PaywallDialog</li>
+        <li>Poruka: "Payment Required - Your balance for last month is 50€. Pay to continue training."</li>
+        <li>Dugmad "Start Workout" su onemogućena</li>
+        <li>Petar klikne "View Payment Details" → otvara se Payment Page</li>
+        <li>Petar klikne "Mark as Paid" → balance se resetuje na 0</li>
+        <li>Petar se vraća na dashboard → <code>onPaymentComplete</code> callback osvežava balance i ponovo proverava paywall</li>
+        <li>Pošto je balance sada 0€, paywall se ne prikazuje, Petar može da trenira</li>
+    </ol>
+    <p>
+        <strong>Scenario 2:</strong> Petar se vrati sa payment page bez plaćanja.
+    </p>
+    <ol>
+        <li>Petar klikne "View Payment Details" u PaywallDialog-u</li>
+        <li>Otvara se Payment Page, ali Petar ne plaća i vraća se nazad</li>
+        <li>Dashboard automatski osvežava balance (poziva <code>onPaymentComplete</code> callback)</li>
+        <li>Ponovo se proverava paywall → monthlyBalance je i dalje -50€</li>
+        <li>PaywallDialog se prikazuje ponovo (korisnik je i dalje blokiran)</li>
+    </ol>
+    <p>
+        <strong>Scenario 3:</strong> Petar zatvori app sa negativnim balance-om i otvori ponovo.
+    </p>
+    <ol>
+        <li>Petar zatvori app sa monthlyBalance = -50€</li>
+        <li>Petar otvori app ponovo</li>
+        <li>WidgetsBindingObserver detektuje da se app vratio u fokus</li>
+        <li>Poziva se <code>refreshBalance()</code> → osvežava balance i proverava paywall</li>
+        <li>PaywallDialog se prikazuje ponovo (korisnik ne može da zaobiđe plaćanje)</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar mora da plati balance pre nego što može da nastavi sa treningom. Paywall se proverava na svakom pristupu dashboard-u, ne samo na day 1.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard Page
+    participant PaywallService as PaywallService
+    participant PaywallDialog as Paywall Dialog
+    participant PaymentPage as Payment Page
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+    participant Observer as WidgetsBindingObserver
+
+    Note over Client: PAYWALL CHECK: On dashboard load, return from payment, or app resume
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: INITIAL PAYWALL CHECK (on dashboard load)
+        Client->>Dashboard: Open dashboard
+        Dashboard->>API: GET /api/gamification/status
+        API->>GamificationService: getPenaltyStatus(clientId)
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (monthlyBalance: -50€)
+        GamificationService-->>API: {balance: -50€, monthlyBalance: -50€}
+        API-->>Dashboard: Balance data
+        
+        Dashboard->>PaywallService: checkPaywall(balanceData, user)
+        PaywallService->>PaywallService: Check monthlyBalance < 0
+        
+        alt monthlyBalance < 0
+            PaywallService->>PaywallDialog: Show non-dismissible dialog
+            PaywallDialog-->>Client: "Payment Required"<br/>"Your balance for last month is 50€.<br/>Pay to continue training."
+            
+            Note over Client: Workout buttons DISABLED<br/>Cannot start workout
+        else monthlyBalance >= 0
+            Dashboard-->>Client: Normal dashboard<br/>No paywall
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: PAYMENT FLOW
+        Client->>PaywallDialog: Click "View Payment Details"
+        PaywallDialog->>PaywallDialog: Close dialog (rootNavigator.pop)
+        PaywallDialog->>PaymentPage: Navigate to /payment
+        
+        PaymentPage->>API: GET /api/gamification/balance
+        API-->>PaymentPage: Full balance details
+        
+        PaymentPage-->>Client: Display:<br/>- Total Balance: €50.00<br/>- Monthly Balance: €50.00<br/>- Payment History<br/>- "Mark as Paid" button
+        
+        Client->>PaymentPage: Click "Mark as Paid"
+        PaymentPage->>API: POST /api/gamification/clear-balance
+        API->>GamificationService: clearBalance(clientId)
+        GamificationService->>DB: Update ClientProfile:<br/>balance = 0<br/>monthlyBalance = 0<br/>lastBalanceReset = now
+        
+        GamificationService-->>API: Balance cleared
+        API-->>PaymentPage: Success
+        PaymentPage->>Dashboard: Return true (payment successful)
+        
+        Dashboard->>Dashboard: onPaymentComplete callback
+        Dashboard->>Dashboard: refreshBalance() - reload balance
+        Dashboard->>API: GET /api/gamification/status
+        API-->>Dashboard: {balance: 0€, monthlyBalance: 0€}
+        Dashboard->>PaywallService: checkPaywall(balanceData, user)
+        PaywallService->>PaywallService: Check monthlyBalance < 0 (0€)
+        
+        alt monthlyBalance >= 0
+            Dashboard-->>Client: Workout buttons ENABLED<br/>Can start workout<br/>Paywall hidden
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: RETURN FROM PAYMENT WITHOUT PAYING
+        Client->>PaymentPage: View payment page but don't pay
+        PaymentPage->>Dashboard: Return (no payment made)
+        
+        Dashboard->>Dashboard: onPaymentComplete callback (always called)
+        Dashboard->>Dashboard: refreshBalance() - reload balance
+        Dashboard->>API: GET /api/gamification/status
+        API-->>Dashboard: {balance: -50€, monthlyBalance: -50€}
+        Dashboard->>PaywallService: checkPaywall(balanceData, user)
+        PaywallService->>PaywallService: Check monthlyBalance < 0 (-50€)
+        
+        alt monthlyBalance < 0
+            PaywallService->>PaywallDialog: Show non-dismissible dialog AGAIN
+            PaywallDialog-->>Client: Paywall shown again<br/>Still blocked
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: APP RESUME (WidgetsBindingObserver)
+        Client->>Observer: App returns to foreground
+        Observer->>Dashboard: didChangeAppLifecycleState(resumed)
+        Dashboard->>Dashboard: refreshBalance()
+        Dashboard->>API: GET /api/gamification/status
+        API-->>Dashboard: Balance data
+        Dashboard->>PaywallService: checkPaywall(balanceData, user)
+        
+        alt monthlyBalance < 0
+            PaywallService->>PaywallDialog: Show paywall if needed
+            PaywallDialog-->>Client: Paywall ensures payment<br/>Cannot bypass by closing app
+        end
+    end
+
+    Note over Client,DB: Result: Paywall checked on dashboard load,<br/>return from payment page, and app resume.<br/>monthlyBalance < 0 triggers paywall (not just day 1).<br/>Always refreshed and re-checked to prevent bypass.
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Paywall primorava klijente da plate balance pre nego što mogu da nastave sa treningom. Ovo je kritičan mehanizam za monetizaciju i osigurava da se ne može zaobići plaćanje.
+    </p>
+    <p>
+        <strong>Kako radi paywall sistem:</strong>
+    </p>
+    <ul>
+        <li><strong>Paywall Condition:</strong> Paywall se prikazuje kada je <code>monthlyBalance < 0</code> (bez obzira na dan u mesecu). Ovo omogućava fleksibilniju kontrolu - korisnik je blokiran čim ima dugovanje, ne samo na day 1.</li>
+        <li><strong>Balance Check:</strong> <code>PaywallService.checkPaywall()</code> proverava da li je <code>monthlyBalance < 0</code> i prikazuje PaywallDialog ako jeste</li>
+        <li><strong>Non-dismissible dialog:</strong> PaywallDialog se prikazuje i ne može se zatvoriti dok se balance ne očisti (koristi <code>PopScope(canPop: false)</code>)</li>
+        <li><strong>Workout buttons disabled:</strong> Sva dugmad za trening su onemogućena dok se balance ne plati</li>
+        <li><strong>Payment flow:</strong> Klijent mora da klikne "View Payment Details" i da očisti balance</li>
+        <li><strong>Auto-refresh:</strong> Kada se korisnik vrati sa payment page, sistem automatski osvežava balance i ponovo proverava paywall</li>
+        <li><strong>App resume detection:</strong> WidgetsBindingObserver proverava paywall kada se app vrati u fokus, osiguravajući da korisnik ne može da zaobiđe plaćanje zatvaranjem app-a</li>
+    </ul>
+    <p>
+        <strong>Razlika: balance vs monthlyBalance:</strong>
+    </p>
+    <ul>
+        <li><code>balance</code> - Ukupan balance (sve kazne i troškovi planova, akumulirano)</li>
+        <li><code>monthlyBalance</code> - Mesečni balance (kazne i troškovi za trenutni mesec)</li>
+        <li><strong>Paywall koristi <code>monthlyBalance < 0</code></strong> za proveru - ovo omogućava precizniju kontrolu mesečnih dugovanja</li>
+        <li>Kada se balance očisti, oba se resetuju na 0 (balance i monthlyBalance)</li>
+    </ul>
+    <p>
+        <strong>Refresh mehanizam:</strong> Kada se korisnik vrati sa payment page, poziva se <code>onPaymentComplete</code> callback koji automatski:
+    </p>
+    <ul>
+        <li>Osvežava balance podatke (<code>_loadBalance()</code>)</li>
+        <li>Ponovo proverava paywall (<code>_checkPaywall()</code>)</li>
+        <li>Prikazuje paywall ponovo ako je balance i dalje negativan</li>
+        <li>Omogućava treninge ako je balance plaćen</li>
+    </ul>
+    <p>
+        <strong>Bypass prevention:</strong> Paywall se proverava na svakom pristupu dashboard-u, kada se vrati sa payment page, i kada se app vrati u fokus. Ovo osigurava da korisnik ne može da zaobiđe plaćanje.
+    </p>
+</div>
+
+<div class="explanation-card">
+    <h3>✅ Testirano i Verifikovano</h3>
+    <p>
+        <strong>Paywall Logic - monthlyBalance < 0:</strong> Paywall se prikazuje kada je <code>monthlyBalance < 0</code>, 
+        bez obzira na dan u mesecu. Ovo je promenjeno sa originalnog "day 1 only" pristupa da bi se osiguralo 
+        da se paywall prikaže čim korisnik ima negativan balance.
+    </p>
+    <p>
+        <strong>Test scenariji koji su provereni:</strong>
+    </p>
+    <ul>
+        <li><strong>Negativan balance test:</strong> Korisnik sa <code>monthlyBalance = -50€</code> vidi paywall odmah pri login-u, bez obzira na dan u mesecu</li>
+        <li><strong>Plaćanje test:</strong> Korisnik plati balance → dashboard se osvežava automatski → paywall nestaje → korisnik može da trenira</li>
+        <li><strong>Return from payment test:</strong> Korisnik se vrati sa payment page bez plaćanja → paywall se prikaže ponovo (osvežava se balance i ponovo proverava)</li>
+        <li><strong>App resume test:</strong> Korisnik zatvori app sa negativnim balance-om → otvori app ponovo → WidgetsBindingObserver detektuje resume → paywall se prikaže ponovo</li>
+        <li><strong>Dialog navigation test:</strong> Klik na "View Payment Details" u PaywallDialog-u zatvara dialog pre navigacije (koristi rootNavigator) → nema dupliranja Navigator.pop() poziva</li>
+    </ul>
+    <p>
+        <strong>Implementacioni detalji:</strong>
+    </p>
+    <ul>
+        <li><strong>Frontend:</strong> <code>PaywallService.checkPaywall()</code> u Flutter-u proverava <code>monthlyBalance < 0</code></li>
+        <li><strong>Frontend:</strong> <code>DashboardPage</code> koristi <code>WidgetsBindingObserver</code> za detekciju app resume-a</li>
+        <li><strong>Frontend:</strong> <code>onPaymentComplete</code> callback se uvek poziva kada se vrati sa payment page (bez obzira na rezultat plaćanja)</li>
+        <li><strong>Backend:</strong> <code>GamificationService.clearBalance()</code> resetuje i balance i monthlyBalance na 0</li>
+        <li><strong>Backend:</strong> <code>GamificationService.getPenaltyStatus()</code> vraća balance i monthlyBalance za frontend proveru</li>
+    </ul>
+    <p>
+        <strong>Status:</strong> ✅ Sve funkcionalnosti su implementirane i testirane. Paywall sistem radi kako je planirano i sprečava zaobilaženje plaćanja.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

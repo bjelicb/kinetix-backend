@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - AI Message System Flow (V2-V3)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">16. AI Message System Flow (V2-V3)</p>
+            
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>AI Message System Flow (V2-V3)</strong> pokazuje kako sistem automatski generiše poruke na osnovu performansi klijenta.
+        Ovo je deo "psychological warfare" filozofije - sistem govori kao strog trener.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>AI Messages</code> - Automatski generisane poruke na osnovu performansi</li>
+        <li><code>Tone-based styling</code> - Poruke se stilizuju na osnovu tona (AGGRESSIVE: crveno, MOTIVATIONAL: zeleno)</li>
+        <li><code>Cron Jobs</code> - Automatska provera i generisanje poruka (daily 20:00, 09:00, Monday 10:00)</li>
+        <li><code>Push notifications (V4)</code> - Poruke se šalju kao push notifikacije</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je propustio 3 treninga prošle nedelje. Sistem automatski generiše poruku.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Svakog dana u 20:00, Cron Job proverava propuštene treninge</li>
+        <li>Sistem pronalazi da je Petar propustio 3 treninga (>2)</li>
+        <li>Sistem proverava da li je poslata poruka u poslednjih 24h → nije</li>
+        <li>Sistem generiše AGGRESSIVE poruku: "3 missed workouts this week? That's not discipline, that's excuses."</li>
+        <li>Sistem čuva poruku u bazi sa tone: AGGRESSIVE, trigger: MISSED_WORKOUTS</li>
+        <li>Sistem šalje push notifikaciju (V4)</li>
+        <li>Petar otvara aplikaciju → vidi poruku u AIMessageCard-u (crveno stilizovano)</li>
+        <li>Petar klikne na poruku → vidi kompletnu istoriju poruka</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar dobija automatsku poruku koja ga primorava da bude odgovorniji.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Cron as Cron Jobs
+    participant AIMessageService as AIMessageService
+    participant WorkoutService as WorkoutsService
+    participant WeighInService as WeighInService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+    participant PushService as Push Notification Service (V4)
+    participant Client as Mobile App
+    participant Dashboard as Dashboard
+
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: DAILY CHECK: MISSED WORKOUTS (20:00)
+        Cron->>AIMessageService: Check missed workouts (daily 20:00)
+        
+        AIMessageService->>WorkoutService: Get clients with >2 missed workouts<br/>in last 7 days
+        WorkoutService->>DB: Query WorkoutLogs (isMissed: true)
+        DB-->>WorkoutService: Clients with missed workouts
+        
+        loop For each client with >2 missed
+            AIMessageService->>AIMessageService: Check if message sent in last 24h
+            alt No recent message
+                AIMessageService->>AIMessageService: Generate AGGRESSIVE message:<br/>"2 missed workouts this week?<br/>That's not discipline, that's excuses."
+                AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: AGGRESSIVE,<br/>trigger: MISSED_WORKOUTS}
+                AIMessageService->>PushService: Send push notification (V4)
+                PushService-->>Client: Push notification received
+            end
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: DAILY CHECK: STREAKS (09:00)
+        Cron->>AIMessageService: Check streaks (daily 09:00)
+        
+        AIMessageService->>DB: Find clients with 7+ day streak
+        DB-->>AIMessageService: Clients with streaks
+        
+        loop For each client with 7+ day streak
+            AIMessageService->>AIMessageService: Generate MOTIVATIONAL message:<br/>"7 days straight! You're unstoppable.<br/>Keep this energy!"
+            AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: MOTIVATIONAL,<br/>trigger: STREAK}
+            AIMessageService->>PushService: Send push notification (V4)
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: MONDAY CHECK: WEIGHT SPIKES (10:00)
+        Cron->>AIMessageService: Check weight spikes (Monday 10:00)
+        
+        AIMessageService->>WeighInService: Get Monday weigh-ins with spike >5%
+        WeighInService->>DB: Find WeighIns where:<br/>date = Monday<br/>isWeightSpike = true
+        DB-->>WeighInService: Weigh-ins with spikes
+        
+        loop For each weigh-in with spike
+            AIMessageService->>AIMessageService: Generate WARNING message:<br/>"Weight up 3kg this week?<br/>Time to explain what happened."
+            AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: WARNING,<br/>trigger: WEIGHT_SPIKE}
+            AIMessageService->>PushService: Send push notification (V4)
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: CLIENT VIEWS MESSAGES
+        Client->>Dashboard: View dashboard
+        Dashboard->>API: GET /api/gamification/messages/:clientId
+        API->>AIMessageService: getMessages(clientId)
+        AIMessageService->>DB: Find AIMessages by clientId<br/>Sort by createdAt DESC
+        DB-->>AIMessageService: Array of messages
+        AIMessageService-->>API: Messages (latest first)
+        API-->>Dashboard: Messages data
+        
+        Dashboard->>Dashboard: Display AIMessageCard<br/>(tone-based styling)
+        Dashboard-->>Client: Latest message shown<br/>(AGGRESSIVE: red, MOTIVATIONAL: green, etc.)
+        
+        Client->>Dashboard: Tap message card
+        Dashboard->>API: GET /api/gamification/messages/:clientId
+        API-->>Dashboard: All messages (history)
+        Dashboard-->>Client: AI Messages page<br/>(full history)
+        
+        Client->>Dashboard: Tap message
+        Dashboard->>API: PATCH /api/gamification/messages/:id/read
+        API->>AIMessageService: markAsRead(messageId)
+        AIMessageService->>DB: Update AIMessage.isRead = true
+    end
+
+    Note over Cron,Client: Result: AI automatically generates messages<br/>based on performance, client sees in app<br/>Push notifications sent (V4)
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> AI Message sistem primorava klijente da budu odgovorni kroz automatske poruke. Ovo je deo "psychological warfare" filozofije - sistem govori kao strog trener.
+    </p>
+    <p>
+        <strong>Kako radi AI Message sistem:</strong>
+    </p>
+    <ul>
+        <li><strong>Daily checks:</strong> Cron Jobs proveravaju performanse klijenta (missed workouts, streaks, weight spikes)</li>
+        <li><strong>Message generation:</strong> Sistem automatski generiše poruke na osnovu trigger-a (MISSED_WORKOUTS, STREAK, WEIGHT_SPIKE)</li>
+        <li><strong>Tone-based styling:</strong> Poruke se stilizuju na osnovu tona (AGGRESSIVE: crveno, MOTIVATIONAL: zeleno, WARNING: narandžasto)</li>
+        <li><strong>Push notifications:</strong> Poruke se šalju kao push notifikacije (V4)</li>
+        <li><strong>Message history:</strong> Klijent može da vidi kompletnu istoriju poruka u aplikaciji</li>
+    </ul>
+    <p>
+        <strong>Message triggers:</strong>
+    </p>
+    <ul>
+        <li><strong>MISSED_WORKOUTS:</strong> Ako je bilo >2 propuštena treninga u poslednjih 7 dana</li>
+        <li><strong>STREAK:</strong> Ako je streak >= 7 dana</li>
+        <li><strong>WEIGHT_SPIKE:</strong> Ako je promena težine >5% (Monday weigh-ins)</li>
+    </ul>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

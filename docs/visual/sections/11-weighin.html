@@ -1,0 +1,395 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Weigh-In Flow (Linked to Plan)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">11. Weigh-In Flow (Linked to Plan)</p>
+            
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Weigh-In Flow (Linked to Plan)</strong> pokazuje kako klijent beleži svoju težinu, povezanu sa aktivnim planom.
+        Preporučeno je da se težina beleži svakog ponedeljka (početak nedelje).
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>WeighIn</code> - Zapis težine klijenta na određeni datum</li>
+        <li><code>isMandatory</code> - Flag koji označava da li je weigh-in obavezan (ponedeljak plan nedelje)</li>
+        <li><code>isWeightSpike</code> - Flag koji označava da li je došlo do velike promene težine (>5%)</li>
+        <li><code>aiFlagged</code> - Flag koji označava da li je AI detektovao anomaliju</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar želi da zabeleži svoju težinu. Prethodna težina je bila 80kg, a sada je 85kg (povećanje od 6.25%).
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar klikne "Record" na WeighInCard-u</li>
+        <li>Unosi težinu: 85kg i opcione napomene</li>
+        <li>Backend pronalazi aktivni plan i povezuje weigh-in sa planom</li>
+        <li>Backend proverava da li je ponedeljak plan nedelje → isMandatory = true</li>
+        <li>Backend pronalazi poslednji weigh-in (80kg) i računa promenu: (85-80)/80 * 100 = 6.25%</li>
+        <li>Pošto je promena >5%, postavlja se isWeightSpike = true i aiFlagged = true</li>
+        <li>AI generiše poruku: "Weight increased by 6.25%"</li>
+        <li>Weigh-in se čuva u bazi, dashboard se osvežava</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je zabeležio težinu, sistem je detektovao spike, i AI će poslati poruku treneru.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard<br/>(WeighInCard)
+    participant WeighInPage as Weigh-In Page
+    participant API as Backend API
+    participant WeighInService as WeighInService
+    participant ClientsService as ClientsService
+    participant PlansService as PlansService
+    participant DB as MongoDB
+
+    Client->>Dashboard: View dashboard
+    Dashboard->>API: GET /api/checkins/weigh-in/latest
+    API->>WeighInService: getLatestWeighIn(userId)
+    WeighInService->>DB: Find latest WeighIn by clientId
+    DB-->>WeighInService: Latest WeighIn or null
+    WeighInService-->>API: Latest weigh-in data
+    API-->>Dashboard: Weigh-in data (weight, date, days since)
+    Dashboard-->>Client: Display WeighInCard<br/>(with "Record" button)
+
+    Client->>Dashboard: Click "Record" button
+    Dashboard->>WeighInPage: Navigate to /weigh-in
+
+    WeighInPage->>Client: Display form<br/>(weight input, notes,<br/>Monday recommendation)
+
+    Client->>WeighInPage: Enter weight, optional notes
+    Client->>WeighInPage: Submit weigh-in
+
+    WeighInPage->>API: POST /api/checkins/weigh-in<br/>{weight, date, notes, planId?}
+
+    API->>WeighInService: createWeighIn(clientId, weight, date, notes, planId)
+
+    WeighInService->>ClientsService: getProfile(clientId)
+    ClientsService->>DB: Find ClientProfile
+    DB-->>ClientsService: ClientProfile with planHistory
+
+    WeighInService->>WeighInService: getActivePlan(clientProfile)
+
+    alt Active plan found
+        WeighInService->>WeighInService: Link weigh-in to plan:<br/>planId = activePlan.planId<br/>planStartDate = activePlan.planStartDate
+        
+        WeighInService->>WeighInService: Check if Monday of plan week
+        alt Is Monday of plan week
+            Note over WeighInService: isMandatory = true
+        else Other day
+            Note over WeighInService: isMandatory = false<br/>(Monday recommended)
+        end
+    else No active plan
+        Note over WeighInService: planId = null<br/>(weigh-in without plan)
+    end
+
+    WeighInService->>DB: Find last weigh-in for spike detection
+    DB-->>WeighInService: Last WeighIn or null
+
+    alt Last weigh-in exists
+        WeighInService->>WeighInService: Calculate weight change %<br/>((current - last) / last * 100)
+        
+        alt Weight increase > 5%
+            Note over WeighInService: isWeightSpike = true<br/>aiFlagged = true<br/>aiMessage = "Weight increased by X%"
+        else Weight decrease > 5%
+            Note over WeighInService: aiFlagged = true<br/>aiMessage = "Weight decreased by X%"
+        end
+    end
+
+    WeighInService->>DB: Save WeighIn document<br/>(with planId, planStartDate,<br/>isMandatory, isWeightSpike)
+
+    WeighInService-->>API: WeighIn saved
+    API-->>WeighInPage: Success response
+
+    WeighInPage->>Dashboard: Return true (refresh signal)
+    Dashboard->>API: GET /api/checkins/weigh-in/latest<br/>(refresh data)
+    API-->>Dashboard: Updated weigh-in data
+    Dashboard-->>Client: Updated WeighInCard displayed
+
+    Note over Client,DB: Result: Weigh-in recorded, linked to plan,<br/>spike detected if >5% change,<br/>dashboard auto-refreshes
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Weigh-in sistem omogućava praćenje napretka klijenta. Težina se povezuje sa planom da bi se pratila promena tokom nedelje.
+    </p>
+    <p>
+        <strong>Kako radi weigh-in:</strong>
+    </p>
+    <ul>
+        <li><strong>Plan linking:</strong> Weigh-in se automatski povezuje sa aktivnim planom (planId, planStartDate)</li>
+        <li><strong>Monday recommendation:</strong> Preporučeno je da se težina beleži svakog ponedeljka (isMandatory = true)</li>
+        <li><strong>Spike detection:</strong> Ako je promena težine >5% u odnosu na poslednji weigh-in, detektuje se spike</li>
+        <li><strong>AI flagging:</strong> Spike se označava sa aiFlagged = true i generiše se AI poruka</li>
+        <li><strong>Dashboard refresh:</strong> Nakon weigh-in-a, dashboard se automatski osvežava</li>
+    </ul>
+    <p>
+        <strong>Spike threshold:</strong> Promena >5% se smatra značajnom i zahteva pažnju. AI će poslati poruku treneru da proveri šta se dešava.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

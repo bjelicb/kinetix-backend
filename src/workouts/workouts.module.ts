@@ -12,6 +12,7 @@ import { PlansModule } from '../plans/plans.module';
 import { GamificationModule } from '../gamification/gamification.module';
 import { DailyWorkoutChecker } from './jobs/daily-workout-checker.job';
 import { CleanupOldLogs } from './jobs/cleanup-old-logs.job';
+import { MigrateWorkoutLogDuplicatesService } from './migrations/migrate-workout-log-duplicates';
 
 @Module({
   imports: [
@@ -27,8 +28,8 @@ import { CleanupOldLogs } from './jobs/cleanup-old-logs.job';
     forwardRef(() => GamificationModule),
   ],
   controllers: [WorkoutsController],
-  providers: [WorkoutsService, DailyWorkoutChecker, CleanupOldLogs],
-  exports: [WorkoutsService],
+  providers: [WorkoutsService, DailyWorkoutChecker, CleanupOldLogs, MigrateWorkoutLogDuplicatesService],
+  exports: [WorkoutsService, MigrateWorkoutLogDuplicatesService],
 })
 export class WorkoutsModule {}
 

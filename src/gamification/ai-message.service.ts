@@ -53,29 +53,46 @@ export class AIMessageService {
     });
 
     try {
-      // Analyze client data and select tone
-      const tone = this.selectTone(dto.trigger, dto.metadata);
-      
-      AppLogger.logOperation('AI_MESSAGE_ANALYZE', {
-        clientId: dto.clientId,
-        trigger: dto.trigger,
-        metadata: dto.metadata,
-      }, 'debug');
+      // If custom message is provided, use it directly
+      // Otherwise, generate from template
+      let message: string;
+      let tone: AIMessageTone;
 
-      AppLogger.logOperation('AI_MESSAGE_TONE_SELECTED', {
-        clientId: dto.clientId,
-        tone,
-        reason: this.getToneReason(dto.trigger),
-      }, 'debug');
+      if (dto.customMessage) {
+        // Use custom message and provided tone (or default to WARNING)
+        message = dto.customMessage;
+        tone = dto.tone || AIMessageTone.WARNING;
+        
+        AppLogger.logOperation('AI_MESSAGE_CUSTOM', {
+          clientId: dto.clientId,
+          trigger: dto.trigger,
+          tone,
+          messageLength: message.length,
+        }, 'debug');
+      } else {
+        // Generate from template
+        tone = this.selectTone(dto.trigger, dto.metadata);
+        
+        AppLogger.logOperation('AI_MESSAGE_ANALYZE', {
+          clientId: dto.clientId,
+          trigger: dto.trigger,
+          metadata: dto.metadata,
+        }, 'debug');
 
-      // Generate message from template
-      const message = this.generateMessageFromTemplate(tone, dto.metadata);
+        AppLogger.logOperation('AI_MESSAGE_TONE_SELECTED', {
+          clientId: dto.clientId,
+          tone,
+          reason: this.getToneReason(dto.trigger),
+        }, 'debug');
 
-      AppLogger.logOperation('AI_MESSAGE_TEMPLATE_APPLIED', {
-        clientId: dto.clientId,
-        tone,
-        messageLength: message.length,
-      }, 'debug');
+        message = this.generateMessageFromTemplate(tone, dto.metadata);
+
+        AppLogger.logOperation('AI_MESSAGE_TEMPLATE_APPLIED', {
+          clientId: dto.clientId,
+          tone,
+          messageLength: message.length,
+        }, 'debug');
+      }
 
       // Save to database
       const aiMessage = new this.aiMessageModel({
@@ -142,6 +159,41 @@ export class AIMessageService {
       createdAt: (msg as any).createdAt,
       updatedAt: (msg as any).updatedAt,
     }));
+  }
+
+  /**
+   * Get all messages across all clients (Admin only)
+   */
+  async getAllMessages(): Promise<AIMessageDto[]> {
+    AppLogger.logStart('AI_MESSAGE_GET_ALL', {});
+
+    const messages = await this.aiMessageModel
+      .find({})
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+
+    AppLogger.logOperation('AI_MESSAGE_GET_ALL', {
+      count: messages.length,
+    }, 'info');
+
+    const result = messages.map(msg => ({
+      id: (msg as any)._id.toString(),
+      clientId: msg.clientId.toString(),
+      message: msg.message,
+      tone: msg.tone,
+      trigger: msg.trigger,
+      isRead: msg.isRead,
+      metadata: msg.metadata,
+      createdAt: (msg as any).createdAt,
+      updatedAt: (msg as any).updatedAt,
+    }));
+
+    AppLogger.logComplete('AI_MESSAGE_GET_ALL', {
+      count: result.length,
+    });
+
+    return result;
   }
 
   /**

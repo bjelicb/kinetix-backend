@@ -1,0 +1,414 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Plan Assignment Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">2. Plan Assignment Flow</p>
+            <span class="version-badge v2">âœ“ V2</span>
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Plan Assignment Flow</strong> pokazuje kako trener ili admin dodeljuje plan klijentu. 
+        <strong>VAŽNO:</strong> Plan se samo dodeljuje, ali se NE otključava automatski i NE naplaćuje odmah.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>planHistory[]</code> - Plan se dodaje u istoriju planova</li>
+        <li><code>currentPlanId</code> - Ostaje <code>null</code> (klijent mora ručno da otključi)</li>
+        <li><code>balance</code> - NE naplaćuje se odmah (naplaćuje se tek kada klijent otključi)</li>
+        <li><code>planStatus</code> - Biće <code>'future'</code> (zaključan) dok klijent ne otključi</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko dodeljuje "Beginner Plan" klijentu Petru za narednu nedelju.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Trener klikne "Assign Plan" u dashboard-u</li>
+        <li>Backend dodaje plan u <code>Petar.planHistory[]</code> sa datumima (npr. 1.1.2025 - 7.1.2025)</li>
+        <li>Backend generiše 7 <code>WorkoutLog</code> dokumenta (po jedan za svaki dan)</li>
+        <li><code>Petar.currentPlanId</code> ostaje <code>null</code></li>
+        <li><code>Petar.balance</code> ostaje nepromenjen</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar vidi plan u aplikaciji, ali je zaključan. Mora da klikne "Unlock Next Week" da bi ga aktivirao i platio.
+    </p>
+</div>
+
+<div class="diagram-container">
+    <div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin/Trainer
+    participant API as Backend API
+    participant PlanService as PlansService
+    participant ClientService as ClientsService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+
+    Admin->>API: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+    
+    API->>PlanService: assignPlanToClients(planId, userId, role, dto)
+    
+    PlanService->>DB: Find plan by ID
+    DB-->>PlanService: Plan document (with weeklyCost)
+    
+    Note over PlanService: Validate: Plan ownership<br/>(unless ADMIN)
+    
+    Note over PlanService: Convert clientIds to clientProfileIds<br/>(handle userId or clientProfileId)
+    
+    loop For each clientId
+        PlanService->>ClientService: getProfile(clientId) or getProfileById(clientId)
+        ClientService->>DB: Find client profile
+        DB-->>ClientService: ClientProfile
+        
+        alt Client profile not found
+            PlanService->>DB: Create new ClientProfile<br/>with trainerId from plan
+            DB-->>PlanService: New ClientProfile created
+        end
+        
+        PlanService->>PlanService: Check if plan exists in planHistory
+        
+        alt Plan already exists in planHistory
+            Note over PlanService: Skip this client<br/>(plan already assigned)
+        else New plan assignment
+            Note over PlanService: Proceed with assignment
+        end
+    end
+    
+    loop For each newClient
+        alt Client has no trainer
+            PlanService->>DB: Update client.trainerId = plan.trainerId
+        else Client has different trainer
+            PlanService->>DB: Update client.trainerId = plan.trainerId<br/>(change trainer to match plan)
+        end
+        
+        PlanService->>DB: Add to planHistory array:<br/>{planId, startDate, endDate, trainerId, assignedAt}
+        
+        Note over PlanService: ⚠️ CRITICAL:<br/>DO NOT set currentPlanId<br/>DO NOT charge balance<br/>Client must UNLOCK manually
+    end
+    
+    PlanService->>WorkoutService: generateWeeklyLogs()<br/>for all assigned clients
+    loop For each newClient
+        WorkoutService->>DB: Create 7 WorkoutLog documents<br/>(one per day, isCompleted: false)
+    end
+    
+    PlanService->>DB: Add clients to plan.assignedClientIds
+    
+    PlanService-->>API: {message: "Plan assigned successfully"}
+    API-->>Admin: Success response
+
+    Note over Admin,DB: ✅ Result: Client has plan in planHistory,<br/>✅ 7 workout logs generated,<br/>❌ currentPlanId NOT set (null),<br/>❌ balance NOT charged yet,<br/>👉 Client must UNLOCK to activate<br/>📌 When displayed: planStatus = 'future' (locked)
+    </div>
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Koraci u procesu:</h4>
+    <ol>
+        <li><strong>Validacija:</strong> Proverava se da li trener poseduje plan (osim ako je ADMIN)</li>
+        <li><strong>Konverzija ID-jeva:</strong> <code>clientIds</code> se konvertuju u <code>clientProfileIds</code> (može biti userId ili clientProfileId)</li>
+        <li><strong>Kreiranje profila:</strong> Ako klijent nema profil, kreira se novi sa <code>trainerId</code> iz plana</li>
+        <li><strong>Provera duplikata:</strong> Ako plan već postoji u <code>planHistory</code>, preskače se</li>
+        <li><strong>Dodela trenera:</strong> Ako klijent nema trenera ili ima drugog, postavlja se trener iz plana</li>
+        <li><strong>Dodavanje u istoriju:</strong> Plan se dodaje u <code>planHistory[]</code> sa datumima i trenerom</li>
+        <li><strong>Generisanje logova:</strong> Kreira se 7 <code>WorkoutLog</code> dokumenta (po jedan za svaki dan)</li>
+        <li><strong>Povezivanje:</strong> Klijent se dodaje u <code>plan.assignedClientIds[]</code></li>
+    </ol>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Šta se NE dešava:</h4>
+    <ul>
+        <li><strong>currentPlanId se NE postavlja</strong> - ostaje <code>null</code> dok klijent ne otključi</li>
+        <li><strong>balance se NE naplaćuje</strong> - naplaćuje se tek kada klijent klikne "Unlock Next Week"</li>
+        <li><strong>Plan se NE aktivira automatski</strong> - klijent mora eksplicitno da otključi</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Zašto ovako?</h4>
+    <p>
+        Ovo je deo "Discipline Enforcer" filozofije - klijent mora eksplicitno da otključi i plati svaku nedelju. 
+        Trener može da dodeli planove unapred, ali klijent kontroliše kada aktivira i plati.
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoint:</h4>
+    <p>
+        <code>POST /api/plans/:id/assign</code>
+    </p>
+    <p>
+        <strong>Request body:</strong>
+    </p>
+    <pre style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; overflow-x: auto; color: #00F0FF; font-family: 'Courier New', monospace;">
+{
+  "clientIds": ["userId1", "userId2"],
+  "startDate": "2025-01-01"
+}
+    </pre>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Rezultat:</h4>
+    <ul>
+        <li>Plan je u <code>planHistory[]</code></li>
+        <li>7 workout logova je generisano</li>
+        <li><code>currentPlanId</code> je <code>null</code></li>
+        <li><code>balance</code> nije naplaćen</li>
+        <li>Kada se prikaže, <code>planStatus</code> je <code>'future'</code> (zaključan)</li>
+    </ul>
+</div>
+
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,12 +1,12 @@
 # KINETIX BACKEND - STATUS
 ## Trenutno Stanje Implementacije
 
-**Poslednji Update:** 2025-12-08  
+**Poslednji Update:** 2025-12-09  
 **Verzija:** Referenca na glavni `docs/BACKEND_MASTERPLAN.md`
 
 ---
 
-## 📊 **UKUPAN PROGRES: ~92%**
+## 📊 **UKUPAN PROGRES: ~95%**
 
 ---
 
@@ -26,17 +26,32 @@
 - ✅ SaaS Kill-Switch (subscription management)
 - ✅ Weekly Penalty Cron Job
 - ✅ Subscription Checker Cron Job
+- ✅ Daily Workout Checker Cron Job (mark overdue workouts as missed)
+- ✅ Cleanup Old Logs Cron Job (cleanup 90+ days old logs)
+- ✅ CLI Commands (migrate-duplicates, list-workout-logs)
 
-### **API Endpoints (47+ endpointa):**
+### **API Endpoints (67+ endpointa):**
 - ✅ Auth endpoints (register, login, refresh, me, logout)
 - ✅ User endpoints (CRUD)
 - ✅ Trainer endpoints (CRUD, subscription management)
 - ✅ Client endpoints (CRUD, plan assignment, stats)
-- ✅ Plan endpoints (CRUD, assign)
+- ✅ Plan endpoints (CRUD, assign, cancel, duplicate, request-next-week)
 - ✅ Workout endpoints (generate, log, complete)
-- ✅ Check-in endpoints (create, verify, list)
-- ✅ Gamification endpoints (penalty status, history)
-- ✅ Admin endpoints (stats, user management, trainer management)
+- ✅ Check-in endpoints (create, verify, list, date range, delete)
+- ✅ Gamification endpoints (penalty status, history, AI messages)
+- ✅ Admin endpoints (stats, user management, trainer management, workout management)
+  - ✅ `GET /api/admin/users` - Lista svih korisnika
+  - ✅ `GET /api/admin/stats` - Sistem statistike
+  - ✅ `GET /api/admin/plans` - Lista svih planova
+  - ✅ `GET /api/admin/workouts/all` - Lista svih workout logs
+  - ✅ `GET /api/admin/workouts/stats` - Workout statistike
+  - ✅ `POST /api/admin/assign-client` - Dodeljivanje klijenta treneru
+  - ✅ `PATCH /api/admin/users/:id` - Update korisnika
+  - ✅ `DELETE /api/admin/users/:id` - Brisanje korisnika
+  - ✅ `PATCH /api/admin/users/:id/status` - Suspend/activate korisnika
+  - ✅ `PATCH /api/admin/workouts/:id/status` - Update workout statusa
+  - ✅ `DELETE /api/admin/workouts/:id` - Brisanje workout log-a
+- ✅ Media endpoints (upload signatures, batch signatures)
 
 ---
 
@@ -53,19 +68,23 @@
 ---
 
 ### **🟡 VISOKI PRIORITET:**
-3. ❌ Plan deletion validation (soft delete za planove sa aktivnim logs)
-4. ❌ Workout log duplicate prevention
-5. ❌ Batch media signatures endpoint
-6. ❌ Workout completion time validation (suspicious completion detection)
-7. ❌ Plan overlap handling (inteligentno rukovanje preklapajućim planovima)
-8. ❌ Workout log date validation (ne dozvoliti budućnost/stare datume)
-9. ❌ Timezone handling (konzistentno rukovanje sa timezone-ovima)
-10. ❌ **Workout log cleanup on plan change (KRITIČNO)**
-11. ❌ Workout log plan validation
-12. ❌ Plan template vs assigned plan logic
-13. ❌ Plan cancellation
+3. ✅ Plan deletion validation (soft delete za planove sa aktivnim logs)
+4. ✅ Workout log duplicate prevention
+5. ✅ Batch media signatures endpoint
+6. ✅ Workout completion time validation (suspicious completion detection)
+7. ✅ Plan overlap handling (inteligentno rukovanje preklapajućim planovima)
+8. ✅ Workout log date validation (ne dozvoliti budućnost/stare datume)
+9. ✅ Timezone handling (konzistentno rukovanje sa timezone-ovima)
+10. ✅ **Workout log cleanup on plan change (KRITIČNO)**
+11. ✅ Workout log plan validation
+12. ✅ Plan template vs assigned plan logic
+13. ✅ Plan cancellation
+14. ✅ **Admin Management System (KOMPLETAN)**
+15. ✅ **Plan Duplicate Endpoint**
+16. ✅ **Check-ins Date Range Endpoint**
+17. ✅ **Global Configuration (CORS, Validation, Filters, Interceptors)**
 
-**Referenca:** `docs/BACKEND_MASTERPLAN_V2.md` - **FAZA 2**
+**Referenca:** `docs/BACKEND_MASTERPLAN_V2_DONE.md` - **FAZA 2** ✅ **ZAVRŠENO**
 
 ---
 
@@ -108,17 +127,26 @@
 
 ---
 
-### **FAZA 2: EDGE CASE HANDLING** 🟡
-**Status:** ❌ **NIJE POČETO**  
+### **FAZA 2: EDGE CASE HANDLING** 🟢
+**Status:** ✅ **ZAVRŠENO**  
 **Prioritet:** 🟡 **VISOKI**
 
 **Zadaci:**
-- Plan deletion validation (soft delete)
-- Workout log duplicate prevention
-- Batch media signatures
-- Workout completion time validation (suspicious completion)
+- ✅ Plan deletion validation (soft delete)
+- ✅ Workout log duplicate prevention
+- ✅ Batch media signatures
+- ✅ Workout completion time validation (suspicious completion)
+- ✅ Plan overlap handling
+- ✅ Workout log date validation
+- ✅ Plan cancellation
+- ✅ AI Message System
+- ✅ Request Next Week notification
+- ✅ Admin Management System
+- ✅ Plan Duplicate Endpoint
+- ✅ Check-ins Date Range Endpoint
+- ✅ Global Configuration & Security
 
-**Fajl:** `docs/BACKEND_MASTERPLAN_V2.md`
+**Fajl:** `docs/BACKEND_MASTERPLAN_V2_DONE.md` ✅ **100% KOMPLETNO**
 
 ---
 
@@ -151,14 +179,21 @@
 
 ## 🎯 **SLEDEĆI KORACI:**
 
-1. **ZAVRŠI FAZU 1** (`docs/BACKEND_MASTERPLAN_V1.md`)
-   - Sync endpointi (KRITIČNO)
+1. ✅ **FAZA 1 ZAVRŠENA** (`docs/BACKEND_MASTERPLAN_V1.md`)
+   - ✅ Sync endpointi
 
-2. **ZAVRŠI FAZU 2** (`docs/BACKEND_MASTERPLAN_V2.md`)
-   - Edge case handling
+2. ✅ **FAZA 2 ZAVRŠENA** (`docs/BACKEND_MASTERPLAN_V2_DONE.md`)
+   - ✅ Edge case handling
+   - ✅ Admin Management System
+   - ✅ Global Configuration
 
 3. **ZAVRŠI FAZU 3** (`docs/BACKEND_MASTERPLAN_V3.md`)
-   - Admin dashboard endpointi
+   - Admin Check-ins Management endpoints
+   - Admin Analytics endpoints
+   - Improved validation messages
+   - Plan expiration notifications
+   - Plan renewal feature
+   - Trainer switch handling
 
 4. **TESTIRAJ KOMPLETNO**
    - Integration testing

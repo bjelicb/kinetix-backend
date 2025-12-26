@@ -1,0 +1,370 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - Admin Dashboard - Full Control Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+            width: 100%;
+        }
+        
+        .mermaid {
+            background: transparent;
+            width: 100%;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">5. Admin Dashboard - Full Control Flow</p>
+            
+        </header>
+        
+        <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Admin Dashboard - Full Control Flow</strong> pokazuje sve akcije koje admin može da izvrši u sistemu.
+        Admin ima potpunu kontrolu nad svim korisnicima, trenerima, planovima, i treningima.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Admin Dashboard</code> - Centralna komanda za upravljanje celim sistemom</li>
+        <li><code>Bypass guards</code> - Admin može da zaobiđe sve provere vlasništva i dozvola</li>
+        <li><code>Kill-switch control</code> - Admin može da aktivira/deaktivira trenere (blokira sve njihove klijente)</li>
+        <li><code>Cascade delete</code> - Brisanje korisnika automatski briše i povezane profile</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Admin Marko želi da pregleda sve trenere, vidi njihove klijente, i suspenduje trenera koji ne plaća pretplatu.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Admin otvara Admin Dashboard</li>
+        <li>Klikne na "Trainer Management" → vidi sve trenere sa statusom pretplate</li>
+        <li>Klikne na trenera koji ne plaća → vidi sve njegove klijente</li>
+        <li>Klikne "Suspend Trainer" → trener se suspenduje, kill-switch se aktivira</li>
+        <li>Svi klijenti tog trenera dobijaju 403 Forbidden kada pokušaju da pristupe aplikaciji</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Admin ima potpunu kontrolu i može da upravlja celim sistemom iz jednog mesta.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[Admin Dashboard] --> B[User Management]
+    A --> C[Trainer Management]
+    A --> D[Plan Management]
+    A --> E[Workout Management]
+    A --> F[Client Management]
+    A --> G[System Stats]
+    
+    B --> B1[Create User<br/>CLIENT/TRAINER/ADMIN]
+    B --> B2[Edit User<br/>email, name, role]
+    B --> B3[Delete User<br/>with cascade]
+    B --> B4[View All Users<br/>with filters]
+    
+    C --> C1[View All Trainers<br/>with subscription status]
+    C --> C2[Assign Clients to Trainer<br/>or Unassign]
+    C --> C3[Activate/Suspend Trainer<br/>Kill-switch control]
+    C --> C4[View Trainer's Clients]
+    C --> C5[Manage Subscription<br/>expiry, status]
+    
+    D --> D1[Create Plan<br/>for any trainer]
+    D --> D2[Edit Plan<br/>workouts, exercises]
+    D --> D3[Delete Plan<br/>with validation]
+    D --> D4[Assign Plan to Clients<br/>bypass trainer ownership]
+    D --> D5[View Plan Details<br/>assigned clients, history]
+    D --> D6[Duplicate Plan<br/>as template]
+    
+    E --> E1[View All Workout Logs<br/>by client, date, plan]
+    E --> E2[View Workout Details<br/>exercises, sets, reps]
+    E --> E3[Manual Log Correction<br/>if needed]
+    E --> E4[View Completion Stats<br/>per client/week]
+    
+    F --> F1[View All Clients<br/>with trainer info]
+    F --> F2[View Client Profile<br/>metrics, goals, stats]
+    F --> F3[View Client Plan History<br/>all assigned plans]
+    F --> F4[View Active Plan<br/>current week]
+    F --> F5[Assign/Reassign Client<br/>to different trainer]
+    F --> F6[View Client Workouts<br/>completed, missed]
+    
+    G --> G1[Total Users<br/>Trainers, Clients]
+    G --> G2[Active Subscriptions<br/>Suspended, Expired]
+    G --> G3[Total Plans Created<br/>Templates vs Assigned]
+    G --> G4[Workout Completion Rate<br/>Average across all clients]
+    G --> G5[System Health<br/>API uptime, DB status]
+    
+    style A fill:#00F0FF,stroke:#fff,stroke-width:3px
+    style B fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style C fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style D fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style E fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style F fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+    style G fill:#1E1E1E,stroke:#00F0FF,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Admin Dashboard je centralna komanda za upravljanje celim sistemom. Admin može da rešava probleme, upravlja korisnicima, i kontroliše kill-switch.
+    </p>
+    <p>
+        <strong>Admin može:</strong>
+    </p>
+    <ul>
+        <li><strong>Kreirati korisnike:</strong> Bilo koje role (CLIENT, TRAINER, ADMIN)</li>
+        <li><strong>Upravljati trenerima:</strong> Aktivirati/suspendovati, produžiti pretplatu, dodeliti klijente</li>
+        <li><strong>Upravljati planovima:</strong> Kreirati, editovati, brisati, dodeljivati bilo kom treneru (bypass ownership)</li>
+        <li><strong>Pregledati treninge:</strong> Svi workout logs, stats, completion rates</li>
+        <li><strong>Upravljati klijentima:</strong> Pregledati profile, plan history, reassign treneru</li>
+        <li><strong>System stats:</strong> Ukupan broj korisnika, subscription status, completion rates</li>
+    </ul>
+    <p>
+        <strong>Kill-switch kontrola:</strong> Admin može da suspenduje trenera, što automatski blokira sve njegove klijente (403 Forbidden). Ovo je kritično za SaaS zaštitu.
+    </p>
+</div>
+
+        </div>
+    </div>
+    
+    <script>
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Render all Mermaid diagrams on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            setTimeout(() => {
+                document.querySelectorAll('.mermaid').forEach(async (element) => {
+                    try {
+                        const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                        element.id = id;
+                        await mermaid.run({ nodes: [element] });
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -7,6 +7,8 @@ import { WorkoutLog, WorkoutLogDocument } from './schemas/workout-log.schema';
 import { ClientProfile } from '../clients/schemas/client-profile.schema';
 import { WeeklyPlan } from '../plans/schemas/weekly-plan.schema';
 import { ClientsService } from '../clients/clients.service';
+import { PlansService } from '../plans/plans.service';
+import { GamificationService } from '../gamification/gamification.service';
 import { LogWorkoutDto } from './dto/log-workout.dto';
 import { UpdateWorkoutLogDto } from './dto/update-workout-log.dto';
 
@@ -84,6 +86,18 @@ describe('WorkoutsService', () => {
             getProfileById: jest.fn(),
           },
         },
+        {
+          provide: PlansService,
+          useValue: {
+            getPlanById: jest.fn(),
+          },
+        },
+        {
+          provide: GamificationService,
+          useValue: {
+            awardPoints: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -97,6 +111,9 @@ describe('WorkoutsService', () => {
     (workoutLogModel as any).find = jest.fn();
     (workoutLogModel as any).insertMany = jest.fn();
     (workoutLogModel as any).updateMany = jest.fn();
+    (workoutLogModel as any).countDocuments = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(0), // Return 0 to avoid migration guard warning
+    });
   });
 
   afterEach(() => {
@@ -248,6 +265,75 @@ describe('WorkoutsService', () => {
       expect(result.isCompleted).toBe(true);
       expect(result.completedExercises).toEqual(logDto.completedExercises);
     });
+
+    it('should normalize workoutDate to start of day', async () => {
+      // Use a recent date (within 30 days) to avoid validation error
+      const today = new Date();
+      const workoutDateWithTime = new Date(today);
+      workoutDateWithTime.setHours(14, 30, 0, 0);
+      
+      const logDto: LogWorkoutDto = {
+        workoutDate: workoutDateWithTime, // Date with time
+        dayOfWeek: 1,
+        weeklyPlanId: mockPlanId,
+        completedExercises: [],
+        isCompleted: true,
+      };
+
+      const clientsService = module.get<ClientsService>(ClientsService);
+      (clientsService.getProfile as jest.Mock).mockResolvedValue(mockClientProfile as any);
+      (workoutLogModel as any).findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(null),
+      });
+
+      const normalizedDate = new Date(workoutDateWithTime);
+      normalizedDate.setUTCHours(0, 0, 0, 0);
+      const mockInstance = {
+        ...logDto,
+        _id: new Types.ObjectId(),
+        workoutDate: normalizedDate,
+        save: jest.fn().mockResolvedValue({ ...mockWorkoutLog, _id: new Types.ObjectId(), workoutDate: normalizedDate }),
+      };
+      (workoutLogModel as any).mockImplementation(() => mockInstance);
+
+      const result = await service.logWorkout(mockClientId, logDto);
+
+      // Verify that findOne was called with range query (normalized date)
+      expect((workoutLogModel as any).findOne).toHaveBeenCalled();
+      const findOneCall = (workoutLogModel as any).findOne.mock.calls[0][0];
+      expect(findOneCall.workoutDate).toHaveProperty('$gte');
+      expect(findOneCall.workoutDate).toHaveProperty('$lt');
+    });
+
+    it('should find existing log with different time same day using range query', async () => {
+      const logDto: LogWorkoutDto = {
+        workoutDate: new Date('2024-01-01T23:59:59.999Z'), // Different time, same day
+        dayOfWeek: 1,
+        weeklyPlanId: mockPlanId,
+        completedExercises: [],
+        isCompleted: true,
+      };
+
+      const clientsService = module.get<ClientsService>(ClientsService);
+      (clientsService.getProfile as jest.Mock).mockResolvedValue(mockClientProfile as any);
+      const existingLog = {
+        ...mockWorkoutLog,
+        workoutDate: new Date('2024-01-01T00:00:00.000Z'), // Existing log with normalized date
+        completedExercises: [],
+        isCompleted: false,
+        save: jest.fn().mockResolvedValue({ ...mockWorkoutLog, ...logDto }),
+      };
+
+      (workoutLogModel as any).findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(existingLog),
+      });
+
+      const result = await service.logWorkout(mockClientId, logDto);
+
+      // Verify that existing log was found (range query works)
+      expect(existingLog.save).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
   });
 
   describe('updateWorkoutLog', () => {
@@ -280,6 +366,74 @@ describe('WorkoutsService', () => {
       await expect(
         service.updateWorkoutLog(mockLogId, { isCompleted: true }),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should normalize workoutDate before update', async () => {
+      const updateDto: UpdateWorkoutLogDto = {
+        workoutDate: new Date('2024-01-01T14:30:00.000Z'), // Date with time
+        isCompleted: true,
+      };
+
+      const normalizedDate = new Date('2024-01-01T00:00:00.000Z');
+      const updatedLog = { ...mockWorkoutLog, workoutDate: normalizedDate, ...updateDto };
+      
+      (workoutLogModel as any).findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockWorkoutLog),
+      });
+      (workoutLogModel as any).findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(updatedLog),
+      });
+
+      const result = await service.updateWorkoutLog(mockLogId, updateDto);
+
+      // Verify that workoutDate was normalized in the update
+      const updateCall = (workoutLogModel as any).findByIdAndUpdate.mock.calls[0][1];
+      expect(updateCall.$set.workoutDate).toEqual(normalizedDate);
+      // Note: The result may not be normalized if findByIdAndUpdate doesn't trigger pre-save hook
+      // But the update call itself should have normalized date
+      expect(updateCall.$set.workoutDate.getUTCHours()).toBe(0);
+      expect(updateCall.$set.workoutDate.getUTCMinutes()).toBe(0);
+    });
+
+    it('should handle unique index violation by merging duplicates', async () => {
+      const updateDto: UpdateWorkoutLogDto = {
+        workoutDate: new Date('2024-01-01T14:30:00.000Z'),
+        isCompleted: true,
+      };
+
+      const normalizedDate = new Date('2024-01-01T00:00:00.000Z');
+      const existingLogForMerge = {
+        ...mockWorkoutLog,
+        _id: new Types.ObjectId('507f1f77bcf86cd799439015'),
+        workoutDate: normalizedDate,
+      };
+      const existingLog = {
+        ...mockWorkoutLog,
+        _id: new Types.ObjectId('507f1f77bcf86cd799439016'),
+        workoutDate: normalizedDate,
+        isCompleted: false,
+        save: jest.fn().mockResolvedValue({ ...existingLog, ...updateDto }),
+      };
+
+      (workoutLogModel as any).findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(existingLogForMerge),
+      });
+      (workoutLogModel as any).findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockRejectedValue({ code: 11000 }), // Unique index violation
+      });
+      (workoutLogModel as any).findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(existingLog),
+      });
+      (workoutLogModel as any).findByIdAndDelete = jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({}),
+      });
+
+      const result = await service.updateWorkoutLog(mockLogId, updateDto);
+
+      // Verify that merge logic was executed
+      expect((workoutLogModel as any).findOne).toHaveBeenCalled();
+      expect(existingLog.save).toHaveBeenCalled();
+      expect(result.isCompleted).toBe(true);
     });
   });
 

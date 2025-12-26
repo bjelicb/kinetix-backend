@@ -1,0 +1,3972 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIX - System Architecture Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            color: #FFFFFF;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+        }
+        
+        h1 {
+            font-size: 3.5em;
+            color: #9D4EDD;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #B3B3B3;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+        
+        .version-status {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(157, 78, 221, 0.1);
+            border: 2px solid #9D4EDD;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .version-status.collapsed .version-content {
+            display: none;
+        }
+        
+        .version-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            user-select: none;
+        }
+        
+        .version-header:hover {
+            background: rgba(157, 78, 221, 0.1);
+            border-radius: 5px;
+        }
+        
+        .version-header h3 {
+            color: #9D4EDD;
+            margin: 0;
+            font-size: 1.4em;
+        }
+        
+        .collapse-icon {
+            font-size: 1.2em;
+            color: #9D4EDD;
+            transition: transform 0.3s;
+        }
+        
+        .version-status.expanded .collapse-icon {
+            transform: rotate(180deg);
+        }
+        
+        .sections-container {
+            margin-bottom: 60px;
+        }
+        
+        .diagram-section {
+            margin-bottom: 30px;
+            background: rgba(30, 30, 30, 0.7);
+            border: 2px solid rgba(157, 78, 221, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .diagram-section.collapsed {
+            border-color: rgba(157, 78, 221, 0.2);
+        }
+        
+        .diagram-section.expanded {
+            border-color: rgba(157, 78, 221, 0.6);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
+        }
+        
+        .section-header {
+            padding: 25px 30px;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(157, 78, 221, 0.05);
+            transition: background 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            position: relative;
+        }
+        
+        .section-header:hover {
+            background: rgba(157, 78, 221, 0.15);
+        }
+        
+        .section-header h2 {
+            color: #9D4EDD;
+            font-size: 1.8em;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .section-number {
+            color: #9D4EDD;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .section-title {
+            flex: 1;
+        }
+        
+        .version-badge {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-left: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .version-badge.v2 {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.25), rgba(0, 200, 0, 0.15));
+            color: #00FF00;
+            border: 2px solid #00FF00;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .version-badge.v3 {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.25), rgba(200, 130, 0, 0.15));
+            color: #FFA500;
+            border: 2px solid #FFA500;
+            text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        
+        .version-badge.v4 {
+            background: linear-gradient(135deg, rgba(0, 191, 255, 0.25), rgba(0, 150, 200, 0.15));
+            color: #00BFFF;
+            border: 2px solid #00BFFF;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+        
+        .collapse-icon {
+            font-size: 1.8em;
+            color: #9D4EDD;
+            transition: transform 0.3s;
+            display: inline-block;
+            line-height: 1;
+            font-weight: bold;
+        }
+        
+        .collapse-icon::before {
+            content: "▼";
+        }
+        
+        .diagram-section.expanded .collapse-icon::before {
+            content: "▲";
+        }
+        
+        .open-section-btn {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(157, 78, 221, 0.2);
+            border: 2px solid #9D4EDD;
+            color: #9D4EDD;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+            font-weight: 500;
+        }
+        
+        .open-section-btn:hover {
+            background: rgba(157, 78, 221, 0.4);
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.6);
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .open-section-btn::before {
+            content: "🔗";
+            font-size: 1.1em;
+        }
+        
+        .section-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+        }
+        
+        .diagram-section.expanded .section-content {
+            max-height: 10000px;
+            padding: 30px;
+        }
+        
+        .summary-card, .example-card, .explanation-card {
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .summary-card {
+            background: rgba(157, 78, 221, 0.1);
+            border-left-color: #9D4EDD;
+        }
+        
+        .summary-card h3 {
+            color: #9D4EDD;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .example-card {
+            background: rgba(255, 165, 0, 0.1);
+            border-left-color: #FFA500;
+        }
+        
+        .example-card h3 {
+            color: #FFA500;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .explanation-card {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00FF00;
+        }
+        
+        .explanation-card h3 {
+            color: #00FF00;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .summary-card p, .example-card p, .explanation-card p,
+        .summary-card ul, .example-card ul, .explanation-card ul {
+            color: #E0E0E0;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .summary-card code, .example-card code, .explanation-card code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #9D4EDD;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .diagram-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            overflow-x: auto;
+        }
+        
+        .mermaid {
+            background: transparent;
+        }
+        
+        .loading-section {
+            padding: 40px;
+            text-align: center;
+            color: #9D4EDD;
+            font-size: 18px;
+        }
+        
+        .error-section {
+            padding: 40px;
+            text-align: center;
+            color: #FF6B6B;
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #FF6B6B;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(157, 78, 221, 0.2);
+            border: 2px solid #9D4EDD;
+            border-radius: 50%;
+            color: #9D4EDD;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 28px;
+            transition: all 0.3s;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        .back-to-top:hover {
+            background: rgba(157, 78, 221, 0.4);
+            box-shadow: 0 0 20px rgba(157, 78, 221, 0.6);
+            transform: translateY(-5px);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .section-header {
+                padding: 20px;
+            }
+            
+            .section-content {
+                padding: 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KINETIX</h1>
+            <p class="subtitle">System Architecture Diagrams - Visual Guide</p>
+            
+            <div class="version-status collapsed" id="version-status">
+                <div class="version-header" onclick="toggleVersionStatus()">
+                    <h3>📋 VERSION STATUS & PLAN STATUS LOGIC</h3>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="version-content">
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #00FF00; margin-bottom: 10px;">✅ V2 - URAĐENO (planStatus Logika)</h4>
+                        <p style="color: #FFFFFF; line-height: 1.8;">
+                            <strong>planStatus</strong> je dinamički određen status plana koji se računa u realnom vremenu na osnovu:
+                        </p>
+                        <ul style="color: #FFFFFF; line-height: 2; margin-left: 20px;">
+                            <li><code>'current'</code> - Plan je otključan (currentPlanId postavljen, planEndDate >= today)</li>
+                            <li><code>'future'</code> - Plan je zaključan (currentPlanId = null, planEndDate >= today) - čeka unlock</li>
+                            <li><code>'previous'</code> - Plan je završen (planEndDate < today) - istorija</li>
+                        </ul>
+                        <p style="color: #B3B3B3; margin-top: 10px; font-style: italic;">
+                            <strong>Implementirano u V2:</strong> assignPlan, cancelPlan (unassign), requestNextWeek (unlock), getCurrentPlan sa planStatus validacijom
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #FFA500; margin-bottom: 10px;">🟡 V3 - PLANIRANO (Admin Dashboard & Features)</h4>
+                        <ul style="color: #FFFFFF; line-height: 2; margin-left: 20px;">
+                            <li>Plan Renewal Feature (produžiti plan za 7 dana)</li>
+                            <li>Trainer Switch Handling (prebacivanje klijenta na drugog trenera)</li>
+                            <li>Analytics Endpoints (user growth, workout completion rates)</li>
+                            <li>Plan Expiration Notifications (obaveštavanje trenera)</li>
+                            <li>Check-ins Management Endpoints (admin dashboard)</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #00BFFF; margin-bottom: 10px;">🔵 V4 - FUTURE (Production & Advanced Features)</h4>
+                        <ul style="color: #FFFFFF; line-height: 2; margin-left: 20px;">
+                            <li>Stripe Payment Integration (automatsko plaćanje planova)</li>
+                            <li>LLM Integration for Plan Generation (AI-generisani planovi)</li>
+                            <li>Push Notifications (Firebase Cloud Messaging)</li>
+                            <li>Monitoring & Logging (Sentry, Winston/Pino)</li>
+                            <li>Security Enhancements (rate limiting, DDoS protection)</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="padding: 15px; background: rgba(255, 165, 0, 0.1); border-left: 4px solid #FFA500; margin-top: 20px;">
+                        <p style="color: #FFFFFF; margin: 0;">
+                            <strong>💡 Napomena:</strong> Sve sekcije u dokumentaciji su obeležene sa badge-ovima koji pokazuju u kojoj verziji su implementirane ili planirane.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="sections-container" id="sections-container">
+        <div class="diagram-section collapsed" id="erd">
+            <div class="section-header" onclick="toggleSection('erd')">
+                <h2>
+                    <span class="section-number">1.</span>
+                    <span class="section-title">Entity Relationship Diagram (ERD)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('erd', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Entity Relationship Diagram (ERD)</strong> pokazuje kompletnu strukturu baze podataka Kinetix sistema. 
+        Ovo je mapa svih tabela (collections), kako su povezane, i šta svako polje znači.
+    </p>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Kada radiš na backend-u, moraš da znaš gde se podaci čuvaju, kako su povezani, 
+        i kako da ih dohvatiš. Ova sekcija ti daje kompletan pregled.
+    </p>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Treba da dohvatiš sve klijente jednog trenera sa njihovim trenutnim planovima.
+    </p>
+    <p>
+        <strong>Kako to radi:</strong>
+    </p>
+    <ul>
+        <li>1. Pronađi <code>TrainerProfile</code> po <code>userId</code></li>
+        <li>2. Koristi <code>trainerId</code> da nađeš sve <code>ClientProfile</code> dokumente</li>
+        <li>3. Za svaki <code>ClientProfile</code>, koristi <code>currentPlanId</code> da dohvatiš <code>WeeklyPlan</code></li>
+        <li>4. Koristi <code>.populate('currentPlanId')</code> u Mongoose-u da automatski učitava plan</li>
+    </ul>
+    <p>
+        <strong>Rezultat:</strong> Imaš kompletnu listu klijenata sa njihovim aktivnim planovima u jednom upitu.
+    </p>
+</div>
+
+<div class="diagram-container">
+    <p style="margin-bottom: 15px; color: #B3B3B3;">
+        <strong>Legend:</strong> 
+        <span style="color: #9D4EDD;">→</span> = Reference (ref:), 
+        <span style="color: #00FF00;">[I]</span> = Indexed, 
+        <span style="color: #FFA500;">[U]</span> = Unique Index, 
+        <span style="color: #FF003C;">[C]</span> = Compound Index
+    </p>
+    <p style="margin-bottom: 15px; color: #B3B3B3;">
+        <strong>Collection Names:</strong> Mongoose automatically pluralizes class names. 
+        V1 Collections: <code>users</code>, <code>trainerprofiles</code>, <code>clientprofiles</code>, 
+        <code>weeklyplans</code>, <code>workoutlogs</code>, <code>checkins</code>, <code>weighins</code>, <code>penaltyrecords</code>
+    </p>
+    <p style="margin-bottom: 15px; color: #B3B3B3;">
+        <strong>V2 Collections:</strong> <code>aimessages</code> (AI Message System)
+    </p>
+    <p style="margin-bottom: 15px; color: #B3B3B3;">
+        <strong>Note:</strong> Phase 2 collections (V4): <code>clientpayments</code>, <code>monthlyinvoices</code>, <code>planeffectivenesses</code>
+    </p>
+    <div class="mermaid">
+erDiagram
+    USER ||--o| TRAINER_PROFILE : has
+    USER ||--o| CLIENT_PROFILE : has
+    
+    TRAINER_PROFILE ||--o{ WEEKLY_PLAN : creates
+    TRAINER_PROFILE ||--o{ CLIENT_PROFILE : manages
+    
+    CLIENT_PROFILE ||--o{ PLAN_HISTORY : has "embedded array"
+    CLIENT_PROFILE ||--o{ WORKOUT_LOG : logs
+    CLIENT_PROFILE ||--o{ CHECK_IN : performs
+    CLIENT_PROFILE ||--o{ WEIGH_IN : records
+    CLIENT_PROFILE ||--o{ PENALTY_RECORD : has
+    CLIENT_PROFILE ||--o{ AI_MESSAGE : receives
+    
+    WEEKLY_PLAN ||--o{ WORKOUT_DAY : contains "embedded array"
+    WEEKLY_PLAN ||--o{ PLAN_HISTORY : assigned_to "via ClientProfile"
+    WEEKLY_PLAN ||--o{ WORKOUT_LOG : generates
+    WEEKLY_PLAN ||--o{ WEIGH_IN : linked_to
+    
+    WORKOUT_DAY ||--o{ EXERCISE : contains "embedded array"
+    WORKOUT_LOG ||--o{ COMPLETED_EXERCISE : tracks "embedded array"
+    
+    USER {
+        string id PK "Collection: users"
+        string email
+        string passwordHash
+        string role "TRAINER|CLIENT|ADMIN"
+        string firstName
+        string lastName
+        string phone
+        string profilePictureUrl
+        boolean isEmailVerified
+    }
+    
+    TRAINER_PROFILE {
+        ObjectId id PK "Collection: trainerprofiles"
+        ObjectId userId FK "ref: User"
+        string businessName
+        boolean isActive "Kill-switch control"
+        string subscriptionStatus "ACTIVE|SUSPENDED|CANCELLED"
+        Date subscriptionExpiresAt
+        string subscriptionTier "BASIC|PRO|ENTERPRISE"
+        array clientIds "ref: ClientProfile"
+        object gymLocation "GPS: lat, lng, radius"
+        string stripeCustomerId "Future"
+        string stripeSubscriptionId "Future"
+    }
+    
+    CLIENT_PROFILE {
+        ObjectId id PK "Collection: clientprofiles"
+        ObjectId userId FK "ref: User [Unique]"
+        ObjectId trainerId FK "ref: TrainerProfile [nullable, indexed]"
+        ObjectId currentPlanId FK "ref: WeeklyPlan [nullable] - UNLOCKED PLAN (CLIENT paid for)<br/>⚠️ Can be null: planStatus determined dynamically"
+        Date planStartDate "nullable"
+        Date planEndDate "nullable"
+        array planHistory "Embedded: stores all plans"
+        boolean isPenaltyMode
+        int consecutiveMissedWorkouts
+        int currentStreak
+        int totalWorkoutsCompleted
+        number weight "kg"
+        number height "cm"
+        string fitnessGoal "WEIGHT_LOSS|MUSCLE_GAIN|ENDURANCE|GENERAL_FITNESS"
+        number balance "Running tab balance in euros"
+        number monthlyBalance "Current month's balance"
+        Date lastBalanceReset "When balance was cleared"
+        array penaltyHistory "Embedded: Balance transaction history"
+        boolean nextWeekRequested "V2: Client requested next week"
+        Date nextWeekRequestDate "V2: When request was made"
+    }
+    
+    PLAN_HISTORY {
+        ObjectId planId FK "ref: WeeklyPlan (embedded in ClientProfile)"
+        Date planStartDate
+        Date planEndDate
+        Date assignedAt
+        ObjectId trainerId FK "ref: TrainerProfile"
+    }
+    
+    WEEKLY_PLAN {
+        ObjectId id PK "Collection: weeklyplans"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed]"
+        string name
+        string description
+        string difficulty "BEGINNER|INTERMEDIATE|ADVANCED"
+        array workouts "Embedded: 7 WorkoutDay objects"
+        array assignedClientIds "ref: ClientProfile"
+        boolean isTemplate
+        number weeklyCost "Cost in euros per week (default 0)"
+        boolean isDeleted "V2: Soft delete flag"
+        Date deletedAt "V2: When plan was deleted"
+    }
+    
+    WORKOUT_DAY {
+        int dayOfWeek "1-7 (Monday-Sunday)"
+        boolean isRestDay
+        string name
+        array exercises "Embedded: Exercise objects"
+        int estimatedDuration "minutes"
+        string notes
+    }
+    
+    EXERCISE {
+        string name "Embedded in WorkoutDay"
+        int sets
+        string reps "e.g. '8-12' or number"
+        int restSeconds
+        string notes
+        string videoUrl "YouTube link"
+    }
+    
+    WORKOUT_LOG {
+        ObjectId id PK "Collection: workoutlogs"
+        ObjectId clientId FK "ref: ClientProfile [indexed in compound]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed in compound]"
+        ObjectId weeklyPlanId FK "ref: WeeklyPlan [indexed]"
+        Date workoutDate "[Compound Unique with clientId]"
+        int weekNumber
+        int dayOfWeek "1-7"
+        array completedExercises "Embedded: CompletedExercise objects"
+        boolean isCompleted
+        boolean isMissed "Triggers 1€ penalty"
+        Date completedAt
+        Date workoutStartTime "V2: When workout started"
+        boolean suspiciousCompletion "V2: Flag if completed too fast (<5min)"
+        number difficultyRating "1-5"
+        string clientNotes
+    }
+    
+    CHECK_IN {
+        ObjectId id PK "Collection: checkins"
+        ObjectId clientId FK "ref: ClientProfile [Compound Unique with checkinDate]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed in compound]"
+        ObjectId workoutLogId FK "ref: WorkoutLog [nullable]"
+        Date checkinDate "[Compound Unique with clientId]"
+        string photoUrl "Cloudinary URL"
+        string thumbnailUrl "Cloudinary thumbnail"
+        object gpsCoordinates "Embedded: lat, lng, accuracy"
+        boolean isGymLocation "GPS validation flag (vs trainer.gymLocation)"
+        string verificationStatus "PENDING|VERIFIED|REJECTED [indexed with trainerId]"
+        ObjectId verifiedBy "ref: User [nullable]"
+        Date verifiedAt
+        string rejectionReason
+        number aiConfidenceScore "0-1 (future)"
+        array detectedActivities "Future: AI detection"
+        string clientNotes
+    }
+    
+    WEIGH_IN {
+        ObjectId id PK "Collection: weighins"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        ObjectId planId FK "ref: WeeklyPlan [nullable, indexed]"
+        Date planStartDate "Plan week start date"
+        number weight "Weight in kg"
+        Date date "Weigh-in date (any day, Monday recommended) [Compound Unique with clientId]"
+        string photoUrl "Optional scale photo"
+        string notes "Client explanation if spike"
+        boolean isMandatory "True if Monday of plan week"
+        boolean isWeightSpike "Flag if >5% increase"
+        boolean aiFlagged "AI detected anomaly"
+        string aiMessage "AI explanation request"
+    }
+    
+    PENALTY_RECORD {
+        ObjectId id PK "Collection: penaltyrecords"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        Date weekStartDate "[Compound Unique with clientId]"
+        Date weekEndDate
+        int totalMissedWorkouts
+        string penaltyType
+    }
+    
+    AI_MESSAGE {
+        ObjectId id PK "Collection: aimessages"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        string message "AI-generated message text"
+        string tone "AGGRESSIVE|EMPATHETIC|MOTIVATIONAL|WARNING"
+        string trigger "MISSED_WORKOUTS|STREAK|WEIGHT_SPIKE|SICK_DAY"
+        boolean isRead "V2: Client read status"
+        Date createdAt "V2: When message was generated"
+    }
+    </div>
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Reference Relationships (MongoDB ref:)</h4>
+    <p>Ovo su veze između različitih collections. Kada vidiš <code>ref: User</code>, to znači da MongoDB čuva samo ID, a podaci se učitavaju sa <code>.populate()</code>.</p>
+    <ul>
+        <li><strong>users → trainerprofiles:</strong> <code>TrainerProfile.userId</code> refs <code>User._id</code> [Unique Index]</li>
+        <li><strong>users → clientprofiles:</strong> <code>ClientProfile.userId</code> refs <code>User._id</code> [Unique Index]</li>
+        <li><strong>trainerprofiles → clientprofiles:</strong> <code>ClientProfile.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed, nullable]</li>
+        <li><strong>trainerprofiles → weeklyplans:</strong> <code>WeeklyPlan.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed]</li>
+        <li><strong>clientprofiles → weeklyplans:</strong> <code>ClientProfile.currentPlanId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
+        <li><strong>clientprofiles.planHistory[]:</strong> Embedded array with <code>planId</code> refs <code>WeeklyPlan._id</code></li>
+        <li><strong>clientprofiles.planHistory[]:</strong> Embedded array with <code>trainerId</code> refs <code>TrainerProfile._id</code></li>
+        <li><strong>weeklyplans → clientprofiles:</strong> <code>WeeklyPlan.assignedClientIds[]</code> array refs <code>ClientProfile._id</code></li>
+        <li><strong>workoutlogs → clientprofiles:</strong> <code>WorkoutLog.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound]</li>
+        <li><strong>workoutlogs → trainerprofiles:</strong> <code>WorkoutLog.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed in compound]</li>
+        <li><strong>workoutlogs → weeklyplans:</strong> <code>WorkoutLog.weeklyPlanId</code> refs <code>WeeklyPlan._id</code> [Indexed]</li>
+        <li><strong>checkins → clientprofiles:</strong> <code>CheckIn.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound, unique]</li>
+        <li><strong>checkins → trainerprofiles:</strong> <code>CheckIn.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed in compound]</li>
+        <li><strong>checkins → workoutlogs:</strong> <code>CheckIn.workoutLogId</code> refs <code>WorkoutLog._id</code> [nullable]</li>
+        <li><strong>checkins → users:</strong> <code>CheckIn.verifiedBy</code> refs <code>User._id</code> [nullable]</li>
+        <li><strong>weighins → clientprofiles:</strong> <code>WeighIn.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+        <li><strong>weighins → weeklyplans:</strong> <code>WeighIn.planId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
+        <li><strong>penaltyrecords → clientprofiles:</strong> <code>PenaltyRecord.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+        <li><strong>aimessages → clientprofiles:</strong> <code>AIMessage.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Embedded Documents (Stored in parent document, not separate collections)</h4>
+    <p>Ovo su podaci koji se čuvaju direktno u parent dokumentu, ne kao odvojena collection. Ovo je brže za čitanje, ali teže za query-ovanje.</p>
+    <ul>
+        <li><strong>weeklyplans.workouts[]:</strong> Embedded array of <code>WorkoutDay</code> objects (7 days)</li>
+        <li><strong>WorkoutDay.exercises[]:</strong> Embedded array of <code>Exercise</code> objects within WorkoutDay</li>
+        <li><strong>workoutlogs.completedExercises[]:</strong> Embedded array of <code>CompletedExercise</code> objects</li>
+        <li><strong>clientprofiles.planHistory[]:</strong> Embedded array of plan history entries (planId, dates, trainerId)</li>
+        <li><strong>clientprofiles.penaltyHistory[]:</strong> Embedded array of balance transactions (date, amount, reason, planId)</li>
+        <li><strong>checkins.gpsCoordinates:</strong> Embedded <code>GpsCoordinates</code> object (lat, lng, accuracy)</li>
+        <li><strong>trainerprofiles.gymLocation:</strong> Embedded object (lat, lng, address, radius)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Database Indexes (Performance Optimization)</h4>
+    <p>Indexi ubrzavaju pretrage. Kada vidiš [Indexed], to znači da MongoDB može brzo da nađe dokumente po tom polju.</p>
+    <ul>
+        <li><strong>users:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>email</code> [Unique] - One user per email</li>
+            </ul>
+        </li>
+        <li><strong>clientprofiles:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>userId</code> [Unique] - One profile per user</li>
+                <li><code>trainerId</code> [Single] - Fast trainer queries</li>
+                <li><code>trainerId + currentPlanId</code> [Compound] - Trainer's clients with specific plan</li>
+                <li><code>currentPlanId</code> [Single] - Find all clients with plan</li>
+            </ul>
+        </li>
+        <li><strong>trainerprofiles:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>userId</code> [Unique] - One profile per user</li>
+                <li><code>isActive</code> [Single] - Filter active trainers</li>
+                <li><code>subscriptionExpiresAt</code> [Single] - Find expiring subscriptions</li>
+            </ul>
+        </li>
+        <li><strong>weeklyplans:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>trainerId</code> [Single] - Trainer's plans</li>
+                <li><code>trainerId + isTemplate</code> [Compound] - Trainer's templates vs assigned plans</li>
+                <li><code>isTemplate</code> [Single] - All templates</li>
+            </ul>
+        </li>
+        <li><strong>workoutlogs:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId + workoutDate</code> [Compound, Unique] - Prevent duplicate logs per day</li>
+                <li><code>trainerId</code> [Single] - Trainer's client logs</li>
+                <li><code>trainerId + workoutDate</code> [Compound] - Trainer's logs by date</li>
+                <li><code>weeklyPlanId</code> [Single] - Logs for specific plan</li>
+                <li><code>isCompleted</code> [Single] - Completed workouts</li>
+                <li><code>isMissed</code> [Single] - Missed workouts (penalty calculation)</li>
+            </ul>
+        </li>
+        <li><strong>checkins:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId + checkinDate</code> [Compound, Unique] - One check-in per day</li>
+                <li><code>trainerId + verificationStatus</code> [Compound] - Pending check-ins for trainer</li>
+            </ul>
+        </li>
+        <li><strong>weighins:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId + date</code> [Compound, Unique] - One weigh-in per client per date</li>
+                <li><code>clientId + date</code> [Compound] - For getting latest weigh-ins</li>
+                <li><code>planId + planStartDate</code> [Compound] - Weigh-ins by plan</li>
+                <li><code>clientId + planId + date</code> [Compound] - Weigh-ins by client and plan</li>
+            </ul>
+        </li>
+        <li><strong>penaltyrecords:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId + weekStartDate</code> [Compound, Unique] - One record per client per week</li>
+            </ul>
+        </li>
+        <li><strong>aimessages:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId</code> [Single] - All messages for client</li>
+                <li><code>clientId + isRead</code> [Compound] - Unread messages</li>
+                <li><code>clientId + createdAt</code> [Compound] - Latest messages first</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Populate Patterns (How data is joined at query time)</h4>
+    <p>Kada koristiš <code>.populate()</code>, Mongoose automatski učitava povezane dokumente. Ovo su najčešći pattern-i:</p>
+    <ul>
+        <li><strong>Get Client Profile:</strong> <code>.populate('userId')</code>, <code>.populate('trainerId')</code>, <code>.populate('currentPlanId')</code></li>
+        <li><strong>Get Weekly Plan:</strong> <code>.populate('trainerId')</code>, <code>.populate('assignedClientIds')</code></li>
+        <li><strong>Get Workout Log:</strong> <code>.populate('clientId')</code>, <code>.populate('trainerId')</code>, <code>.populate('weeklyPlanId')</code></li>
+        <li><strong>Get Trainer Clients:</strong> <code>.populate('clientIds')</code> - All clients for trainer</li>
+        <li><strong>Admin Queries:</strong> Multiple populate chains for full data hierarchy</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Bidirectional Relationships</h4>
+    <p>Neke veze su obostrane - oba dokumenta imaju reference jedan na drugog. Ovo se održava ručno u kodu.</p>
+    <ul>
+        <li><strong>TRAINER ↔ CLIENT:</strong> 
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>TrainerProfile.clientIds[]</code> → Array of ClientProfile._id</li>
+                <li><code>ClientProfile.trainerId</code> → Single TrainerProfile._id</li>
+                <li><em>Maintained manually in code (not enforced by DB)</em></li>
+            </ul>
+        </li>
+        <li><strong>WEEKLY_PLAN ↔ CLIENT:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>WeeklyPlan.assignedClientIds[]</code> → Array of ClientProfile._id</li>
+                <li><code>ClientProfile.currentPlanId</code> → Single WeeklyPlan._id (current, nullable)</li>
+                <li><code>ClientProfile.planHistory[]</code> → Array with planId references (all history)</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Plan Status System (Dynamic)</h4>
+    <p>
+        <strong>planStatus</strong> se računa dinamički u <code>getCurrentPlan()</code> funkciji. 
+        <strong>VAŽNO:</strong> planStatus se NE čuva u bazi - računa se u realnom vremenu na osnovu trenutnog datuma.
+    </p>
+    <ul>
+        <li><code>'current'</code> - Plan je otključan (currentPlanId postavljen, planEndDate >= today)</li>
+        <li><code>'future'</code> - Plan je zaključan (currentPlanId null, planEndDate >= today) - čeka unlock</li>
+        <li><code>'previous'</code> - Plan je završen (planEndDate < today) - istorija</li>
+    </ul>
+    <p style="margin-top: 10px; color: #FFA500;">
+        <strong>💡 Tip:</strong> Uvek koristi <code>getCurrentPlan()</code> umesto direktnog čitanja <code>currentPlanId</code> jer automatski računa planStatus.
+    </p>
+</div>
+
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="plan-assign">
+            <div class="section-header" onclick="toggleSection('plan-assign')">
+                <h2>
+                    <span class="section-number">2.</span>
+                    <span class="section-title">Plan Assignment Flow</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('plan-assign', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Plan Assignment Flow</strong> pokazuje kako trener ili admin dodeljuje plan klijentu. 
+        <strong>VAŽNO:</strong> Plan se samo dodeljuje, ali se NE otključava automatski i NE naplaćuje odmah.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>planHistory[]</code> - Plan se dodaje u istoriju planova</li>
+        <li><code>currentPlanId</code> - Ostaje <code>null</code> (klijent mora ručno da otključi)</li>
+        <li><code>balance</code> - NE naplaćuje se odmah (naplaćuje se tek kada klijent otključi)</li>
+        <li><code>planStatus</code> - Biće <code>'future'</code> (zaključan) dok klijent ne otključi</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko dodeljuje "Beginner Plan" klijentu Petru za narednu nedelju.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Trener klikne "Assign Plan" u dashboard-u</li>
+        <li>Backend dodaje plan u <code>Petar.planHistory[]</code> sa datumima (npr. 1.1.2025 - 7.1.2025)</li>
+        <li>Backend generiše 7 <code>WorkoutLog</code> dokumenta (po jedan za svaki dan)</li>
+        <li><code>Petar.currentPlanId</code> ostaje <code>null</code></li>
+        <li><code>Petar.balance</code> ostaje nepromenjen</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar vidi plan u aplikaciji, ali je zaključan. Mora da klikne "Unlock Next Week" da bi ga aktivirao i platio.
+    </p>
+</div>
+
+<div class="diagram-container">
+    <div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin/Trainer
+    participant API as Backend API
+    participant PlanService as PlansService
+    participant ClientService as ClientsService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+
+    Admin->>API: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+    
+    API->>PlanService: assignPlanToClients(planId, userId, role, dto)
+    
+    PlanService->>DB: Find plan by ID
+    DB-->>PlanService: Plan document (with weeklyCost)
+    
+    Note over PlanService: Validate: Plan ownership<br/>(unless ADMIN)
+    
+    Note over PlanService: Convert clientIds to clientProfileIds<br/>(handle userId or clientProfileId)
+    
+    loop For each clientId
+        PlanService->>ClientService: getProfile(clientId) or getProfileById(clientId)
+        ClientService->>DB: Find client profile
+        DB-->>ClientService: ClientProfile
+        
+        alt Client profile not found
+            PlanService->>DB: Create new ClientProfile<br/>with trainerId from plan
+            DB-->>PlanService: New ClientProfile created
+        end
+        
+        PlanService->>PlanService: Check if plan exists in planHistory
+        
+        alt Plan already exists in planHistory
+            Note over PlanService: Skip this client<br/>(plan already assigned)
+        else New plan assignment
+            Note over PlanService: Proceed with assignment
+        end
+    end
+    
+    loop For each newClient
+        alt Client has no trainer
+            PlanService->>DB: Update client.trainerId = plan.trainerId
+        else Client has different trainer
+            PlanService->>DB: Update client.trainerId = plan.trainerId<br/>(change trainer to match plan)
+        end
+        
+        PlanService->>DB: Add to planHistory array:<br/>{planId, startDate, endDate, trainerId, assignedAt}
+        
+        Note over PlanService: ⚠️ CRITICAL:<br/>DO NOT set currentPlanId<br/>DO NOT charge balance<br/>Client must UNLOCK manually
+    end
+    
+    PlanService->>WorkoutService: generateWeeklyLogs()<br/>for all assigned clients
+    loop For each newClient
+        WorkoutService->>DB: Create 7 WorkoutLog documents<br/>(one per day, isCompleted: false)
+    end
+    
+    PlanService->>DB: Add clients to plan.assignedClientIds
+    
+    PlanService-->>API: {message: "Plan assigned successfully"}
+    API-->>Admin: Success response
+
+    Note over Admin,DB: ✅ Result: Client has plan in planHistory,<br/>✅ 7 workout logs generated,<br/>❌ currentPlanId NOT set (null),<br/>❌ balance NOT charged yet,<br/>👉 Client must UNLOCK to activate<br/>📌 When displayed: planStatus = 'future' (locked)
+    </div>
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Koraci u procesu:</h4>
+    <ol>
+        <li><strong>Validacija:</strong> Proverava se da li trener poseduje plan (osim ako je ADMIN)</li>
+        <li><strong>Konverzija ID-jeva:</strong> <code>clientIds</code> se konvertuju u <code>clientProfileIds</code> (može biti userId ili clientProfileId)</li>
+        <li><strong>Kreiranje profila:</strong> Ako klijent nema profil, kreira se novi sa <code>trainerId</code> iz plana</li>
+        <li><strong>Provera duplikata:</strong> Ako plan već postoji u <code>planHistory</code>, preskače se</li>
+        <li><strong>Dodela trenera:</strong> Ako klijent nema trenera ili ima drugog, postavlja se trener iz plana</li>
+        <li><strong>Dodavanje u istoriju:</strong> Plan se dodaje u <code>planHistory[]</code> sa datumima i trenerom</li>
+        <li><strong>Generisanje logova:</strong> Kreira se 7 <code>WorkoutLog</code> dokumenta (po jedan za svaki dan)</li>
+        <li><strong>Povezivanje:</strong> Klijent se dodaje u <code>plan.assignedClientIds[]</code></li>
+    </ol>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Šta se NE dešava:</h4>
+    <ul>
+        <li><strong>currentPlanId se NE postavlja</strong> - ostaje <code>null</code> dok klijent ne otključi</li>
+        <li><strong>balance se NE naplaćuje</strong> - naplaćuje se tek kada klijent klikne "Unlock Next Week"</li>
+        <li><strong>Plan se NE aktivira automatski</strong> - klijent mora eksplicitno da otključi</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Zašto ovako?</h4>
+    <p>
+        Ovo je deo "Discipline Enforcer" filozofije - klijent mora eksplicitno da otključi i plati svaku nedelju. 
+        Trener može da dodeli planove unapred, ali klijent kontroliše kada aktivira i plati.
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoint:</h4>
+    <p>
+        <code>POST /api/plans/:id/assign</code>
+    </p>
+    <p>
+        <strong>Request body:</strong>
+    </p>
+    <pre style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; overflow-x: auto; color: #9D4EDD; font-family: 'Courier New', monospace;">
+{
+  "clientIds": ["userId1", "userId2"],
+  "startDate": "2025-01-01"
+}
+    </pre>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Rezultat:</h4>
+    <ul>
+        <li>Plan je u <code>planHistory[]</code></li>
+        <li>7 workout logova je generisano</li>
+        <li><code>currentPlanId</code> je <code>null</code></li>
+        <li><code>balance</code> nije naplaćen</li>
+        <li>Kada se prikaže, <code>planStatus</code> je <code>'future'</code> (zaključan)</li>
+    </ul>
+</div>
+
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="plan-unassign">
+            <div class="section-header" onclick="toggleSection('plan-unassign')">
+                <h2>
+                    <span class="section-number">2.5.</span>
+                    <span class="section-title">Plan Unassign Flow</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('plan-unassign', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Plan Unassign Flow</strong> pokazuje kako trener ili admin uklanja (otkazuje) plan od klijenta. 
+        Ovo je suprotno od assign - briše plan iz istorije i briše workout logove.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li>Plan se uklanja iz <code>planHistory[]</code></li>
+        <li>Ako je plan trenutno aktivan (<code>currentPlanId</code>), on se takođe briše</li>
+        <li>Svi workout logovi za taj plan se brišu</li>
+        <li>Klijent se uklanja iz <code>plan.assignedClientIds[]</code></li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko otkazuje "Beginner Plan" klijentu Petru jer je prešao na napredniji plan.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Trener klikne "Cancel Plan" u dashboard-u</li>
+        <li>Backend proverava da li je plan trenutno aktivan (poredi <code>currentPlanId</code> sa <code>planId</code>)</li>
+        <li>Ako je aktivan, <code>currentPlanId</code> se postavlja na <code>null</code></li>
+        <li>Plan se uklanja iz <code>Petar.planHistory[]</code></li>
+        <li>Svi <code>WorkoutLog</code> dokumenti za taj plan se brišu</li>
+        <li>Petar se uklanja iz <code>plan.assignedClientIds[]</code></li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar više nema taj plan. Ako je bio aktivan, sada će videti sledeći plan iz istorije (ako postoji).
+    </p>
+</div>
+
+<div class="diagram-container">
+    <div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin/Trainer
+    participant API as Backend API
+    participant PlanService as PlansService
+    participant ClientService as ClientsService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+
+    Admin->>API: POST /api/plans/:id/cancel/:clientId
+    API->>PlanService: cancelPlan(planId, clientProfileId)
+    
+    PlanService->>ClientService: getProfileById(clientProfileId)
+    ClientService->>DB: Find ClientProfile
+    DB-->>ClientService: ClientProfile with currentPlanId, planHistory
+    ClientService-->>PlanService: ClientProfile
+    
+    PlanService->>PlanService: Check if plan is current plan<br/>(compare currentPlanId with planId)
+    
+    alt Plan is current plan
+        Note over PlanService: isCurrentPlan = true
+        PlanService->>DB: Update ClientProfile:<br/>$pull planHistory: {planId}<br/>$set currentPlanId: null
+    else Plan not current plan
+        Note over PlanService: isCurrentPlan = false
+        PlanService->>DB: Update ClientProfile:<br/>$pull planHistory: {planId}
+    end
+    
+    PlanService->>WorkoutService: Delete workout logs for plan
+    WorkoutService->>DB: Delete WorkoutLog documents<br/>where weeklyPlanId = planId<br/>and clientId = clientProfileId
+    DB-->>WorkoutService: Deleted count
+    
+    PlanService->>DB: Update WeeklyPlan:<br/>$pull assignedClientIds: clientProfileId
+    DB-->>PlanService: Plan updated
+    
+    PlanService->>ClientService: getProfileById(clientProfileId)
+    ClientService->>DB: Find ClientProfile
+    DB-->>ClientService: Updated ClientProfile
+    ClientService-->>PlanService: ClientProfile
+    
+    PlanService->>PlanService: Verify currentPlanId was cleared<br/>(if it matched)
+    
+    alt currentPlanId still set (error)
+        PlanService->>DB: Force clear currentPlanId = null
+        Note over PlanService: Safety check - force clear
+    end
+    
+    PlanService-->>API: Success response
+    API-->>Admin: Plan unassigned successfully
+
+    Note over Admin,DB: ✅ Result: Plan removed from planHistory,<br/>✅ currentPlanId cleared (if was current),<br/>✅ Workout logs deleted,<br/>✅ Client removed from plan.assignedClientIds,<br/>📌 Client will see next available plan (future/previous)
+    </div>
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Koraci u procesu:</h4>
+    <ol>
+        <li><strong>Pronalaženje klijenta:</strong> Dohvata se <code>ClientProfile</code> po <code>clientProfileId</code></li>
+        <li><strong>Provera aktuelnosti:</strong> Poredi se <code>currentPlanId</code> sa <code>planId</code> da se vidi da li je plan trenutno aktivan</li>
+        <li><strong>Brisanje iz istorije:</strong> Plan se uklanja iz <code>planHistory[]</code> koristeći <code>$pull</code></li>
+        <li><strong>Brisanje currentPlanId:</strong> Ako je plan bio aktivan, <code>currentPlanId</code> se postavlja na <code>null</code></li>
+        <li><strong>Brisanje workout logova:</strong> Svi <code>WorkoutLog</code> dokumenti za taj plan se brišu</li>
+        <li><strong>Uklanjanje iz plana:</strong> Klijent se uklanja iz <code>plan.assignedClientIds[]</code></li>
+        <li><strong>Verifikacija:</strong> Proverava se da li je <code>currentPlanId</code> zaista obrisan (safety check)</li>
+    </ol>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Razlika između aktuelnog i neaktuelnog plana:</h4>
+    <ul>
+        <li><strong>Ako je plan aktuelan (currentPlanId === planId):</strong>
+            <ul style="margin-left: 20px;">
+                <li>Briše se iz <code>planHistory[]</code></li>
+                <li><code>currentPlanId</code> se postavlja na <code>null</code></li>
+                <li>Klijent će videti sledeći plan iz istorije (ako postoji)</li>
+            </ul>
+        </li>
+        <li><strong>Ako plan nije aktuelan:</strong>
+            <ul style="margin-left: 20px;">
+                <li>Briše se samo iz <code>planHistory[]</code></li>
+                <li><code>currentPlanId</code> ostaje nepromenjen</li>
+                <li>Klijent i dalje vidi svoj aktuelni plan</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Safety Check:</h4>
+    <p>
+        Nakon brisanja, sistem proverava da li je <code>currentPlanId</code> zaista obrisan. 
+        Ako nije (što ne bi trebalo da se desi), forsira se brisanje kao dodatna sigurnost.
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoint:</h4>
+    <p>
+        <code>POST /api/plans/:id/cancel/:clientId</code>
+    </p>
+    <p>
+        <strong>Parameters:</strong>
+    </p>
+    <ul>
+        <li><code>:id</code> - ID plana koji se otkazuje</li>
+        <li><code>:clientId</code> - ID klijenta (može biti userId ili clientProfileId)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Rezultat:</h4>
+    <ul>
+        <li>Plan je uklonjen iz <code>planHistory[]</code></li>
+        <li><code>currentPlanId</code> je obrisan (ako je plan bio aktivan)</li>
+        <li>Svi workout logovi za taj plan su obrisani</li>
+        <li>Klijent je uklonjen iz <code>plan.assignedClientIds[]</code></li>
+        <li>Klijent će videti sledeći dostupan plan (future/previous) ili null ako nema planova</li>
+    </ul>
+</div>
+
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="active-plan">
+            <div class="section-header" onclick="toggleSection('active-plan')">
+                <h2>
+                    <span class="section-number">3.</span>
+                    <span class="section-title">Get Active Plan Flow (with planStatus)</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('active-plan', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Get Active Plan Flow</strong> pokazuje kako klijent dobija svoj trenutni plan sa određivanjem <code>planStatus</code>-a.
+        Ovo je kritičan flow jer određuje da li je plan otključan, zaključan, ili završen.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>currentPlanId</code> - ID plana koji je klijent otključao i platio</li>
+        <li><code>planStatus</code> - Dinamički status: 'current', 'future', ili 'previous'</li>
+        <li><code>planHistory[]</code> - Niz svih dodeljenih planova (prošlih i budućih)</li>
+        <li><code>planEndDate</code> - Datum završetka plana (koristi se za određivanje statusa)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar otvara aplikaciju i traži svoj trenutni plan.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Mobile app šalje <code>GET /api/clients/current-plan</code></li>
+        <li>Backend proverava da li Petar ima <code>currentPlanId</code></li>
+        <li>Ako ima, proverava da li je plan još aktivan (planEndDate >= today)</li>
+        <li>Vraća plan sa <code>planStatus: 'current'</code> (otključan) ili <code>'previous'</code> (završen)</li>
+        <li>Ako nema currentPlanId, traži future plan u planHistory i vraća <code>planStatus: 'future'</code> (zaključan)</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar vidi svoj plan sa jasnim statusom - da li može da trenira (current) ili mora da otključi (future).
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant API as Backend API
+    participant ClientService as ClientsService
+    participant PlanService as PlansService
+    participant DB as MongoDB
+
+    Client->>API: GET /api/clients/current-plan
+    API->>ClientService: getCurrentPlan(userId)
+    ClientService->>DB: Find ClientProfile by userId
+    DB-->>ClientService: ClientProfile with currentPlanId, planHistory
+    
+    alt currentPlanId exists
+        ClientService->>ClientService: Extract planId from currentPlanId
+        ClientService->>ClientService: Find plan in planHistory array
+        
+        alt Plan not in planHistory
+            ClientService->>DB: Update: currentPlanId = null
+            Note over ClientService: Invalid currentPlanId - clear it
+            ClientService->>ClientService: Continue to find future/previous plan
+        else Plan in planHistory
+            ClientService->>ClientService: Check if plan is completed<br/>(planEndDate < today)
+            
+            alt Plan is completed
+                ClientService->>DB: Update: currentPlanId = null
+                ClientService->>PlanService: getPlanById(planId)
+                PlanService-->>ClientService: Plan details
+                ClientService-->>API: Plan with planStatus: 'previous'
+                API-->>Client: Previous plan (completed)
+            else Plan not completed
+                ClientService->>PlanService: getPlanById(planId)
+                PlanService-->>ClientService: Plan details
+                ClientService-->>API: Plan with planStatus: 'current'
+                API-->>Client: Current plan (active, unlocked)
+            end
+        end
+    end
+    
+    alt No currentPlanId or was cleared
+        ClientService->>ClientService: Find future plan<br/>(planEndDate >= today)
+        
+        alt Future plan found
+            ClientService->>PlanService: getPlanById(futurePlan.planId)
+            PlanService-->>ClientService: Plan details
+            ClientService-->>API: Plan with planStatus: 'future'
+            API-->>Client: Future plan (locked, needs unlock)
+        else No future plan
+            ClientService->>ClientService: Find previous plan<br/>(planEndDate < today, most recent)
+            
+            alt Previous plan found
+                ClientService->>PlanService: getPlanById(previousPlan.planId)
+                PlanService-->>ClientService: Plan details
+                ClientService-->>API: Plan with planStatus: 'previous'
+                API-->>Client: Previous plan (completed)
+            else No plans
+                ClientService-->>API: null
+                API-->>Client: No plan assigned
+            end
+        end
+    end
+
+    Note over Client,DB: Result: Plan with planStatus determined:<br/>✅ 'current' = unlocked, active plan<br/>🔒 'future' = locked, needs unlock<br/>📜 'previous' = completed plan<br/>❌ null = no plan assigned
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Ovaj flow je srce sistema jer određuje šta klijent vidi u aplikaciji.
+    </p>
+    <p>
+        <strong>Kako radi planStatus logika:</strong>
+    </p>
+    <ul>
+        <li><strong>'current':</strong> Plan je otključan (currentPlanId postavljen) i još nije završen (planEndDate >= today). Klijent može da trenira.</li>
+        <li><strong>'future':</strong> Plan je dodeljen ali zaključan (currentPlanId = null). Klijent mora da klikne "Unlock Next Week" da bi otključao.</li>
+        <li><strong>'previous':</strong> Plan je završen (planEndDate < today). Može se gledati u istoriji ali ne može da se koristi za trening.</li>
+    </ul>
+    <p>
+        <strong>Validacija:</strong> Ako currentPlanId pokazuje na plan koji više nije u planHistory, sistem ga automatski briše (invalid state cleanup).
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="workout-log">
+            <div class="section-header" onclick="toggleSection('workout-log')">
+                <h2>
+                    <span class="section-number">4.</span>
+                    <span class="section-title">Workout Logging Flow</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('workout-log', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Workout Logging Flow</strong> pokazuje kako klijent beleži treninge u offline-first režimu.
+        Klijent može da loguje treninge čak i bez interneta, a aplikacija će ih sinhronizovati kada se konekcija uspostavi.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Isar DB</code> - Lokalna baza podataka na telefonu (offline-first)</li>
+        <li><code>isDirty</code> - Flag koji označava da log nije sinhronizovan sa serverom</li>
+        <li><code>isSyncing</code> - Lock flag koji sprečava race condition između direktnih API poziva i SyncManager-a</li>
+        <li><code>finishWorkout()</code> - Direktan API poziv za logovanje treninga (instant feedback)</li>
+        <li><code>markAsMissed()</code> - Direktan API poziv za označavanje propuštenog treninga</li>
+        <li><code>SyncManager</code> - Fallback mehanizam za batch sync kada direktni API pozivi ne uspeju (offline scenario)</li>
+        <li><code>Cron Job</code> - Automatska analiza nedeljnih treninga (svaki ponedeljak u 23:59)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je u teretani. Završio je trening i želi da zabeleži rezultate.
+    </p>
+    <p>
+        <strong>Šta se dešava (sa internetom):</strong>
+    </p>
+    <ol>
+        <li>Petar unosi podatke (weight, reps, sets, RPE) u aplikaciju</li>
+        <li>Petar pritiska "Finish Workout"</li>
+        <li>Aplikacija pokušava direktan API poziv (<code>logWorkout</code>) sa retry logikom (1-2 retry-a)</li>
+        <li>Server validira da Petar ima aktivan plan, ažurira WorkoutLog i ClientProfile stats</li>
+        <li>Aplikacija ažurira lokalnu bazu: <code>isCompleted = true</code>, <code>isDirty = false</code>, <code>isSyncing = false</code></li>
+        <li>Petar vidi instant feedback (confetti, success message)</li>
+    </ol>
+    <p>
+        <strong>Šta se dešava (bez interneta):</strong>
+    </p>
+    <ol>
+        <li>Petar pritiska "Finish Workout"</li>
+        <li>API poziv ne uspe (network error) nakon retry logike</li>
+        <li>Aplikacija čuva podatke lokalno: <code>isCompleted = true</code>, <code>isDirty = true</code> (offline queue)</li>
+        <li>Petar vidi poruku: "Workout saved locally. Will sync when online."</li>
+        <li>Kada Petar dođe kući i ima internet, SyncManager automatski šalje podatke na server (batch sync)</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar može da trenira i beleži podatke bilo gde, čak i bez interneta. Direktni API pozivi pružaju instant feedback kada je internet dostupan, a SyncManager je fallback za offline scenario.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App<br/>(finishWorkout)
+    participant IsarDB as Isar (Local DB)
+    participant API as Backend API
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+    participant Sync as SyncManager<br/>(Fallback)
+    participant Cron as Cron Job
+
+    Note over Client,IsarDB: OFFLINE-FIRST: Direct API call with fallback
+    
+    Client->>Client: 1. Migration: dayOfWeek, planId<br/>(if missing)
+    Client->>Client: 2. Validation: planId, dayOfWeek<br/>(required fields)
+    Client->>IsarDB: 3. Set isSyncing = true<br/>(lock mechanism)
+    
+    alt Internet available
+        Client->>API: 4. POST /api/workouts/log<br/>(direct API call with retry)
+        
+        API->>WorkoutService: logWorkout(userId, dto)
+        
+        WorkoutService->>WorkoutService: Validate: Get active plan<br/>for today's date
+        
+        alt Active plan exists
+            WorkoutService->>DB: Find WorkoutLog for today
+            DB-->>WorkoutService: WorkoutLog document
+            
+            WorkoutService->>DB: Update WorkoutLog:<br/>completedExercises, isCompleted: true, completedAt
+            DB-->>WorkoutService: Updated log
+            
+            WorkoutService->>ClientService: Update client stats:<br/>totalWorkoutsCompleted++, currentStreak++
+            ClientService->>DB: Update ClientProfile
+            
+            WorkoutService-->>API: Success (serverId)
+            API-->>Client: Success (serverId)
+            
+            Client->>IsarDB: 5. Update local workout:<br/>isCompleted = true, isDirty = false,<br/>isSyncing = false, serverId
+            
+            Client->>Client: 6. Show confetti & success message
+            Client->>Client: 7. Navigate to /calendar
+            
+        else No active plan
+            WorkoutService-->>API: Error: No active plan
+            API-->>Client: Error
+            Client->>IsarDB: Mark isDirty = true, isSyncing = false
+        end
+        
+    else No internet (after retries)
+        Note over Client: API call failed after retries<br/>(1-2 retries with exponential backoff)
+        Client->>IsarDB: Mark isCompleted = true,<br/>isDirty = true, isSyncing = false
+        Client->>Client: Show: "Workout saved locally.<br/>Will sync when online."
+        
+        Note over Sync: Fallback: SyncManager will sync<br/>when internet is available
+        Sync->>API: POST /api/sync/batch<br/>(sync dirty workouts)
+        API-->>Sync: Success
+        Sync->>IsarDB: Mark isDirty = false,<br/>Update serverId
+    end
+    
+    Note over Cron: Every Monday at 23:59
+    
+    Cron->>WorkoutService: Analyze last week's logs
+    
+    loop For each client
+        WorkoutService->>DB: Count missed workouts (isMissed: true)
+        
+        alt Missed workouts > 2
+            WorkoutService->>ClientService: Enable penalty mode
+            WorkoutService->>DB: Add "Penalty Cardio" to next week's plan
+            WorkoutService->>DB: Update client.isPenaltyMode = true
+            WorkoutService->>DB: Reset client.currentStreak = 0
+        else Good adherence
+            WorkoutService->>DB: Award badge/achievement
+        end
+    end
+
+    Note over Client,DB: Result: Direct API call for instant feedback,<br/>SyncManager as fallback for offline scenario
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto direktni API pozivi umesto SyncManager-a?</strong>
+    </p>
+    <ul>
+        <li><strong>Instant feedback:</strong> Korisnik dobija trenutnu potvrdu da je trening uspešno logovan (confetti, success message)</li>
+        <li><strong>Bolje UX:</strong> Ne mora da čeka da SyncManager sinhronizuje podatke u pozadini</li>
+        <li><strong>Error handling:</strong> Korisnik vidi greške odmah (npr. "No active plan") umesto da sazna kasnije</li>
+    </ul>
+    <p>
+        <strong>Zašto offline-first?</strong> Teretane često imaju loš WiFi signal. Klijent mora moći da trenira i beleži podatke bez interneta.
+    </p>
+    <p>
+        <strong>Kako radi sinhronizacija:</strong>
+    </p>
+    <ul>
+        <li><strong>Direktni API pozivi:</strong> <code>finishWorkout()</code> i <code>markAsMissed()</code> direktno pozivaju API sa retry logikom (1-2 retry-a sa exponential backoff)</li>
+        <li><strong>Lock mehanizam:</strong> <code>isSyncing = true</code> sprečava race condition između direktnih API poziva i SyncManager-a</li>
+        <li><strong>Migration logika:</strong> Ako <code>dayOfWeek</code> ili <code>planId</code> nedostaju, pokušava se da se izvuku iz lokalne baze (backward compatibility)</li>
+        <li><strong>Offline detection:</strong> Ako API poziv ne uspe nakon retry logike, workout se označava kao <code>isDirty = true</code> za SyncManager</li>
+        <li><strong>SyncManager (fallback):</strong> Kada direktni API pozivi ne uspeju (offline scenario), SyncManager automatski sinhronizuje dirty workouts kada se internet uspostavi</li>
+        <li><strong>Partial success scenario:</strong> Ako API uspe ali lokalno ažuriranje ne uspe, pokušava se retry lokalnog ažuriranja sa exponential backoff (2 retry-a)</li>
+        <li><strong>Timeout handling:</strong> API pozivi imaju timeout od 30 sekundi</li>
+    </ul>
+    <p>
+        <strong>Nedeljna analiza:</strong> Svakog ponedeljka u 23:59, Cron Job analizira prošlu nedelju. Ako je bilo više od 2 propuštena treninga, aktivira se penalty mode i dodaje se "Penalty Cardio" u narednu nedelju.
+    </p>
+    <p>
+        <strong>Razlika između direktnih API poziva i batch sync-a:</strong>
+    </p>
+    <ul>
+        <li><strong>Direktni API pozivi (finishWorkout, markAsMissed):</strong> Koriste se za instant feedback kada je internet dostupan. Koriste <code>logWorkout</code> i <code>updateWorkoutLog</code> API endpoint-e.</li>
+        <li><strong>Batch sync (SyncManager):</strong> Koristi se kao fallback mehanizam kada direktni API pozivi ne uspeju (offline scenario). Koristi <code>syncBatch</code> API endpoint za batch sinhronizaciju više workout-a odjednom.</li>
+        <li><strong>Lock mehanizam:</strong> SyncManager skip-uje workout-e sa <code>isSyncing = true</code> da spreči race condition.</li>
+    </ul>
+    <p style="margin-top: 15px; padding: 15px; background: rgba(157, 78, 221, 0.1); border-left: 4px solid #9D4EDD;">
+        <strong>📖 Za detaljne flow-ove:</strong> Pogledaj <a href="sections/04-workout-log.html" style="color: #9D4EDD; text-decoration: underline;" target="_blank">detaljnu dokumentaciju</a> koja uključuje sequence diagrame za <code>finishWorkout()</code> i <code>markAsMissed()</code> sa svim mehanizmima (migration, lock, retry, timeout, offline detection, partial success).
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="admin-dashboard">
+            <div class="section-header" onclick="toggleSection('admin-dashboard')">
+                <h2>
+                    <span class="section-number">5.</span>
+                    <span class="section-title">Admin Dashboard - Full Control Flow</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('admin-dashboard', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Admin Dashboard - Full Control Flow</strong> pokazuje sve akcije koje admin može da izvrši u sistemu.
+        Admin ima potpunu kontrolu nad svim korisnicima, trenerima, planovima, i treningima.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Admin Dashboard</code> - Centralna komanda za upravljanje celim sistemom</li>
+        <li><code>Bypass guards</code> - Admin može da zaobiđe sve provere vlasništva i dozvola</li>
+        <li><code>Kill-switch control</code> - Admin može da aktivira/deaktivira trenere (blokira sve njihove klijente)</li>
+        <li><code>Cascade delete</code> - Brisanje korisnika automatski briše i povezane profile</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Admin Marko želi da pregleda sve trenere, vidi njihove klijente, i suspenduje trenera koji ne plaća pretplatu.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Admin otvara Admin Dashboard</li>
+        <li>Klikne na "Trainer Management" → vidi sve trenere sa statusom pretplate</li>
+        <li>Klikne na trenera koji ne plaća → vidi sve njegove klijente</li>
+        <li>Klikne "Suspend Trainer" → trener se suspenduje, kill-switch se aktivira</li>
+        <li>Svi klijenti tog trenera dobijaju 403 Forbidden kada pokušaju da pristupe aplikaciji</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Admin ima potpunu kontrolu i može da upravlja celim sistemom iz jednog mesta.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[Admin Dashboard] --> B[User Management]
+    A --> C[Trainer Management]
+    A --> D[Plan Management]
+    A --> E[Workout Management]
+    A --> F[Client Management]
+    A --> G[System Stats]
+    
+    B --> B1[Create User<br/>CLIENT/TRAINER/ADMIN]
+    B --> B2[Edit User<br/>email, name, role]
+    B --> B3[Delete User<br/>with cascade]
+    B --> B4[View All Users<br/>with filters]
+    
+    C --> C1[View All Trainers<br/>with subscription status]
+    C --> C2[Assign Clients to Trainer<br/>or Unassign]
+    C --> C3[Activate/Suspend Trainer<br/>Kill-switch control]
+    C --> C4[View Trainer's Clients]
+    C --> C5[Manage Subscription<br/>expiry, status]
+    
+    D --> D1[Create Plan<br/>for any trainer]
+    D --> D2[Edit Plan<br/>workouts, exercises]
+    D --> D3[Delete Plan<br/>with validation]
+    D --> D4[Assign Plan to Clients<br/>bypass trainer ownership]
+    D --> D5[View Plan Details<br/>assigned clients, history]
+    D --> D6[Duplicate Plan<br/>as template]
+    
+    E --> E1[View All Workout Logs<br/>by client, date, plan]
+    E --> E2[View Workout Details<br/>exercises, sets, reps]
+    E --> E3[Manual Log Correction<br/>if needed]
+    E --> E4[View Completion Stats<br/>per client/week]
+    
+    F --> F1[View All Clients<br/>with trainer info]
+    F --> F2[View Client Profile<br/>metrics, goals, stats]
+    F --> F3[View Client Plan History<br/>all assigned plans]
+    F --> F4[View Active Plan<br/>current week]
+    F --> F5[Assign/Reassign Client<br/>to different trainer]
+    F --> F6[View Client Workouts<br/>completed, missed]
+    
+    G --> G1[Total Users<br/>Trainers, Clients]
+    G --> G2[Active Subscriptions<br/>Suspended, Expired]
+    G --> G3[Total Plans Created<br/>Templates vs Assigned]
+    G --> G4[Workout Completion Rate<br/>Average across all clients]
+    G --> G5[System Health<br/>API uptime, DB status]
+    
+    style A fill:#9D4EDD,stroke:#fff,stroke-width:3px
+    style B fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style C fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style D fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style E fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style F fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style G fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Admin Dashboard je centralna komanda za upravljanje celim sistemom. Admin može da rešava probleme, upravlja korisnicima, i kontroliše kill-switch.
+    </p>
+    <p>
+        <strong>Admin može:</strong>
+    </p>
+    <ul>
+        <li><strong>Kreirati korisnike:</strong> Bilo koje role (CLIENT, TRAINER, ADMIN)</li>
+        <li><strong>Upravljati trenerima:</strong> Aktivirati/suspendovati, produžiti pretplatu, dodeliti klijente</li>
+        <li><strong>Upravljati planovima:</strong> Kreirati, editovati, brisati, dodeljivati bilo kom treneru (bypass ownership)</li>
+        <li><strong>Pregledati treninge:</strong> Svi workout logs, stats, completion rates</li>
+        <li><strong>Upravljati klijentima:</strong> Pregledati profile, plan history, reassign treneru</li>
+        <li><strong>System stats:</strong> Ukupan broj korisnika, subscription status, completion rates</li>
+    </ul>
+    <p>
+        <strong>Kill-switch kontrola:</strong> Admin može da suspenduje trenera, što automatski blokira sve njegove klijente (403 Forbidden). Ovo je kritično za SaaS zaštitu.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="admin-actions">
+            <div class="section-header" onclick="toggleSection('admin-actions')">
+                <h2>
+                    <span class="section-number">6.</span>
+                    <span class="section-title">Admin Actions - Detailed Flow</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('admin-actions', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Admin Actions - Detailed Flow</strong> pokazuje detaljno kako admin zaobiđe sve guards i ownership checks.
+        Admin može da izvršava akcije koje normalni treneri ne mogu.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Admin bypass</code> - Admin može da zaobiđe sve provere vlasništva</li>
+        <li><code>Ownership checks</code> - Normalni treneri mogu da upravljaju samo svojim planovima i klijentima</li>
+        <li><code>Cascade delete</code> - Brisanje korisnika automatski briše i povezane profile (TrainerProfile ili ClientProfile)</li>
+        <li><code>Kill-switch activation</code> - Suspendovanje trenera blokira sve njegove klijente</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Admin Marko želi da dodeli plan trenera A klijentu trenera B (što normalno nije dozvoljeno).
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Admin poziva <code>POST /api/plans/:id/assign</code> sa clientIds trenera B</li>
+        <li>Backend proverava da li je korisnik admin (bypass ownership check)</li>
+        <li>Plan se dodeljuje klijentu bez provere da li plan pripada treneru B</li>
+        <li>Klijent dobija plan u svojoj planHistory</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Admin može da izvršava akcije koje normalni treneri ne mogu, što omogućava fleksibilno upravljanje sistemom.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant AdminAPI as Admin API
+    participant PlansAPI as Plans API
+    participant ClientsAPI as Clients API
+    participant TrainersAPI as Trainers API
+    participant DB as MongoDB
+
+    Note over Admin,DB: ADMIN BYPASSES ALL GUARDS AND OWNERSHIP CHECKS
+
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: PLAN MANAGEMENT
+        Admin->>PlansAPI: POST /api/plans<br/>{name, workouts, trainerId}
+        PlansAPI->>DB: Create plan (any trainer)
+        
+        Admin->>PlansAPI: PATCH /api/plans/:id<br/>{...updates}
+        Note over PlansAPI: Admin can edit ANY plan
+        
+        Admin->>PlansAPI: DELETE /api/plans/:id
+        Note over PlansAPI: Admin can delete ANY plan<br/>(even if clients assigned)
+        
+        Admin->>PlansAPI: POST /api/plans/:id/assign<br/>{clientIds, startDate}
+        Note over PlansAPI: Admin can assign ANY plan<br/>to ANY clients (bypass trainer check)
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: CLIENT MANAGEMENT
+        Admin->>ClientsAPI: GET /api/admin/clients
+        ClientsAPI->>DB: Find all clients<br/>(populate trainer, currentPlan)
+        
+        Admin->>ClientsAPI: GET /api/admin/clients/:id
+        ClientsAPI->>DB: Get client + planHistory
+        
+        Admin->>TrainersAPI: POST /api/admin/assign-client<br/>{clientId, trainerId}
+        TrainersAPI->>DB: Update client.trainerId<br/>Remove from old trainer.clientIds<br/>Add to new trainer.clientIds
+        
+        Admin->>TrainersAPI: POST /api/admin/assign-client<br/>{clientId, trainerId: null}
+        Note over TrainersAPI: Unassign client from trainer<br/>(client.trainerId = null)
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: TRAINER MANAGEMENT
+        Admin->>TrainersAPI: GET /api/admin/trainers
+        TrainersAPI->>DB: Find all trainers<br/>(populate subscription, clients)
+        
+        Admin->>TrainersAPI: PATCH /api/admin/trainers/:id<br/>{isActive: false}
+        Note over TrainersAPI: Suspend trainer<br/>→ Kill-switch activates<br/>→ All clients get 403
+        
+        Admin->>TrainersAPI: PATCH /api/admin/trainers/:id<br/>{subscriptionExpiresAt}
+        Note over TrainersAPI: Extend subscription<br/>→ Trainer stays active
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: USER MANAGEMENT
+        Admin->>AdminAPI: POST /api/admin/users<br/>{email, role, password}
+        AdminAPI->>DB: Create user (any role)
+        
+        Admin->>AdminAPI: PATCH /api/admin/users/:id
+        AdminAPI->>DB: Update user (role, email, etc.)
+        
+        Admin->>AdminAPI: DELETE /api/admin/users/:id
+        Note over AdminAPI: Delete user + cascade:<br/>- If TRAINER: Delete TrainerProfile<br/>- If CLIENT: Delete ClientProfile
+    end
+
+    Note over Admin,DB: Admin has FULL CONTROL over entire system
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto admin bypass?</strong> Admin mora imati potpunu kontrolu da bi mogao da rešava probleme, migrira podatke, i upravlja sistemom.
+    </p>
+    <p>
+        <strong>Kako radi admin bypass:</strong>
+    </p>
+    <ul>
+        <li><strong>Guards provera:</strong> Admin guards proveravaju da li je korisnik admin pre nego što dozvole akciju</li>
+        <li><strong>Ownership skip:</strong> Ako je admin, ownership checks se preskaču (admin može da upravlja bilo čim)</li>
+        <li><strong>Cascade delete:</strong> Kada se briše korisnik, sistem automatski briše i povezane profile (TrainerProfile ili ClientProfile)</li>
+        <li><strong>Kill-switch kontrola:</strong> Admin može da suspenduje trenera, što aktivira kill-switch i blokira sve njegove klijente</li>
+    </ul>
+    <p>
+        <strong>Bezbednost:</strong> Admin akcije su zaštićene RBAC (Role-Based Access Control) - samo korisnici sa role='ADMIN' mogu da pristupe admin endpoint-ima.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="killswitch">
+            <div class="section-header" onclick="toggleSection('killswitch')">
+                <h2>
+                    <span class="section-number">7.</span>
+                    <span class="section-title">Kill-Switch Flow (SaaS Protection)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('killswitch', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Kill-Switch Flow (SaaS Protection)</strong> pokazuje kako se klijenti automatski blokiraju kada njihov trener prestane da plaća pretplatu.
+        Ovo je kritičan mehanizam zaštite za SaaS platformu.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>SaasKillswitchGuard</code> - Guard koji proverava status pretplate pre svakog API zahteva</li>
+        <li><code>isActive</code> - Flag koji označava da li je trener aktivan</li>
+        <li><code>subscriptionStatus</code> - Status pretplate: 'ACTIVE', 'SUSPENDED', 'EXPIRED'</li>
+        <li><code>subscriptionExpiresAt</code> - Datum isteka pretplate (auto-suspend ako je prošao)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko je prestao da plaća pretplatu. Njegov klijent Petar pokušava da pristupi aplikaciji.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar šalje bilo koji API zahtev (npr. GET /api/workouts/upcoming)</li>
+        <li>SaasKillswitchGuard proverava da li je Petar CLIENT (ne TRAINER ili ADMIN)</li>
+        <li>Guard pronalazi Petrovog trenera (Marka) i proverava njegov subscriptionStatus</li>
+        <li>Ako je Marko suspendovan ili mu je istekla pretplata, Guard vraća 403 Forbidden</li>
+        <li>Petar vidi poruku: "Your trainer's subscription is inactive"</li>
+        <li>Petar ne može da pristupi aplikaciji dok Marko ne plati pretplatu</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Kill-switch automatski blokira sve klijente suspendovanog trenera, što primorava trenera da plati pretplatu.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Client App
+    participant Guard as SaasKillswitchGuard
+    participant DB as MongoDB
+    participant Trainer as TrainerProfile
+
+    Client->>Guard: Any API Request<br/>(with JWT token)
+    
+    Guard->>Guard: Extract user.role from JWT
+    
+    alt user.role === 'CLIENT'
+        Guard->>DB: Find ClientProfile by userId
+        DB-->>Guard: ClientProfile with trainerId
+        
+        Guard->>DB: Find TrainerProfile by trainerId
+        DB-->>Guard: TrainerProfile with<br/>isActive, subscriptionStatus,<br/>subscriptionExpiresAt
+        
+        alt isActive === false OR<br/>subscriptionStatus !== 'ACTIVE'
+            Guard-->>Client: 403 Forbidden<br/>"Your trainer's subscription<br/>is inactive"
+        else subscriptionExpiresAt < today
+            Guard->>DB: Auto-suspend trainer:<br/>isActive = false,<br/>subscriptionStatus = 'SUSPENDED'
+            Guard-->>Client: 403 Forbidden<br/>"Subscription has expired"
+        else All checks pass
+            Guard-->>Client: Allow request (200 OK)
+        end
+        
+    else user.role === 'TRAINER' OR 'ADMIN'
+        Note over Guard: Trainers and Admins<br/>bypass kill-switch
+        Guard-->>Client: Allow request (200 OK)
+    end
+
+    Note over Client,DB: Result: Clients automatically blocked<br/>if their trainer's subscription expires
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Kill-switch je kritičan mehanizam zaštite za SaaS platformu. Ako trener ne plaća pretplatu, svi njegovi klijenti se automatski blokiraju.
+    </p>
+    <p>
+        <strong>Kako radi kill-switch:</strong>
+    </p>
+    <ul>
+        <li><strong>Guard provera:</strong> Svaki API zahtev od klijenta prolazi kroz SaasKillswitchGuard</li>
+        <li><strong>Role check:</strong> Guard proverava da li je korisnik CLIENT (ne TRAINER ili ADMIN)</li>
+        <li><strong>Trainer lookup:</strong> Guard pronalazi klijentovog trenera i proverava njegov subscriptionStatus</li>
+        <li><strong>Auto-suspend:</strong> Ako je subscriptionExpiresAt prošao, trener se automatski suspenduje</li>
+        <li><strong>403 Forbidden:</strong> Klijent dobija 403 sa porukom da je pretplata neaktivna</li>
+    </ul>
+    <p>
+        <strong>Bypass za trenere i admine:</strong> Treneri i admini zaobiđu kill-switch jer oni ne zavise od pretplate drugog trenera.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="plan-history">
+            <div class="section-header" onclick="toggleSection('plan-history')">
+                <h2>
+                    <span class="section-number">8.</span>
+                    <span class="section-title">Plan History vs Current Plan Logic</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('plan-history', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Plan History vs Current Plan Logic</strong> određuje koji plan je aktivan na osnovu datuma. Sistem pronalazi aktivni plan iz planHistory (planStartDate <= today <= planEndDate) ili koristi currentPlanId za backward compatibility.
+    </p>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar ima aktivni plan u planHistory.
+    </p>
+    <ol>
+        <li>Backend pronalazi aktivni plan (planStartDate <= today <= planEndDate)</li>
+        <li>Backend vraća plan sa planStatus: 'current'</li>
+        <li>Frontend prikazuje workout logs za trenutnu nedelju</li>
+        <li>Petar može da trenira</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar vidi svoje treninge i može da trenira.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[Get Client Profile] --> B{Active Plan Found?}
+    
+    B -->|Yes| C[Return Active Plan<br/>Client can train]
+    B -->|No| D[Return null<br/>No active plan]
+    
+    C --> E[Client sees workouts<br/>for this week]
+    D --> F[Client sees message<br/>Waiting for plan]
+    
+    style A fill:#9D4EDD,stroke:#fff,stroke-width:2px
+    style C fill:#00FF00,stroke:#000,stroke-width:2px
+    style D fill:#FFA500,stroke:#000,stroke-width:2px
+    style E fill:#00FF00,stroke:#000,stroke-width:2px
+    style F fill:#FF6B6B,stroke:#000,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Kako radi:</strong> Sistem pronalazi aktivni plan iz planHistory gde je planStartDate <= today <= planEndDate. Ako nema planHistory, koristi currentPlanId za backward compatibility. Plan je aktivan samo ako je u datumu - ako je planEndDate prošao, plan je završen (previous).
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="penalty">
+            <div class="section-header" onclick="toggleSection('penalty')">
+                <h2>
+                    <span class="section-number">9.</span>
+                    <span class="section-title">Penalty System (Missed Workouts + Weekly Analysis)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('penalty', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Penalty System (Missed Workouts + Weekly Analysis)</strong> pokazuje kako sistem naplaćuje kazne za propuštene treninge i analizira nedeljne rezultate.
+        Ovo je deo "Discipline Enforcer" filozofije - klijenti moraju da budu odgovorni za svoje treninge.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Real-time penalty</code> - Kazna se dodaje odmah kada admin označi trening kao propušten</li>
+        <li><code>Weekly analysis</code> - Cron Job analizira prošlu nedelju svakog ponedeljka u 23:59</li>
+        <li><code>Penalty mode</code> - Aktivira se ako je bilo više od 2 propuštena treninga u nedelji</li>
+        <li><code>Penalty Cardio</code> - Automatski se dodaje u narednu nedelju kada se aktivira penalty mode</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je propustio 3 treninga prošle nedelje. Admin Marko označava treninge kao propuštene.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Admin označava prvi propušteni trening → <code>addPenaltyToBalance()</code> dodaje 1€ na balance</li>
+        <li>Admin označava drugi propušteni trening → dodaje se još 1€ (ukupno 2€)</li>
+        <li>Admin označava treći propušteni trening → dodaje se još 1€ (ukupno 3€)</li>
+        <li>Svakog ponedeljka u 23:59, Cron Job analizira prošlu nedelju</li>
+        <li>Pošto je bilo 3 propuštena treninga (>2), aktivira se penalty mode</li>
+        <li>Dodaje se "Penalty Cardio" u narednu nedelju, resetuje se currentStreak na 0</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar ima 3€ na balance-u i mora da uradi "Penalty Cardio" u narednoj nedelji.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant API as Backend API
+    participant WorkoutService as WorkoutsService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+    participant Cron as Cron Job<br/>(Every Monday 23:59)
+
+    rect rgb(30, 30, 30)
+        Note over Admin,DB: REAL-TIME MISSED WORKOUT PENALTY
+        Admin->>API: PATCH /api/admin/workouts/:id<br/>{isMissed: true}
+        
+        API->>WorkoutService: updateWorkoutLog(logId, dto)
+        
+        WorkoutService->>DB: Find existing WorkoutLog
+        DB-->>WorkoutService: WorkoutLog (isMissed: false)
+        
+        alt isMissed changed from false to true
+            WorkoutService->>GamificationService: addPenaltyToBalance(<br/>clientId, 1,<br/>"Missed workout penalty", planId)
+            
+            GamificationService->>DB: Update ClientProfile:<br/>balance += 1€<br/>monthlyBalance += 1€<br/>Add to penaltyHistory[]
+            
+            Note over GamificationService: 1€ penalty added immediately
+        end
+        
+        WorkoutService->>DB: Update WorkoutLog.isMissed = true
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: WEEKLY PENALTY ANALYSIS (Cron Job)
+        Cron->>GamificationService: calculateWeeklyPenalties()
+        
+        GamificationService->>DB: Find all ClientProfiles
+        
+        loop For each client
+            GamificationService->>WorkoutService: Get last week's workout logs<br/>(from Monday to Sunday)
+            
+            WorkoutService->>DB: Find WorkoutLogs where:<br/>workoutDate >= lastMonday<br/>workoutDate <= lastSunday<br/>clientId = client._id
+            
+            DB-->>WorkoutService: Array of WorkoutLogs
+            
+            WorkoutService->>WorkoutService: Count where isMissed === true
+            
+            alt Missed workouts > 2
+                GamificationService->>ClientService: Enable penalty mode
+                ClientService->>DB: Update ClientProfile:<br/>isPenaltyMode = true<br/>consecutiveMissedWorkouts += count<br/>currentStreak = 0
+                
+                GamificationService->>PlansService: Add "Penalty Cardio" workout<br/>to client's next week plan
+                
+                Note over DB: Penalty workout automatically<br/>added to next week's schedule
+                
+            else Missed workouts <= 2
+                GamificationService->>ClientService: Update streak
+                ClientService->>DB: Update ClientProfile:<br/>currentStreak += days_completed<br/>isPenaltyMode = false (if was true)
+            end
+        end
+        
+        GamificationService->>DB: Save PenaltyRecord documents
+    end
+
+    Note over Admin,DB: Result: Real-time 1€ penalties for missed workouts,<br/>Weekly analysis for penalty mode and streaks
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Penalty sistem primorava klijente da budu odgovorni za svoje treninge. Propuštanje treninga košta novac.
+    </p>
+    <p>
+        <strong>Kako radi penalty sistem:</strong>
+    </p>
+    <ul>
+        <li><strong>Real-time penalty:</strong> Kada admin označi trening kao propušten, odmah se dodaje 1€ na balance</li>
+        <li><strong>Balance accumulation:</strong> Svi propušteni treningi se sabiraju u balance i monthlyBalance</li>
+        <li><strong>Weekly analysis:</strong> Svakog ponedeljka u 23:59, Cron Job analizira prošlu nedelju</li>
+        <li><strong>Penalty mode:</strong> Ako je bilo više od 2 propuštena treninga, aktivira se penalty mode</li>
+        <li><strong>Penalty Cardio:</strong> Automatski se dodaje u narednu nedelju kada se aktivira penalty mode</li>
+    </ul>
+    <p>
+        <strong>Streak management:</strong> Ako klijent ima dobar adherence (<=2 propuštena treninga), streak se ažurira. Ako ima loš adherence (>2 propuštena), streak se resetuje na 0.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="checkin">
+            <div class="section-header" onclick="toggleSection('checkin')">
+                <h2>
+                    <span class="section-number">10.</span>
+                    <span class="section-title">Check-In Flow (GPS + Photo Verification)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('checkin', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Check-In Flow (GPS + Photo Verification)</strong> pokazuje kako klijent mora da se check-in-uje pre treninga.
+        Check-in zahteva foto dokaz i GPS validaciju da bi se sprečilo varanje.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Check-In Gate</code> - Obavezan check-in pre početka treninga</li>
+        <li><code>GPS validation</code> - Provera da li je klijent u teretani (Haversine formula)</li>
+        <li><code>Photo verification</code> - Trener verifikuje da li je foto autentičan</li>
+        <li><code>isGymLocation</code> - Flag koji označava da li je check-in u teretani (unutar radius-a)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar želi da počne trening. Mora prvo da se check-in-uje.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar klikne "Start Workout" → aplikacija traži check-in</li>
+        <li>Petar otvara kameru i snima foto dokaz</li>
+        <li>Aplikacija uzima GPS koordinate (lat, lng)</li>
+        <li>Podaci se čuvaju lokalno u Isar DB (offline-first)</li>
+        <li>Kada ima internet, foto se upload-uje na Cloudinary</li>
+        <li>Backend proverava da li je GPS u teretani (Haversine formula, radius 100m)</li>
+        <li>Trener vidi check-in u dashboard-u i verifikuje autentičnost</li>
+        <li>Nakon verifikacije, Petar može da počne trening</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar mora da se check-in-uje pre svakog treninga, što sprečava varanje.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Camera as Camera API
+    participant GPS as GPS API
+    participant IsarDB as Isar (Local)
+    participant Sync as SyncManager
+    participant API as Backend API
+    participant MediaAPI as Media API<br/>(Cloudinary)
+    participant CheckInService as CheckInService
+    participant TrainerService as TrainersService
+    participant DB as MongoDB
+    participant Trainer as Trainer Dashboard
+
+    Note over Client: CHECK-IN GATE: Required before workout
+
+    Client->>Camera: Open camera<br/>(mandatory check-in)
+    Camera->>Client: Photo captured
+    
+    Client->>GPS: Get current location
+    GPS-->>Client: GPS coordinates<br/>(lat, lng, accuracy)
+    
+    Client->>IsarDB: Save CheckInCollection:<br/>photoLocalPath, gpsCoordinates,<br/>timestamp, isSynced: false
+    
+    Note over Client: Client can proceed<br/>even offline
+    
+    alt Internet available
+        Sync->>API: GET /api/media/signature
+        API-->>Sync: Upload signature<br/>(Cloudinary credentials)
+        
+        Sync->>MediaAPI: Upload photo directly<br/>(using signature)
+        MediaAPI-->>Sync: photoUrl (Cloudinary URL)
+        
+        Sync->>IsarDB: Update CheckInCollection:<br/>photoUrl, isSynced: true
+        
+        Sync->>API: POST /api/checkins<br/>{photoUrl, gpsCoordinates, timestamp}
+        
+        API->>CheckInService: createCheckIn(userId, dto)
+        
+        CheckInService->>DB: Find ClientProfile by userId
+        DB-->>CheckInService: ClientProfile with trainerId
+        
+        alt Client has trainer
+            CheckInService->>TrainerService: getProfileById(trainerId)
+            TrainerService->>DB: Find TrainerProfile by trainerId
+            DB-->>TrainerService: TrainerProfile with gymLocation
+            
+            CheckInService->>CheckInService: validateGpsLocation(<br/>trainerId,<br/>checkInLat, checkInLon)
+            
+            alt Trainer has gymLocation set
+                CheckInService->>CheckInService: Calculate distance<br/>(Haversine formula)
+                alt Distance <= radius (default 100m)
+                    Note over CheckInService: isGymLocation = true
+                else Distance > radius
+                    Note over CheckInService: isGymLocation = false<br/>(flagged for review)
+                end
+            else No gymLocation set
+                Note over CheckInService: isGymLocation = true<br/>(backward compatibility)
+            end
+            
+            alt GPS matches gym location
+                Note over CheckInService: isGymLocation = true<br/>(within radius)
+            else GPS doesn't match
+                Note over CheckInService: isGymLocation = false<br/>(flagged for review)
+            end
+        end
+        
+        CheckInService->>DB: Save CheckIn document<br/>(with isGymLocation flag)
+        
+        CheckInService->>Trainer: Notify trainer<br/>(new check-in pending verification)
+        
+    else No internet
+        Note over Sync: Queue for sync when online
+    end
+    
+    Trainer->>API: GET /api/trainers/clients/checkins<br/>(pending verification)
+    API-->>Trainer: List of check-ins<br/>(with isGymLocation flag)
+    
+    Trainer->>API: PATCH /api/checkins/:id/verify<br/>{verificationStatus: "VERIFIED"}
+    API->>CheckInService: verifyCheckIn(checkInId)
+    CheckInService->>DB: Update CheckIn.verificationStatus = "VERIFIED"
+    
+    Note over Client,Trainer: Result: Photo uploaded with GPS,<br/>trainer verifies authenticity<br/>Workout gate now open
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Check-in sistem sprečava varanje. Klijent mora da se check-in-uje pre svakog treninga sa foto dokazom i GPS validacijom.
+    </p>
+    <p>
+        <strong>Kako radi check-in:</strong>
+    </p>
+    <ul>
+        <li><strong>Mandatory check-in:</strong> "Start Workout" dugme je onemogućeno dok se klijent ne check-in-uje</li>
+        <li><strong>Photo proof:</strong> Klijent mora da snimi foto dokaz (offline-first, čuva se lokalno)</li>
+        <li><strong>GPS validation:</strong> Sistem proverava da li je klijent u teretani (Haversine formula, radius 100m)</li>
+        <li><strong>Trainer verification:</strong> Trener verifikuje autentičnost check-in-a u dashboard-u</li>
+        <li><strong>isGymLocation flag:</strong> Označava da li je check-in u teretani (true) ili van teretane (false, flagged for review)</li>
+    </ul>
+    <p>
+        <strong>Offline-first:</strong> Check-in se može snimiti i bez interneta. Foto se upload-uje kada se konekcija uspostavi.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="weighin">
+            <div class="section-header" onclick="toggleSection('weighin')">
+                <h2>
+                    <span class="section-number">11.</span>
+                    <span class="section-title">Weigh-In Flow (Linked to Plan)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('weighin', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Weigh-In Flow (Linked to Plan)</strong> pokazuje kako klijent beleži svoju težinu, povezanu sa aktivnim planom.
+        Preporučeno je da se težina beleži svakog ponedeljka (početak nedelje).
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>WeighIn</code> - Zapis težine klijenta na određeni datum</li>
+        <li><code>isMandatory</code> - Flag koji označava da li je weigh-in obavezan (ponedeljak plan nedelje)</li>
+        <li><code>isWeightSpike</code> - Flag koji označava da li je došlo do velike promene težine (>5%)</li>
+        <li><code>aiFlagged</code> - Flag koji označava da li je AI detektovao anomaliju</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar želi da zabeleži svoju težinu. Prethodna težina je bila 80kg, a sada je 85kg (povećanje od 6.25%).
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar klikne "Record" na WeighInCard-u</li>
+        <li>Unosi težinu: 85kg i opcione napomene</li>
+        <li>Backend pronalazi aktivni plan i povezuje weigh-in sa planom</li>
+        <li>Backend proverava da li je ponedeljak plan nedelje → isMandatory = true</li>
+        <li>Backend pronalazi poslednji weigh-in (80kg) i računa promenu: (85-80)/80 * 100 = 6.25%</li>
+        <li>Pošto je promena >5%, postavlja se isWeightSpike = true i aiFlagged = true</li>
+        <li>AI generiše poruku: "Weight increased by 6.25%"</li>
+        <li>Weigh-in se čuva u bazi, dashboard se osvežava</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je zabeležio težinu, sistem je detektovao spike, i AI će poslati poruku treneru.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard<br/>(WeighInCard)
+    participant WeighInPage as Weigh-In Page
+    participant API as Backend API
+    participant WeighInService as WeighInService
+    participant ClientsService as ClientsService
+    participant PlansService as PlansService
+    participant DB as MongoDB
+
+    Client->>Dashboard: View dashboard
+    Dashboard->>API: GET /api/checkins/weigh-in/latest
+    API->>WeighInService: getLatestWeighIn(userId)
+    WeighInService->>DB: Find latest WeighIn by clientId
+    DB-->>WeighInService: Latest WeighIn or null
+    WeighInService-->>API: Latest weigh-in data
+    API-->>Dashboard: Weigh-in data (weight, date, days since)
+    Dashboard-->>Client: Display WeighInCard<br/>(with "Record" button)
+
+    Client->>Dashboard: Click "Record" button
+    Dashboard->>WeighInPage: Navigate to /weigh-in
+
+    WeighInPage->>Client: Display form<br/>(weight input, notes,<br/>Monday recommendation)
+
+    Client->>WeighInPage: Enter weight, optional notes
+    Client->>WeighInPage: Submit weigh-in
+
+    WeighInPage->>API: POST /api/checkins/weigh-in<br/>{weight, date, notes, planId?}
+
+    API->>WeighInService: createWeighIn(clientId, weight, date, notes, planId)
+
+    WeighInService->>ClientsService: getProfile(clientId)
+    ClientsService->>DB: Find ClientProfile
+    DB-->>ClientsService: ClientProfile with planHistory
+
+    WeighInService->>WeighInService: getActivePlan(clientProfile)
+
+    alt Active plan found
+        WeighInService->>WeighInService: Link weigh-in to plan:<br/>planId = activePlan.planId<br/>planStartDate = activePlan.planStartDate
+        
+        WeighInService->>WeighInService: Check if Monday of plan week
+        alt Is Monday of plan week
+            Note over WeighInService: isMandatory = true
+        else Other day
+            Note over WeighInService: isMandatory = false<br/>(Monday recommended)
+        end
+    else No active plan
+        Note over WeighInService: planId = null<br/>(weigh-in without plan)
+    end
+
+    WeighInService->>DB: Find last weigh-in for spike detection
+    DB-->>WeighInService: Last WeighIn or null
+
+    alt Last weigh-in exists
+        WeighInService->>WeighInService: Calculate weight change %<br/>((current - last) / last * 100)
+        
+        alt Weight increase > 5%
+            Note over WeighInService: isWeightSpike = true<br/>aiFlagged = true<br/>aiMessage = "Weight increased by X%"
+        else Weight decrease > 5%
+            Note over WeighInService: aiFlagged = true<br/>aiMessage = "Weight decreased by X%"
+        end
+    end
+
+    WeighInService->>DB: Save WeighIn document<br/>(with planId, planStartDate,<br/>isMandatory, isWeightSpike)
+
+    WeighInService-->>API: WeighIn saved
+    API-->>WeighInPage: Success response
+
+    WeighInPage->>Dashboard: Return true (refresh signal)
+    Dashboard->>API: GET /api/checkins/weigh-in/latest<br/>(refresh data)
+    API-->>Dashboard: Updated weigh-in data
+    Dashboard-->>Client: Updated WeighInCard displayed
+
+    Note over Client,DB: Result: Weigh-in recorded, linked to plan,<br/>spike detected if >5% change,<br/>dashboard auto-refreshes
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Weigh-in sistem omogućava praćenje napretka klijenta. Težina se povezuje sa planom da bi se pratila promena tokom nedelje.
+    </p>
+    <p>
+        <strong>Kako radi weigh-in:</strong>
+    </p>
+    <ul>
+        <li><strong>Plan linking:</strong> Weigh-in se automatski povezuje sa aktivnim planom (planId, planStartDate)</li>
+        <li><strong>Monday recommendation:</strong> Preporučeno je da se težina beleži svakog ponedeljka (isMandatory = true)</li>
+        <li><strong>Spike detection:</strong> Ako je promena težine >5% u odnosu na poslednji weigh-in, detektuje se spike</li>
+        <li><strong>AI flagging:</strong> Spike se označava sa aiFlagged = true i generiše se AI poruka</li>
+        <li><strong>Dashboard refresh:</strong> Nakon weigh-in-a, dashboard se automatski osvežava</li>
+    </ul>
+    <p>
+        <strong>Spike threshold:</strong> Promena >5% se smatra značajnom i zahteva pažnju. AI će poslati poruku treneru da proveri šta se dešava.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="balance">
+            <div class="section-header" onclick="toggleSection('balance')">
+                <h2>
+                    <span class="section-number">12.</span>
+                    <span class="section-title">Running Tab Balance System</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('balance', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Running Tab Balance System</strong> pokazuje kako se balance akumulira i prikazuje klijentu.
+        Balance se sastoji od troškova planova i kazni za propuštene treninge.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>balance</code> - Ukupan balance (sve kazne i troškovi planova)</li>
+        <li><code>monthlyBalance</code> - Mesečni balance (kazne i troškovi za trenutni mesec)</li>
+        <li><code>penaltyHistory[]</code> - Istorija svih kazni i troškova</li>
+        <li><code>Monthly Paywall</code> - Blokada na početku meseca (day 1) ako balance > 0</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar ima balance od 10€ (9€ za plan + 1€ za propušteni trening). Prvi dan novog meseca.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar otvara aplikaciju 1. dana u mesecu</li>
+        <li>Dashboard proverava da li je danas day 1 i da li je balance > 0</li>
+        <li>Pošto jeste, prikazuje se PaywallDialog (non-dismissible)</li>
+        <li>Petar vidi poruku: "Payment Required - Your balance for last month is 10€"</li>
+        <li>Dugme "Start Workout" je onemogućeno dok se balance ne očisti</li>
+        <li>Petar klikne "View Payment Details" → otvara se Payment Page</li>
+        <li>Petar vidi detalje: Total Balance 10€, Monthly Balance 10€, Payment History</li>
+        <li>Petar klikne "Mark as Paid" → balance se resetuje na 0</li>
+        <li>Dashboard se osvežava, PaywallDialog nestaje, Petar može da trenira</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar mora da plati balance pre nego što može da nastavi sa treningom.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard<br/>(BalanceCard)
+    participant PaymentPage as Payment Page
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant PlansService as PlansService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+
+    rect rgb(30, 30, 30)
+        Note over PlansService,DB: PLAN ASSIGNMENT ADDS COST
+        PlansService->>GamificationService: addPenaltyToBalance(<br/>clientId, weeklyCost,<br/>"Weekly plan cost", planId)
+        
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 0€)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>balance += weeklyCost<br/>monthlyBalance += weeklyCost<br/>penaltyHistory.push({<br/>  date, amount: weeklyCost,<br/>  reason: "Weekly plan cost",<br/>  planId<br/>})
+        
+        DB-->>GamificationService: Updated (balance: 9€)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over WorkoutService,DB: MISSED WORKOUT ADDS PENALTY
+        WorkoutService->>GamificationService: addPenaltyToBalance(<br/>clientId, 1,<br/>"Missed workout penalty", planId)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>balance += 1€<br/>monthlyBalance += 1€<br/>penaltyHistory.push({<br/>  date, amount: 1,<br/>  reason: "Missed workout penalty",<br/>  planId<br/>})
+        
+        DB-->>GamificationService: Updated (balance: 10€)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: DISPLAY BALANCE ON DASHBOARD
+        Client->>Dashboard: View dashboard
+        Dashboard->>API: GET /api/gamification/penalty-status
+        API->>GamificationService: getPenaltyStatus(clientId)
+        
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 10€,<br/>monthlyBalance: 10€,<br/>penaltyHistory[])
+        
+        GamificationService-->>API: {balance, monthlyBalance,<br/>penaltyHistory}
+        API-->>Dashboard: Balance data
+        Dashboard-->>Client: Display BalanceCard<br/>(€10.00, "Pay Now" button)
+    end
+
+    rect rgb(30, 30, 30)
+        Note over Client,DB: PAYMENT PAGE
+        Client->>PaymentPage: Click "Pay Now" button
+        PaymentPage->>API: GET /api/gamification/penalty-status
+        API-->>PaymentPage: Full balance details
+        
+        PaymentPage-->>Client: Display:<br/>- Total Balance: €10.00<br/>- Monthly Balance: €10.00<br/>- Payment History (all entries)<br/>- "Mark as Paid" button
+        
+        Client->>PaymentPage: Click "Mark as Paid"
+        PaymentPage->>API: POST /api/gamification/clear-balance
+        
+        API->>GamificationService: clearBalance(clientId)
+        GamificationService->>DB: Update ClientProfile:<br/>balance = 0<br/>monthlyBalance = 0<br/>lastBalanceReset = now
+        
+        GamificationService-->>API: Balance cleared
+        API-->>PaymentPage: Success
+        PaymentPage-->>Client: "No Balance Due" message
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: MONTHLY PAYWALL (V2): Day 1 Block
+        Client->>Dashboard: Open dashboard (Day 1 of month)
+        Dashboard->>Dashboard: Check if today is day 1
+        
+        alt Today is day 1 AND balance > 0
+            Dashboard->>API: GET /api/gamification/status
+            API->>GamificationService: getPenaltyStatus(clientId)
+            GamificationService->>DB: Find ClientProfile
+            DB-->>GamificationService: ClientProfile (balance: 10€)
+            GamificationService-->>API: {balance: 10€, blocked: true}
+            API-->>Dashboard: Balance data with blocked flag
+            
+            Dashboard->>Dashboard: Show non-dismissible PaywallDialog
+            Dashboard-->>Client: "Payment Required" dialog<br/>Workout buttons DISABLED
+            
+            Note over Client: Cannot start workout<br/>until balance cleared
+        else balance === 0 OR not day 1
+            Dashboard-->>Client: Normal dashboard<br/>No paywall
+        end
+    end
+
+    Note over Client,DB: Result: Balance accumulates from plan costs<br/>and missed workouts, displayed on dashboard<br/>and payment page, can be cleared manually.<br/>V2: Monthly paywall blocks workouts on day 1 if balance > 0
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Balance sistem primorava klijente da plate za planove i kazne. Monthly paywall blokira treninge dok se balance ne očisti.
+    </p>
+    <p>
+        <strong>Kako radi balance sistem:</strong>
+    </p>
+    <ul>
+        <li><strong>Plan assignment:</strong> Kada se plan dodeljuje, dodaje se weeklyCost na balance</li>
+        <li><strong>Missed workout:</strong> Kada se trening označi kao propušten, dodaje se 1€ na balance</li>
+        <li><strong>Balance display:</strong> Balance se prikazuje na dashboard-u u BalanceCard-u</li>
+        <li><strong>Payment page:</strong> Klijent može da vidi detalje balance-a i da ga očisti</li>
+        <li><strong>Monthly paywall:</strong> Na početku meseca (day 1), ako je balance > 0, prikazuje se PaywallDialog</li>
+    </ul>
+    <p>
+        <strong>Monthly paywall logika:</strong> Ako je danas 1. dan u mesecu i balance > 0, klijent je blokiran dok ne plati. PaywallDialog je non-dismissible - mora da se plati da bi se nastavilo sa treningom.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="paywall">
+            <div class="section-header" onclick="toggleSection('paywall')">
+                <h2>
+                    <span class="section-number">13.</span>
+                    <span class="section-title">Monthly Paywall Flow</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('paywall', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Monthly Paywall Flow (V2)</strong> pokazuje kako se klijenti blokiraju na početku meseca ako imaju neplaćen balance.
+        Ovo je kritičan mehanizam za primoravanje plaćanja.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Monthly Paywall</code> - Blokada na početku meseca (day 1) ako balance > 0</li>
+        <li><code>Non-dismissible dialog</code> - PaywallDialog se ne može zatvoriti dok se balance ne očisti</li>
+        <li><code>Workout buttons disabled</code> - Dugmad za trening su onemogućena dok se balance ne plati</li>
+        <li><code>checkMonthlyPaywall()</code> - Funkcija koja proverava da li je danas day 1 i da li je balance > 0</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar ima balance od 15€. Prvi dan novog meseca (1. januar).
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar otvara aplikaciju 1. januara</li>
+        <li>Dashboard proverava da li je danas day 1 → jeste</li>
+        <li>Dashboard poziva <code>GET /api/gamification/status</code></li>
+        <li>Backend poziva <code>checkMonthlyPaywall()</code> → balance > 0 → vraća <code>blocked: true</code></li>
+        <li>Dashboard prikazuje non-dismissible PaywallDialog</li>
+        <li>Poruka: "Payment Required - Your balance for last month is 15€. Pay to continue training."</li>
+        <li>Dugmad "Start Workout" su onemogućena</li>
+        <li>Petar klikne "View Payment Details" → otvara se Payment Page</li>
+        <li>Petar klikne "Mark as Paid" → balance se resetuje na 0</li>
+        <li>Dashboard se osvežava, PaywallDialog nestaje, Petar može da trenira</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar mora da plati balance pre nego što može da nastavi sa treningom.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant Dashboard as Dashboard Page
+    participant PaywallDialog as Paywall Dialog
+    participant PaymentPage as Payment Page
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+
+    Note over Client: MONTH START: Day 1 of new month
+
+    Client->>Dashboard: Open dashboard
+    Dashboard->>Dashboard: Check if today is day 1
+    
+    alt Today is day 1
+        Dashboard->>API: GET /api/gamification/status
+        API->>GamificationService: getPenaltyStatus(clientId)
+        GamificationService->>DB: Find ClientProfile
+        DB-->>GamificationService: ClientProfile (balance: 15€)
+        
+        GamificationService->>GamificationService: checkMonthlyPaywall(clientId)
+        
+        alt balance > 0
+            GamificationService-->>API: {balance: 15€, blocked: true}
+            API-->>Dashboard: Balance data with blocked flag
+            
+            Dashboard->>PaywallDialog: Show non-dismissible dialog
+            PaywallDialog-->>Client: "Payment Required"<br/>"Your balance for last month is 15€.<br/>Pay to continue training."
+            
+            Note over Client: Workout buttons DISABLED<br/>Cannot start workout
+            
+            Client->>PaywallDialog: Click "View Payment Details"
+            PaywallDialog->>PaymentPage: Navigate
+            PaymentPage->>API: GET /api/gamification/status
+            API-->>PaymentPage: Full balance details
+            
+            PaymentPage-->>Client: Display:<br/>- Total Balance: €15.00<br/>- Payment History<br/>- "Mark as Paid" button
+            
+            Client->>PaymentPage: Click "Mark as Paid"
+            PaymentPage->>API: POST /api/gamification/clear-balance
+            API->>GamificationService: clearBalance(clientId)
+            GamificationService->>DB: Update ClientProfile:<br/>balance = 0<br/>monthlyBalance = 0<br/>lastBalanceReset = now
+            
+            GamificationService-->>API: Balance cleared
+            API-->>PaymentPage: Success
+            PaymentPage->>Dashboard: Return (refresh)
+            Dashboard->>API: GET /api/gamification/status
+            API-->>Dashboard: {balance: 0€, blocked: false}
+            Dashboard-->>Client: Workout buttons ENABLED<br/>Can start workout
+        else balance === 0
+            Dashboard-->>Client: Normal dashboard<br/>No paywall
+        end
+    else Today is not day 1
+        Dashboard-->>Client: Normal dashboard<br/>No paywall check
+    end
+
+    Note over Client,DB: Result: Clients blocked on month start<br/>if balance > 0, must pay to continue
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Monthly paywall primorava klijente da plate balance pre nego što mogu da nastave sa treningom. Ovo je kritičan mehanizam za monetizaciju.
+    </p>
+    <p>
+        <strong>Kako radi monthly paywall:</strong>
+    </p>
+    <ul>
+        <li><strong>Day 1 check:</strong> Dashboard proverava da li je danas 1. dan u mesecu</li>
+        <li><strong>Balance check:</strong> Ako jeste, poziva se <code>checkMonthlyPaywall()</code> koja proverava da li je balance > 0</li>
+        <li><strong>Block flag:</strong> Ako je balance > 0, vraća se <code>blocked: true</code></li>
+        <li><strong>Non-dismissible dialog:</strong> PaywallDialog se prikazuje i ne može se zatvoriti dok se balance ne očisti</li>
+        <li><strong>Workout buttons disabled:</strong> Sva dugmad za trening su onemogućena dok se balance ne plati</li>
+        <li><strong>Payment flow:</strong> Klijent mora da klikne "View Payment Details" i da očisti balance</li>
+    </ul>
+    <p>
+        <strong>Bypass:</strong> Ako je balance === 0 ili danas nije day 1, paywall se ne prikazuje i klijent može normalno da trenira.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="unlock">
+            <div class="section-header" onclick="toggleSection('unlock')">
+                <h2>
+                    <span class="section-number">14.</span>
+                    <span class="section-title">Weekly Unlock Mechanism (CLIENT-Initiated)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('unlock', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Weekly Unlock Mechanism</strong> omogućava klijentu da direktno otključi narednu nedelju klikom na "Unlock Next Week" dugme. Klijent mora da završi trenutnu nedelju pre nego što može da otključi sledeću.
+    </p>
+    <p>
+        <strong>VAŽNO:</strong> Nema potrebe za odobrenjem trenera - klijent otključava direktno i balance se naplaćuje automatski.
+    </p>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je završio sve treninge za trenutnu nedelju i želi da otključi narednu.
+    </p>
+    <ol>
+        <li>Petar vidi "Unlock Next Week" dugme na dashboard-u</li>
+        <li>Petar klikne dugme → poziva se API za proveru</li>
+        <li>Backend proverava da li su svi treningi završeni → jesu</li>
+        <li>Backend pronalazi sledeći plan i naplaćuje balance (npr. 9€)</li>
+        <li>Petar vidi nove otključane dane u kalendaru</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Naredna nedelja je otključana, balance naplaćen, Petar može da trenira.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[Client Views Dashboard] --> B{Can Unlock Next Week?}
+    
+    B -->|No| C[Button Hidden<br/>Complete current week first]
+    B -->|Yes| D[Show Unlock Button]
+    
+    D --> E[Client Clicks Unlock]
+    E --> F[POST /plans/request-next-week]
+    
+    F --> G{Next Plan Found?}
+    G -->|No| H[Error: Contact Trainer]
+    G -->|Yes| I[Charge Balance<br/>Update currentPlanId]
+    
+    I --> J[Refresh Calendar<br/>Show New Days]
+    
+    style A fill:#9D4EDD,stroke:#fff,stroke-width:2px
+    style D fill:#00FF00,stroke:#000,stroke-width:2px
+    style E fill:#FFA500,stroke:#fff,stroke-width:2px
+    style I fill:#9D4EDD,stroke:#fff,stroke-width:2px
+    style J fill:#00FF00,stroke:#000,stroke-width:2px
+    style H fill:#FF6B6B,stroke:#000,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Kako radi:</strong> Klijent mora da završi sve treninge trenutne nedelje pre nego što može da otključi sledeću. Backend proverava da li su svi treningi završeni, pronalazi sledeći plan u planHistory, naplaćuje balance, i postavlja currentPlanId.
+    </p>
+    <p>
+        <strong>Direktno otključavanje:</strong> Nema potrebe za odobrenjem trenera - klijent otključava direktno i balance se naplaćuje automatski.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="request-week">
+            <div class="section-header" onclick="toggleSection('request-week')">
+                <h2>
+                    <span class="section-number">15.</span>
+                    <span class="section-title">Unlock Next Week Flow (CLIENT Direct - NO Approval)</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('request-week', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Unlock Next Week Flow (CLIENT Direct - NO Approval) V2</strong> pokazuje detaljno kako klijent direktno otključava narednu nedelju iz planHistory.
+        Instant aktivacija + naplata balance-a, bez potrebe za odobrenjem trenera.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>requestNextWeek()</code> - Funkcija koja otključava narednu nedelju i naplaćuje balance</li>
+        <li><code>planHistory sorting</code> - Planovi se sortiraju po startDate da bi se pronašao sledeći plan</li>
+        <li><code>Instant activation</code> - currentPlanId se postavlja odmah, bez čekanja</li>
+        <li><code>Balance charging</code> - weeklyCost se dodaje na balance odmah pri unlock-u</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je završio sve treninge za trenutnu nedelju. Klikne "Unlock Next Week".
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar klikne "Unlock Next Week" → poziva se <code>POST /api/plans/request-next-week/:clientId</code></li>
+        <li>Backend poziva <code>requestNextWeek(clientId)</code></li>
+        <li>Backend pronalazi ClientProfile sa planHistory i currentPlanId</li>
+        <li>Backend sortira planHistory po startDate</li>
+        <li>Backend pronalazi sledeći plan posle currentPlanId (nextPlan)</li>
+        <li>Backend uzima plan.weeklyCost (npr. 9€)</li>
+        <li>Backend poziva <code>addPenaltyToBalance(clientId, 9, "Weekly plan cost")</code></li>
+        <li>Backend postavlja <code>currentPlanId = nextPlan._id</code></li>
+        <li>Backend postavlja <code>nextWeekRequested = false</code></li>
+        <li>Backend vraća plan sa planStatus: 'current'</li>
+        <li>Frontend invalidira providers (workouts, auth, canUnlock, calendar)</li>
+        <li>Frontend osvežava UI → Petar vidi nove otključane dane i ažurirani balance</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je otključio narednu nedelju, balance je naplaćen (9€), i može da trenira.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant CalendarProvider as CalendarDataProvider
+    participant UnlockButton as UnlockButton Widget
+    participant API as Backend API
+    participant PlansService as PlansService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+
+    Client->>CalendarProvider: Load calendar/dashboard
+    CalendarProvider->>API: GET /api/workouts/upcoming
+    API-->>CalendarProvider: All workout logs
+    CalendarProvider->>API: GET /api/clients/profile
+    API-->>CalendarProvider: User with currentPlanId
+    
+    CalendarProvider->>CalendarProvider: Calculate lastUnlockedDay<br/>(filter workouts by currentPlanId)
+    
+    alt Today > lastUnlockedDay OR no currentPlanId
+        CalendarProvider->>UnlockButton: Show unlock button
+        UnlockButton->>API: GET /api/plans/can-unlock-next-week/:clientId
+        API->>PlansService: canUnlockNextWeek(clientId)
+        
+        PlansService->>DB: Find ClientProfile
+        DB-->>PlansService: ClientProfile with currentPlanId, planHistory
+        
+        alt No currentPlanId
+            PlansService-->>API: {canUnlock: true} (first unlock)
+        else Has currentPlanId
+            PlansService->>DB: Get workout logs for currentPlanId
+            PlansService->>PlansService: Check if all completed
+            PlansService->>PlansService: Check if last workout date passed
+            
+            alt All complete AND week ended
+                PlansService-->>API: {canUnlock: true}
+            else Incomplete OR week active
+                PlansService-->>API: {canUnlock: false}
+            end
+        end
+        
+        alt canUnlock = true
+            UnlockButton-->>Client: Show "Unlock Next Week" button
+            Client->>UnlockButton: Click unlock
+            UnlockButton->>API: POST /api/plans/request-next-week/:clientId
+            
+            API->>PlansService: requestNextWeek(clientId)
+            PlansService->>DB: Find ClientProfile
+            DB-->>PlansService: ClientProfile with planHistory, currentPlanId
+            
+            PlansService->>PlansService: Sort planHistory by startDate
+            
+            alt No currentPlanId (first unlock)
+                Note over PlansService: Find first future plan<br/>(planEndDate >= today)
+                PlansService->>PlansService: Find first plan where<br/>planEndDate >= today
+                
+                alt Future plan found
+                    PlansService->>PlansService: nextPlan = futurePlan
+                    Note over PlansService: First plan that is not completed yet
+                else No future plan
+                    PlansService-->>API: BadRequestException
+                    API-->>Client: "No future plan available"
+                end
+            else Has currentPlanId
+                PlansService->>PlansService: Find currentPlanId in planHistory
+                PlansService->>PlansService: Find next plan after current<br/>(sorted by startDate)
+                PlansService->>PlansService: nextPlan = nextPlanInHistory
+            end
+            
+            alt No next plan found
+                PlansService-->>API: Error: "No next plan"
+                API-->>Client: Error message:<br/>"Contact trainer for next week"
+            else Next plan found
+                PlansService->>DB: Get plan.weeklyCost
+                DB-->>PlansService: Plan with cost
+                
+                alt weeklyCost > 0
+                    PlansService->>GamificationService: addPenaltyToBalance(<br/>clientId, weeklyCost,<br/>"Weekly plan cost")
+                    GamificationService->>DB: balance += cost<br/>monthlyBalance += cost
+                end
+                
+                PlansService->>DB: Update ClientProfile:<br/>currentPlanId = nextPlan._id<br/>nextWeekRequested = false
+                DB-->>PlansService: Updated
+                
+                PlansService->>PlansService: getPlanById(nextPlan.planId)
+                PlansService->>DB: Find WeeklyPlan by ID
+                DB-->>PlansService: Plan details
+                PlansService-->>API: Plan with planStatus: 'current'
+                API-->>UnlockButton: Success
+                UnlockButton->>CalendarProvider: Invalidate providers:<br/>workouts, auth, canUnlock, calendar
+                CalendarProvider->>API: Refresh all data
+                API-->>CalendarProvider: New data with updated currentPlanId
+                CalendarProvider-->>Client: Calendar updates:<br/>New unlocked days visible<br/>Balance card shows new balance<br/>Plan status: 'current' (unlocked)
+                
+                Client->>Client: Show success:<br/>"Next week unlocked! Balance charged."
+            end
+        else canUnlock = false
+            UnlockButton-->>Client: Button hidden<br/>Show info card:<br/>"Complete current week first"
+        end
+    else Today <= lastUnlockedDay
+        CalendarProvider-->>Client: Unlock button hidden<br/>Current week still active
+    end
+    
+    Note over Client,DB: ✅ Result: CLIENT directly unlocks,<br/>✅ currentPlanId updated instantly,<br/>✅ Balance charged immediately,<br/>✅ NO trainer approval needed
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Unlock flow omogućava klijentima da direktno otključavaju narednu nedelju bez potrebe za odobrenjem trenera. Ovo omogućava fleksibilnost i kontrolu.
+    </p>
+    <p>
+        <strong>Kako radi requestNextWeek:</strong>
+    </p>
+    <ul>
+        <li><strong>Plan History lookup:</strong> Sistem pronalazi sledeći plan u planHistory (sorted by startDate)</li>
+        <li><strong>First unlock:</strong> Ako klijent nema currentPlanId, pronalazi se prvi future plan (planEndDate >= today)</li>
+        <li><strong>Next plan:</strong> Ako klijent ima currentPlanId, pronalazi se sledeći plan posle current (sorted by startDate)</li>
+        <li><strong>Balance charging:</strong> weeklyCost se dodaje na balance odmah pri unlock-u (instant billing)</li>
+        <li><strong>currentPlanId update:</strong> Postavlja se na nextPlan._id odmah (instant activation)</li>
+        <li><strong>Frontend refresh:</strong> Providers se invalidiraju i UI se osvežava sa novim podacima</li>
+    </ul>
+    <p>
+        <strong>No approval needed:</strong> Klijent otključava direktno, bez potrebe za odobrenjem trenera. Ovo je V2 feature koji omogućava instant unlock i billing.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="ai-messages">
+            <div class="section-header" onclick="toggleSection('ai-messages')">
+                <h2>
+                    <span class="section-number">16.</span>
+                    <span class="section-title">AI Message System Flow (V2-V3)</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('ai-messages', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>AI Message System Flow (V2-V3)</strong> pokazuje kako sistem automatski generiše poruke na osnovu performansi klijenta.
+        Ovo je deo "psychological warfare" filozofije - sistem govori kao strog trener.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>AI Messages</code> - Automatski generisane poruke na osnovu performansi</li>
+        <li><code>Tone-based styling</code> - Poruke se stilizuju na osnovu tona (AGGRESSIVE: crveno, MOTIVATIONAL: zeleno)</li>
+        <li><code>Cron Jobs</code> - Automatska provera i generisanje poruka (daily 20:00, 09:00, Monday 10:00)</li>
+        <li><code>Push notifications (V4)</code> - Poruke se šalju kao push notifikacije</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar je propustio 3 treninga prošle nedelje. Sistem automatski generiše poruku.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Svakog dana u 20:00, Cron Job proverava propuštene treninge</li>
+        <li>Sistem pronalazi da je Petar propustio 3 treninga (>2)</li>
+        <li>Sistem proverava da li je poslata poruka u poslednjih 24h → nije</li>
+        <li>Sistem generiše AGGRESSIVE poruku: "3 missed workouts this week? That's not discipline, that's excuses."</li>
+        <li>Sistem čuva poruku u bazi sa tone: AGGRESSIVE, trigger: MISSED_WORKOUTS</li>
+        <li>Sistem šalje push notifikaciju (V4)</li>
+        <li>Petar otvara aplikaciju → vidi poruku u AIMessageCard-u (crveno stilizovano)</li>
+        <li>Petar klikne na poruku → vidi kompletnu istoriju poruka</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar dobija automatsku poruku koja ga primorava da bude odgovorniji.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Cron as Cron Jobs
+    participant AIMessageService as AIMessageService
+    participant WorkoutService as WorkoutsService
+    participant WeighInService as WeighInService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+    participant PushService as Push Notification Service (V4)
+    participant Client as Mobile App
+    participant Dashboard as Dashboard
+
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: DAILY CHECK: MISSED WORKOUTS (20:00)
+        Cron->>AIMessageService: Check missed workouts (daily 20:00)
+        
+        AIMessageService->>WorkoutService: Get clients with >2 missed workouts<br/>in last 7 days
+        WorkoutService->>DB: Query WorkoutLogs (isMissed: true)
+        DB-->>WorkoutService: Clients with missed workouts
+        
+        loop For each client with >2 missed
+            AIMessageService->>AIMessageService: Check if message sent in last 24h
+            alt No recent message
+                AIMessageService->>AIMessageService: Generate AGGRESSIVE message:<br/>"2 missed workouts this week?<br/>That's not discipline, that's excuses."
+                AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: AGGRESSIVE,<br/>trigger: MISSED_WORKOUTS}
+                AIMessageService->>PushService: Send push notification (V4)
+                PushService-->>Client: Push notification received
+            end
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: DAILY CHECK: STREAKS (09:00)
+        Cron->>AIMessageService: Check streaks (daily 09:00)
+        
+        AIMessageService->>DB: Find clients with 7+ day streak
+        DB-->>AIMessageService: Clients with streaks
+        
+        loop For each client with 7+ day streak
+            AIMessageService->>AIMessageService: Generate MOTIVATIONAL message:<br/>"7 days straight! You're unstoppable.<br/>Keep this energy!"
+            AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: MOTIVATIONAL,<br/>trigger: STREAK}
+            AIMessageService->>PushService: Send push notification (V4)
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Cron,DB: MONDAY CHECK: WEIGHT SPIKES (10:00)
+        Cron->>AIMessageService: Check weight spikes (Monday 10:00)
+        
+        AIMessageService->>WeighInService: Get Monday weigh-ins with spike >5%
+        WeighInService->>DB: Find WeighIns where:<br/>date = Monday<br/>isWeightSpike = true
+        DB-->>WeighInService: Weigh-ins with spikes
+        
+        loop For each weigh-in with spike
+            AIMessageService->>AIMessageService: Generate WARNING message:<br/>"Weight up 3kg this week?<br/>Time to explain what happened."
+            AIMessageService->>DB: Save AIMessage:<br/>{clientId, message, tone: WARNING,<br/>trigger: WEIGHT_SPIKE}
+            AIMessageService->>PushService: Send push notification (V4)
+        end
+    end
+    
+    rect rgb(30, 30, 30)
+        Note over Client,DB: CLIENT VIEWS MESSAGES
+        Client->>Dashboard: View dashboard
+        Dashboard->>API: GET /api/gamification/messages/:clientId
+        API->>AIMessageService: getMessages(clientId)
+        AIMessageService->>DB: Find AIMessages by clientId<br/>Sort by createdAt DESC
+        DB-->>AIMessageService: Array of messages
+        AIMessageService-->>API: Messages (latest first)
+        API-->>Dashboard: Messages data
+        
+        Dashboard->>Dashboard: Display AIMessageCard<br/>(tone-based styling)
+        Dashboard-->>Client: Latest message shown<br/>(AGGRESSIVE: red, MOTIVATIONAL: green, etc.)
+        
+        Client->>Dashboard: Tap message card
+        Dashboard->>API: GET /api/gamification/messages/:clientId
+        API-->>Dashboard: All messages (history)
+        Dashboard-->>Client: AI Messages page<br/>(full history)
+        
+        Client->>Dashboard: Tap message
+        Dashboard->>API: PATCH /api/gamification/messages/:id/read
+        API->>AIMessageService: markAsRead(messageId)
+        AIMessageService->>DB: Update AIMessage.isRead = true
+    end
+
+    Note over Cron,Client: Result: AI automatically generates messages<br/>based on performance, client sees in app<br/>Push notifications sent (V4)
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> AI Message sistem primorava klijente da budu odgovorni kroz automatske poruke. Ovo je deo "psychological warfare" filozofije - sistem govori kao strog trener.
+    </p>
+    <p>
+        <strong>Kako radi AI Message sistem:</strong>
+    </p>
+    <ul>
+        <li><strong>Daily checks:</strong> Cron Jobs proveravaju performanse klijenta (missed workouts, streaks, weight spikes)</li>
+        <li><strong>Message generation:</strong> Sistem automatski generiše poruke na osnovu trigger-a (MISSED_WORKOUTS, STREAK, WEIGHT_SPIKE)</li>
+        <li><strong>Tone-based styling:</strong> Poruke se stilizuju na osnovu tona (AGGRESSIVE: crveno, MOTIVATIONAL: zeleno, WARNING: narandžasto)</li>
+        <li><strong>Push notifications:</strong> Poruke se šalju kao push notifikacije (V4)</li>
+        <li><strong>Message history:</strong> Klijent može da vidi kompletnu istoriju poruka u aplikaciji</li>
+    </ul>
+    <p>
+        <strong>Message triggers:</strong>
+    </p>
+    <ul>
+        <li><strong>MISSED_WORKOUTS:</strong> Ako je bilo >2 propuštena treninga u poslednjih 7 dana</li>
+        <li><strong>STREAK:</strong> Ako je streak >= 7 dana</li>
+        <li><strong>WEIGHT_SPIKE:</strong> Ako je promena težine >5% (Monday weigh-ins)</li>
+    </ul>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="plan-renewal">
+            <div class="section-header" onclick="toggleSection('plan-renewal')">
+                <h2>
+                    <span class="section-number">17.</span>
+                    <span class="section-title">Plan Renewal Flow</span>
+                    <span class="version-badge v3">⚠ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('plan-renewal', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Plan Renewal Flow (V3 - PLANIRANO)</strong> - Produžavanje plana za još 7 dana bez kreiranja novog plana.
+        Ovo je V3 feature koji omogućava fleksibilno produžavanje postojećih planova.
+    </p>
+    <p>
+        <strong>Status:</strong> 🟡 PLANIRANO (V3 Masterplan)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>POST /api/plans/:id/renew</code> - Endpoint za produžavanje plana</li>
+        <li><code>planEndDate extension</code> - Produžava planEndDate za 7 dana</li>
+        <li><code>New workout logs</code> - Generiše nove workout logs za narednu nedelju</li>
+        <li><code>planHistory update</code> - Ažurira planHistory entry sa novim planEndDate</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko želi da produži plan klijenta Petra za još 7 dana bez kreiranja novog plana.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Trener poziva <code>POST /api/plans/:id/renew</code></li>
+        <li>Backend pronalazi plan i proverava da li je aktivan</li>
+        <li>Backend produžava planEndDate za 7 dana</li>
+        <li>Backend generiše nove workout logs za narednu nedelju</li>
+        <li>Backend ažurira planHistory entry sa novim planEndDate</li>
+        <li>Klijent vidi produžene dane u kalendaru</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Plan je produžen za 7 dana bez potrebe za kreiranjem novog plana.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Trainer as Trainer Dashboard
+    participant API as Backend API
+    participant PlansService as PlansService
+    participant WorkoutService as WorkoutsService
+    participant DB as MongoDB
+    participant Client as Mobile App
+
+    Note over Trainer,Client: V3 FEATURE: PLAN RENEWAL (PLANNED)
+
+    Trainer->>API: POST /api/plans/:id/renew<br/>{extendByDays: 7}
+    
+    API->>PlansService: renewPlan(planId, extendByDays)
+    
+    PlansService->>DB: Find WeeklyPlan by ID
+    DB-->>PlansService: Plan details
+    
+    PlansService->>PlansService: Validate plan is active<br/>(planEndDate >= today)
+    
+    alt Plan is active
+        PlansService->>PlansService: Calculate new planEndDate:<br/>planEndDate += extendByDays (7 days)
+        
+        PlansService->>DB: Update WeeklyPlan:<br/>planEndDate = newPlanEndDate
+        
+        PlansService->>WorkoutService: Generate workout logs<br/>for next 7 days
+        WorkoutService->>DB: Create WorkoutLog documents<br/>for new week
+        
+        PlansService->>DB: Find ClientProfiles with this plan<br/>in planHistory
+        
+        loop For each client with this plan
+            PlansService->>DB: Update ClientProfile.planHistory:<br/>Find entry with planId,<br/>Update planEndDate = newPlanEndDate
+        end
+        
+        PlansService-->>API: Plan renewed successfully
+        API-->>Trainer: Success response
+        
+        Client->>API: GET /api/workouts/upcoming<br/>(refresh calendar)
+        API-->>Client: Updated workout logs<br/>with new week
+        
+    else Plan is not active
+        PlansService-->>API: Error: Plan is not active
+        API-->>Trainer: Error message
+    end
+
+    Note over Trainer,Client: Result: Plan extended by 7 days,<br/>new workout logs generated,<br/>planHistory updated for all clients
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Plan Renewal omogućava trenerima da produže postojeće planove bez potrebe za kreiranjem novih planova. Ovo omogućava fleksibilnost i brže upravljanje.
+    </p>
+    <p>
+        <strong>Kako bi radio Plan Renewal (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>Plan lookup:</strong> Sistem pronalazi plan po ID-u i proverava da li je aktivan</li>
+        <li><strong>Date extension:</strong> planEndDate se produžava za 7 dana (ili custom broj dana)</li>
+        <li><strong>Workout logs generation:</strong> Generišu se novi workout logs za narednu nedelju</li>
+        <li><strong>planHistory update:</strong> Ažurira se planHistory entry za sve klijente koji imaju ovaj plan</li>
+        <li><strong>Client refresh:</strong> Klijenti vide produžene dane u kalendaru</li>
+    </ul>
+    <p>
+        <strong>V3 Masterplan:</strong> Ovo je feature 3.6 u V3 Masterplan-u. Implementiraće se kada se završi V2.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="trainer-switch">
+            <div class="section-header" onclick="toggleSection('trainer-switch')">
+                <h2>
+                    <span class="section-number">18.</span>
+                    <span class="section-title">Trainer Switch Handling</span>
+                    <span class="version-badge v3">⚠ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('trainer-switch', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Trainer Switch Handling (V3 - PLANIRANO)</strong> - Kritično za data integrity kada se klijent prebacuje na drugog trenera.
+        Ovo je V3 feature koji omogućava bezbedno prebacivanje klijenta između trenera.
+    </p>
+    <p>
+        <strong>Status:</strong> 🟡 PLANIRANO (V3 Masterplan)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Trainer switch</code> - Prebacivanje klijenta sa jednog trenera na drugog</li>
+        <li><code>Close active plans</code> - Zatvaranje svih aktivnih planova od starog trenera</li>
+        <li><code>Clear currentPlanId</code> - Resetovanje currentPlanId da bi novi trener mogao da assign-uje planove</li>
+        <li><code>Data integrity</code> - Očuvanje svih podataka (workout logs, check-ins, weigh-ins) pri prebacivanju</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar se prebacuje sa trenera Marka na trenera Jovana.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Admin poziva <code>POST /api/admin/assign-client</code> sa {clientId: Petar, trainerId: Jovan}</li>
+        <li>Backend pronalazi Petrovog trenutnog trenera (Marka)</li>
+        <li>Backend zatvara sve aktivne planove od Marka (planEndDate = today)</li>
+        <li>Backend resetuje Petrov currentPlanId = null</li>
+        <li>Backend uklanja Petra iz Markovog clientIds[]</li>
+        <li>Backend dodaje Petra u Jovanov clientIds[]</li>
+        <li>Backend postavlja Petrov trainerId = Jovan</li>
+        <li>Jovan sada može da assign-uje nove planove Petru</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je prebačen na Jovana, svi podaci su očuvani, i Jovan može da assign-uje nove planove.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Admin as Admin Dashboard
+    participant API as Backend API
+    participant TrainersService as TrainersService
+    participant PlansService as PlansService
+    participant ClientsService as ClientsService
+    participant DB as MongoDB
+    participant OldTrainer as Old Trainer (Marko)
+    participant NewTrainer as New Trainer (Jovan)
+    participant Client as Client (Petar)
+
+    Note over Admin,Client: V3 FEATURE: TRAINER SWITCH (PLANNED)
+
+    Admin->>API: POST /api/admin/assign-client<br/>{clientId: Petar, trainerId: Jovan}
+    
+    API->>TrainersService: assignClientToTrainer(clientId, newTrainerId)
+    
+    TrainersService->>DB: Find ClientProfile by clientId
+    DB-->>TrainersService: ClientProfile with trainerId: Marko
+    
+    TrainersService->>TrainersService: oldTrainerId = client.trainerId
+    
+    alt oldTrainerId exists
+        TrainersService->>PlansService: Close all active plans<br/>for client from old trainer
+        
+        PlansService->>DB: Find all plans where:<br/>trainerId = oldTrainerId<br/>assignedClientIds includes clientId<br/>planEndDate >= today
+        
+        loop For each active plan
+            PlansService->>DB: Update WeeklyPlan:<br/>planEndDate = today<br/>(close plan immediately)
+        end
+        
+        PlansService->>ClientsService: Clear currentPlanId
+        ClientsService->>DB: Update ClientProfile:<br/>currentPlanId = null
+        
+        TrainersService->>DB: Update OldTrainerProfile:<br/>Remove clientId from clientIds[]
+        
+    end
+    
+    TrainersService->>DB: Update NewTrainerProfile:<br/>Add clientId to clientIds[]
+    
+    TrainersService->>DB: Update ClientProfile:<br/>trainerId = newTrainerId
+    
+    TrainersService-->>API: Client assigned successfully
+    API-->>Admin: Success response
+    
+    NewTrainer->>API: GET /api/trainers/clients<br/>(view clients)
+    API-->>NewTrainer: Client list includes Petar
+    
+    NewTrainer->>API: POST /api/plans/assign<br/>{clientIds: [Petar], ...}
+    API->>PlansService: assignPlanToClients(...)
+    PlansService->>DB: Add plan to Petar's planHistory
+    PlansService-->>API: Plan assigned
+    API-->>NewTrainer: Success
+    
+    Client->>API: GET /api/clients/profile
+    API-->>Client: Profile with trainerId: Jovan<br/>currentPlanId: null (ready for new plan)
+
+    Note over Admin,Client: Result: Client switched to new trainer,<br/>old plans closed, currentPlanId cleared,<br/>new trainer can assign plans
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Trainer Switch Handling omogućava bezbedno prebacivanje klijenta između trenera bez gubitka podataka. Ovo je kritično za data integrity.
+    </p>
+    <p>
+        <strong>Kako bi radio Trainer Switch (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>Close active plans:</strong> Svi aktivni planovi od starog trenera se zatvaraju (planEndDate = today)</li>
+        <li><strong>Clear currentPlanId:</strong> currentPlanId se resetuje na null da bi novi trener mogao da assign-uje planove</li>
+        <li><strong>Update trainer references:</strong> Klijent se uklanja iz starog trenerovog clientIds[] i dodaje u novog trenerovog clientIds[]</li>
+        <li><strong>Data preservation:</strong> Svi podaci (workout logs, check-ins, weigh-ins) ostaju očuvani</li>
+        <li><strong>New trainer assignment:</strong> Novi trener može da assign-uje nove planove klijentu</li>
+    </ul>
+    <p>
+        <strong>V3 Masterplan:</strong> Ovo je feature 3.7 u V3 Masterplan-u. Implementiraće se kada se završi V2.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="analytics">
+            <div class="section-header" onclick="toggleSection('analytics')">
+                <h2>
+                    <span class="section-number">19.</span>
+                    <span class="section-title">Analytics Endpoints</span>
+                    <span class="version-badge v3">⚠ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('analytics', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Analytics Endpoints (V3 - PLANIRANO)</strong> - Admin dashboard analytics za praćenje performansi sistema.
+        Ovo je V3 feature koji omogućava detaljnu analitiku korisnika, treninga, check-in-ova i trenera.
+    </p>
+    <p>
+        <strong>Status:</strong> 🟡 PLANIRANO (V3 Masterplan)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>GET /api/admin/analytics/users</code> - User growth over time</li>
+        <li><code>GET /api/admin/analytics/workouts</code> - Workout completion rates</li>
+        <li><code>GET /api/admin/analytics/check-ins</code> - Check-in stats</li>
+        <li><code>GET /api/admin/analytics/trainers</code> - Trainer performance metrics</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Admin Marko želi da vidi statistiku sistema za poslednji mesec.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Admin poziva <code>GET /api/admin/analytics/users?period=30d</code></li>
+        <li>Backend vraća user growth: +50 korisnika u poslednja 30 dana</li>
+        <li>Admin poziva <code>GET /api/admin/analytics/workouts?period=30d</code></li>
+        <li>Backend vraća completion rate: 75% (750/1000 treninga završeno)</li>
+        <li>Admin poziva <code>GET /api/admin/analytics/check-ins?period=30d</code></li>
+        <li>Backend vraća check-in stats: 800 check-in-ova, 95% verified</li>
+        <li>Admin poziva <code>GET /api/admin/analytics/trainers?period=30d</code></li>
+        <li>Backend vraća trainer metrics: Top 3 treneri po broju klijenta, average completion rate per trainer</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Admin ima kompletnu statistiku sistema za donošenje odluka.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[Admin Dashboard] --> B[Analytics Endpoints]
+    
+    B --> C[GET /api/admin/analytics/users]
+    B --> D[GET /api/admin/analytics/workouts]
+    B --> E[GET /api/admin/analytics/check-ins]
+    B --> F[GET /api/admin/analytics/trainers]
+    
+    C --> C1[User Growth Over Time<br/>New users per day/week/month]
+    C --> C2[User Distribution<br/>CLIENT vs TRAINER vs ADMIN]
+    C --> C3[Active Users<br/>Users with activity in last 30 days]
+    C --> C4[Retention Rate<br/>Users who returned after first week]
+    
+    D --> D1[Completion Rate<br/>Completed vs Total Workouts]
+    D --> D2[Missed Workouts<br/>Missed workouts per client]
+    D --> D3[Streak Statistics<br/>Average streak length]
+    D --> D4[Workout Frequency<br/>Workouts per week per client]
+    
+    E --> E1[Check-In Count<br/>Total check-ins per period]
+    E --> E2[Verification Rate<br/>Verified vs Pending check-ins]
+    E --> E3[Gym Location Rate<br/>isGymLocation: true vs false]
+    E --> E4[Check-In Trends<br/>Check-ins per day/week]
+    
+    F --> F1[Trainer Performance<br/>Completion rate per trainer]
+    F --> F2[Client Count<br/>Number of clients per trainer]
+    F --> F3[Subscription Status<br/>Active vs Suspended trainers]
+    F --> F4[Top Trainers<br/>Ranked by client satisfaction]
+    
+    style A fill:#9D4EDD,stroke:#fff,stroke-width:3px
+    style B fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style C fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style D fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style E fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style F fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Analytics Endpoints omogućavaju admin-u da prati performanse sistema i donosi informisane odluke. Ovo je kritično za rast i optimizaciju platforme.
+    </p>
+    <p>
+        <strong>Kako bi radili Analytics Endpoints (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>User Analytics:</strong> Praćenje rasta korisnika, distribucije po rolama, aktivnih korisnika, retention rate-a</li>
+        <li><strong>Workout Analytics:</strong> Completion rate, missed workouts, streak statistics, workout frequency</li>
+        <li><strong>Check-In Analytics:</strong> Check-in count, verification rate, gym location rate, trends</li>
+        <li><strong>Trainer Analytics:</strong> Trainer performance metrics, client count, subscription status, top trainers</li>
+    </ul>
+    <p>
+        <strong>V3 Masterplan:</strong> Ovo je feature 3.2 u V3 Masterplan-u. Implementiraće se kada se završi V2.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="stripe-payments">
+            <div class="section-header" onclick="toggleSection('stripe-payments')">
+                <h2>
+                    <span class="section-number">20.</span>
+                    <span class="section-title">Stripe Payment Integration</span>
+                    <span class="version-badge v4">⚡ V4</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('stripe-payments', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Stripe Payment Integration (V4 - PLANIRANO)</strong> - Automatsko plaćanje planova i balance-a kroz Stripe.
+        Ovo je V4 feature koji omogućava digitalno plaćanje umesto ručnog naplate.
+    </p>
+    <p>
+        <strong>Status:</strong> 🔵 PLANIRANO (V4 Masterplan)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>Stripe Webhook</code> - Endpoint za subscription events</li>
+        <li><code>Subscription upgrade</code> - Endpoint sa plaćanjem</li>
+        <li><code>Invoice generation</code> - Automatsko generisanje faktura</li>
+        <li><code>Payment history</code> - Istorija svih plaćanja</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar želi da plati balance od 15€ kroz Stripe.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Petar klikne "Pay Balance" → otvara se Stripe Checkout</li>
+        <li>Petar unosi kreditnu karticu i potvrđuje plaćanje</li>
+        <li>Stripe procesira plaćanje i šalje webhook na backend</li>
+        <li>Backend prima webhook i proverava da li je plaćanje uspešno</li>
+        <li>Backend poziva <code>clearBalance()</code> i resetuje balance na 0</li>
+        <li>Backend generiše invoice i šalje ga Petru na email</li>
+        <li>Petar vidi "Payment Successful" poruku i može da nastavi sa treningom</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je platio balance digitalno, invoice je generisan, i može da nastavi sa treningom.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant PaymentPage as Payment Page
+    participant Stripe as Stripe Checkout
+    participant Webhook as Stripe Webhook
+    participant API as Backend API
+    participant PaymentService as PaymentService
+    participant GamificationService as GamificationService
+    participant InvoiceService as InvoiceService
+    participant DB as MongoDB
+
+    Note over Client,DB: V4 FEATURE: STRIPE PAYMENT INTEGRATION (PLANNED)
+
+    Client->>PaymentPage: Click "Pay Balance"<br/>(balance: 15€)
+    
+    PaymentPage->>API: POST /api/payments/create-checkout<br/>{amount: 15, type: 'balance'}
+    
+    API->>PaymentService: createCheckoutSession(amount, type)
+    PaymentService->>Stripe: Create Checkout Session<br/>{amount: 1500 (cents), currency: 'EUR'}
+    Stripe-->>PaymentService: Checkout Session URL
+    PaymentService-->>API: Checkout URL
+    API-->>PaymentPage: Redirect to Stripe Checkout
+    
+    PaymentPage->>Stripe: Redirect to Checkout URL
+    Stripe-->>Client: Stripe Checkout page<br/>(credit card form)
+    
+    Client->>Stripe: Enter card details, confirm payment
+    Stripe->>Stripe: Process payment
+    
+    alt Payment successful
+        Stripe->>Webhook: POST /api/payments/webhook<br/>{event: 'payment_intent.succeeded',<br/>paymentIntentId, amount}
+        
+        Webhook->>PaymentService: handleWebhook(event)
+        PaymentService->>PaymentService: Verify webhook signature<br/>(Stripe secret)
+        
+        PaymentService->>DB: Save PaymentRecord:<br/>{clientId, amount, type: 'balance',<br/>status: 'completed', stripePaymentId}
+        
+        PaymentService->>GamificationService: clearBalance(clientId)
+        GamificationService->>DB: Update ClientProfile:<br/>balance = 0, monthlyBalance = 0
+        
+        PaymentService->>InvoiceService: generateInvoice(clientId, amount)
+        InvoiceService->>DB: Save Invoice document
+        InvoiceService->>InvoiceService: Send invoice email to client
+        
+        PaymentService-->>Webhook: 200 OK
+        
+        Webhook->>Client: Payment confirmation email
+        
+        Client->>PaymentPage: Return from Stripe
+        PaymentPage->>API: GET /api/payments/status/:paymentIntentId
+        API->>PaymentService: getPaymentStatus(paymentIntentId)
+        PaymentService->>DB: Find PaymentRecord
+        DB-->>PaymentService: PaymentRecord (status: 'completed')
+        PaymentService-->>API: Payment successful
+        API-->>PaymentPage: Success response
+        
+        PaymentPage-->>Client: "Payment Successful" message<br/>Balance cleared, can continue training
+        
+    else Payment failed
+        Stripe->>Webhook: POST /api/payments/webhook<br/>{event: 'payment_intent.failed'}
+        Webhook->>PaymentService: handleWebhook(event)
+        PaymentService->>DB: Save PaymentRecord:<br/>{status: 'failed', error}
+        PaymentService-->>Webhook: 200 OK
+        
+        PaymentPage-->>Client: "Payment Failed" message<br/>Please try again
+    end
+
+    Note over Client,DB: Result: Digital payment processed,<br/>balance cleared, invoice generated,<br/>payment history saved
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> Stripe Payment Integration omogućava digitalno plaćanje umesto ručnog naplate. Ovo omogućava automatsku naplatu i bolje korisničko iskustvo.
+    </p>
+    <p>
+        <strong>Kako bi radila Stripe integracija (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>Checkout Session:</strong> Kreira se Stripe Checkout Session sa amount-om i currency-jem</li>
+        <li><strong>Payment Processing:</strong> Stripe procesira plaćanje i šalje webhook na backend</li>
+        <li><strong>Webhook Handling:</strong> Backend prima webhook, verifikuje signature, i ažurira PaymentRecord</li>
+        <li><strong>Balance Clearing:</strong> Ako je plaćanje uspešno, poziva se clearBalance() i resetuje se balance</li>
+        <li><strong>Invoice Generation:</strong> Generiše se invoice i šalje se klijentu na email</li>
+        <li><strong>Payment History:</strong> Sva plaćanja se čuvaju u PaymentRecord dokumentima</li>
+    </ul>
+    <p>
+        <strong>V4 Masterplan:</strong> Ovo je feature 4.1 u V4 Masterplan-u. Implementiraće se kada se završi V3.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="llm-plan-generation">
+            <div class="section-header" onclick="toggleSection('llm-plan-generation')">
+                <h2>
+                    <span class="section-number">21.</span>
+                    <span class="section-title">LLM Plan Generation</span>
+                    <span class="version-badge v4">⚡ V4</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('llm-plan-generation', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>LLM Plan Generation (V4 - PLANIRANO)</strong> - AI-generisani planovi koristeći LLM (OpenAI/Anthropic).
+        Ovo je V4 feature (Phase 2) koji omogućava automatsko generisanje planova na osnovu ciljeva, nivoa i opreme.
+    </p>
+    <p>
+        <strong>Status:</strong> 🔵 PLANIRANO (V4 Masterplan - Phase 2, posle 6 meseci produkcije)
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>POST /ai/generate-plan</code> - Endpoint za generisanje plana</li>
+        <li><code>LLM Integration</code> - OpenAI ili Anthropic API za generisanje planova</li>
+        <li><code>Goal-based generation</code> - Planovi se generišu na osnovu ciljeva klijenta</li>
+        <li><code>Equipment-aware</code> - Planovi uzimaju u obzir dostupnu opremu</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Trener Marko želi da generiše plan za klijenta Petra koristeći AI.
+    </p>
+    <p>
+        <strong>Šta bi se dešavalo (kada se implementira):</strong>
+    </p>
+    <ol>
+        <li>Trener poziva <code>POST /ai/generate-plan</code> sa {clientId, goals, level, equipment}</li>
+        <li>Backend priprema prompt sa klijentovim podacima (goals, level, equipment, previous workouts)</li>
+        <li>Backend poziva LLM API (OpenAI/Anthropic) sa prompt-om</li>
+        <li>LLM generiše plan sa workout-ima, exercise-ima, sets, reps, RPE</li>
+        <li>Backend validira generisani plan (proverava da li su svi podaci validni)</li>
+        <li>Backend kreira WeeklyPlan dokument sa generisanim podacima</li>
+        <li>Trener pregleda plan i može da ga edit-uje pre assign-ovanja</li>
+        <li>Trener assign-uje plan klijentu</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Plan je generisan automatski pomoću AI-a, štedeći vreme treneru.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Trainer as Trainer Dashboard
+    participant API as Backend API
+    participant AIService as AIService
+    participant LLM as LLM API<br/>(OpenAI/Anthropic)
+    participant PlansService as PlansService
+    participant DB as MongoDB
+    participant Client as Client Profile
+
+    Note over Trainer,Client: V4 FEATURE: LLM PLAN GENERATION (PLANNED - Phase 2)
+
+    Trainer->>API: POST /ai/generate-plan<br/>{clientId, goals, level, equipment,<br/>previousWorkouts?}
+    
+    API->>AIService: generatePlan(clientId, params)
+    
+    AIService->>DB: Find ClientProfile by clientId
+    DB-->>AIService: ClientProfile with goals, level,<br/>previous workouts, stats
+    
+    AIService->>AIService: Build LLM prompt:<br/>- Client goals (weight loss, muscle gain, etc.)<br/>- Fitness level (beginner, intermediate, advanced)<br/>- Available equipment (gym, home, bodyweight)<br/>- Previous workout history<br/>- Current stats (weight, strength, etc.)
+    
+    AIService->>LLM: POST /v1/chat/completions<br/>{model: 'gpt-4', messages: [prompt]}
+    
+    LLM->>LLM: Generate plan based on prompt
+    LLM-->>AIService: Generated plan JSON:<br/>{workouts: [{exercises: [{name, sets, reps, RPE}]}]}
+    
+    AIService->>AIService: Validate generated plan:<br/>- Check all exercises exist in DB<br/>- Validate sets/reps/RPE ranges<br/>- Ensure plan is 7 days
+    
+    alt Plan is valid
+        AIService->>PlansService: createPlanFromAI(generatedPlan, trainerId)
+        PlansService->>DB: Create WeeklyPlan document<br/>(with AI-generated workouts)
+        PlansService-->>AIService: Plan created
+        AIService-->>API: Generated plan (ready for review)
+        API-->>Trainer: Plan generated successfully<br/>(can edit before assigning)
+        
+        Trainer->>API: PATCH /api/plans/:id<br/>{...edits} (optional)
+        API->>PlansService: updatePlan(planId, edits)
+        PlansService->>DB: Update plan with edits
+        
+        Trainer->>API: POST /api/plans/:id/assign<br/>{clientIds: [clientId]}
+        API->>PlansService: assignPlanToClients(...)
+        PlansService->>DB: Add plan to client's planHistory
+        PlansService-->>API: Plan assigned
+        API-->>Trainer: Success
+        
+    else Plan is invalid
+        AIService-->>API: Error: Invalid plan generated
+        API-->>Trainer: Error message<br/>"Please try again or create manually"
+    end
+
+    Note over Trainer,Client: Result: AI-generated plan created,<br/>trainer can review/edit,<br/>plan assigned to client
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    <p>
+        <strong>Zašto je ovo važno?</strong> LLM Plan Generation omogućava automatsko generisanje planova pomoću AI-a, štedeći vreme treneru i omogućavajući personalizovane planove na osnovu ciljeva klijenta.
+    </p>
+    <p>
+        <strong>Kako bi radila LLM integracija (kada se implementira):</strong>
+    </p>
+    <ul>
+        <li><strong>Prompt Building:</strong> Sistem priprema detaljan prompt sa klijentovim podacima (goals, level, equipment, previous workouts)</li>
+        <li><strong>LLM API Call:</strong> Poziva se LLM API (OpenAI GPT-4 ili Anthropic Claude) sa prompt-om</li>
+        <li><strong>Plan Generation:</strong> LLM generiše plan sa workout-ima, exercise-ima, sets, reps, RPE</li>
+        <li><strong>Validation:</strong> Sistem validira generisani plan (proverava da li su svi podaci validni)</li>
+        <li><strong>Plan Creation:</strong> Kreira se WeeklyPlan dokument sa generisanim podacima</li>
+        <li><strong>Review & Edit:</strong> Trener može da pregleda i edit-uje plan pre assign-ovanja</li>
+        <li><strong>Assignment:</strong> Plan se assign-uje klijentu kao normalan plan</li>
+    </ul>
+    <p>
+        <strong>V4 Masterplan:</strong> Ovo je feature 4.5 u V4 Masterplan-u (Phase 2 - posle 6 meseci produkcije). Implementiraće se kada se završi V3 i kada se prikupi dovoljno podataka za trening LLM-a.
+    </p>
+</div>
+
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <a href="#" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">↑</a>
+    
+    <script>
+        // Section configuration
+        const sections = [
+            { id: 'erd', file: 'sections/01-erd.html', number: '1', title: 'Entity Relationship Diagram (ERD)', version: null },
+            { id: 'plan-assign', file: 'sections/02-plan-assign.html', number: '2', title: 'Plan Assignment Flow', version: 'v2' },
+            { id: 'plan-unassign', file: 'sections/02-5-plan-unassign.html', number: '2.5', title: 'Plan Unassign Flow', version: 'v2' },
+            { id: 'active-plan', file: 'sections/03-active-plan.html', number: '3', title: 'Get Active Plan Flow (with planStatus)', version: 'v2' },
+            { id: 'workout-log', file: 'sections/04-workout-log.html', number: '4', title: 'Workout Logging Flow', version: null },
+            { id: 'admin-dashboard', file: 'sections/05-admin-dashboard.html', number: '5', title: 'Admin Dashboard - Full Control Flow', version: null },
+            { id: 'admin-actions', file: 'sections/06-admin-actions.html', number: '6', title: 'Admin Actions - Detailed Flow', version: null },
+            { id: 'killswitch', file: 'sections/07-killswitch.html', number: '7', title: 'Kill-Switch Flow (SaaS Protection)', version: null },
+            { id: 'plan-history', file: 'sections/08-plan-history.html', number: '8', title: 'Plan History vs Current Plan Logic', version: null },
+            { id: 'penalty', file: 'sections/09-penalty.html', number: '9', title: 'Penalty System (Missed Workouts + Weekly Analysis)', version: null },
+            { id: 'checkin', file: 'sections/10-checkin.html', number: '10', title: 'Check-In Flow (GPS + Photo Verification)', version: null },
+            { id: 'weighin', file: 'sections/11-weighin.html', number: '11', title: 'Weigh-In Flow (Linked to Plan)', version: null },
+            { id: 'balance', file: 'sections/12-balance.html', number: '12', title: 'Running Tab Balance System', version: 'v2' },
+            { id: 'paywall', file: 'sections/13-paywall.html', number: '13', title: 'Monthly Paywall Flow', version: 'v2' },
+            { id: 'unlock', file: 'sections/14-unlock.html', number: '14', title: 'Weekly Unlock Mechanism (CLIENT-Initiated)', version: null },
+            { id: 'request-week', file: 'sections/15-request-week.html', number: '15', title: 'Unlock Next Week Flow (CLIENT Direct - NO Approval)', version: 'v2' },
+            { id: 'ai-messages', file: 'sections/16-ai-messages.html', number: '16', title: 'AI Message System Flow (V2-V3)', version: null },
+            { id: 'plan-renewal', file: 'sections/17-plan-renewal.html', number: '17', title: 'Plan Renewal Flow', version: 'v3' },
+            { id: 'trainer-switch', file: 'sections/18-trainer-switch.html', number: '18', title: 'Trainer Switch Handling', version: 'v3' },
+            { id: 'analytics', file: 'sections/19-analytics.html', number: '19', title: 'Analytics Endpoints', version: 'v3' },
+            { id: 'stripe-payments', file: 'sections/20-stripe-payments.html', number: '20', title: 'Stripe Payment Integration', version: 'v4' },
+            { id: 'llm-plan-generation', file: 'sections/21-llm-plan-generation.html', number: '21', title: 'LLM Plan Generation', version: 'v4' }
+        ];
+        
+        // Map section IDs to file names for opening in new window
+        const sectionFileMap = {
+            'erd': '01-erd.html',
+            'plan-assign': '02-plan-assign.html',
+            'plan-unassign': '02-5-plan-unassign.html',
+            'active-plan': '03-active-plan.html',
+            'workout-log': '04-workout-log.html',
+            'admin-dashboard': '05-admin-dashboard.html',
+            'admin-actions': '06-admin-actions.html',
+            'killswitch': '07-killswitch.html',
+            'plan-history': '08-plan-history.html',
+            'penalty': '09-penalty.html',
+            'checkin': '10-checkin.html',
+            'weighin': '11-weighin.html',
+            'balance': '12-balance.html',
+            'paywall': '13-paywall.html',
+            'unlock': '14-unlock.html',
+            'request-week': '15-request-week.html',
+            'ai-messages': '16-ai-messages.html',
+            'plan-renewal': '17-plan-renewal.html',
+            'trainer-switch': '18-trainer-switch.html',
+            'analytics': '19-analytics.html',
+            'stripe-payments': '20-stripe-payments.html',
+            'llm-plan-generation': '21-llm-plan-generation.html'
+        };
+        
+        // Open section in new window
+        function openSectionInNewWindow(sectionId, event) {
+            if (event) {
+                event.stopPropagation(); // Prevent triggering toggleSection
+            }
+            const fileName = sectionFileMap[sectionId];
+            if (fileName) {
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                const sectionPath = basePath + '/sections/' + fileName;
+                window.open(sectionPath, '_blank');
+            }
+        }
+        
+        let mermaidInitialized = false;
+        
+        // Initialize Mermaid
+        function initMermaid() {
+            if (mermaidInitialized) return;
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#9D4EDD',
+                    primaryTextColor: '#FFFFFF',
+                    primaryBorderColor: '#9D4EDD',
+                    lineColor: '#9D4EDD',
+                    secondaryColor: '#1E1E1E',
+                    tertiaryColor: '#0A0A0A',
+                    background: '#1E1E1E',
+                    mainBkg: '#1E1E1E',
+                    secondBkg: '#0A0A0A',
+                    textColor: '#FFFFFF',
+                    actorBorder: '#9D4EDD',
+                    actorBkg: '#1E1E1E',
+                    actorTextColor: '#FFFFFF',
+                    actorLineColor: '#9D4EDD',
+                    signalColor: '#9D4EDD',
+                    signalTextColor: '#FFFFFF',
+                    labelBoxBkgColor: '#1E1E1E',
+                    labelBoxBorderColor: '#9D4EDD',
+                    labelTextColor: '#FFFFFF',
+                    loopTextColor: '#FFFFFF',
+                    noteBorderColor: '#9D4EDD',
+                    noteBkgColor: '#1E1E1E',
+                    noteTextColor: '#FFFFFF',
+                    activationBorderColor: '#9D4EDD',
+                    activationBkgColor: '#1E1E1E',
+                    sequenceNumberColor: '#FFFFFF',
+                    cScale0: '#9D4EDD',
+                    cScale1: '#FF003C',
+                    cScale2: '#FFA500'
+                },
+                flowchart: {
+                    curve: 'basis',
+                    padding: 40,
+                    htmlLabels: true,
+                    useMaxWidth: true
+                },
+                sequence: {
+                    diagramMarginX: 80,
+                    diagramMarginY: 20,
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 50,
+                    mirrorActors: true,
+                    bottomMarginAdj: 1,
+                    useMaxWidth: true,
+                    rightAngles: false,
+                    showSequenceNumbers: false
+                },
+                er: {
+                    fontSize: 14
+                }
+            });
+            mermaidInitialized = true;
+        }
+        
+        // Toggle section expand/collapse (sections are already embedded)
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            
+            const isExpanded = section.classList.contains('expanded');
+            
+            section.classList.toggle('expanded');
+            section.classList.toggle('collapsed');
+            
+            // Render Mermaid diagrams if expanding and not yet rendered
+            if (!isExpanded) {
+                setTimeout(() => {
+                    const mermaidElements = section.querySelectorAll('.mermaid:not([data-rendered])');
+                    mermaidElements.forEach(async (element) => {
+                        try {
+                            const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                            element.id = id;
+                            element.setAttribute('data-rendered', 'true');
+                            await mermaid.run({ nodes: [element] });
+                        } catch (error) {
+                            console.error('Mermaid rendering error:', error);
+                        }
+                    });
+                }, 100);
+            }
+            
+            // Save state to localStorage
+            const state = JSON.parse(localStorage.getItem('sectionStates') || '{}');
+            state[sectionId] = section.classList.contains('expanded');
+            localStorage.setItem('sectionStates', JSON.stringify(state));
+            
+            // Scroll to section if expanding
+            if (!isExpanded) {
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        }
+        
+        // Save section states
+        function saveStates() {
+            const state = {};
+            sections.forEach(section => {
+                const element = document.getElementById(section.id);
+                if (element) {
+                    state[section.id] = element.classList.contains('expanded');
+                }
+            });
+            localStorage.setItem('sectionStates', JSON.stringify(state));
+        }
+        
+        // Restore section states
+        function restoreStates() {
+            const state = JSON.parse(localStorage.getItem('sectionStates') || '{}');
+            sections.forEach(section => {
+                if (state[section.id]) {
+                    const element = document.getElementById(section.id);
+                    if (element) {
+                        element.classList.add('expanded');
+                        element.classList.remove('collapsed');
+                        
+                    }
+                }
+            });
+        }
+        
+        // Toggle version status
+        function toggleVersionStatus() {
+            const status = document.getElementById('version-status');
+            status.classList.toggle('expanded');
+            status.classList.toggle('collapsed');
+        }
+        
+        // Handle hash navigation
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const section = document.getElementById(hash);
+                if (section) {
+                    toggleSection(hash);
+                    setTimeout(() => {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                    }, 200);
+                }
+            }
+        });
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMermaid();
+            
+            // Clear localStorage on first load to ensure all sections start collapsed
+            const isFirstLoad = !localStorage.getItem('diagramsInitialized');
+            if (isFirstLoad) {
+                localStorage.clear();
+                localStorage.setItem('diagramsInitialized', 'true');
+            }
+            
+            // Restore states only on subsequent loads (not first load)
+            if (!isFirstLoad) {
+                restoreStates();
+            }
+            
+            // Render Mermaid diagrams for expanded sections
+            setTimeout(() => {
+                document.querySelectorAll('.diagram-section.expanded .mermaid').forEach(async (element) => {
+                    if (!element.hasAttribute('data-rendered')) {
+                        try {
+                            const id = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                            element.id = id;
+                            element.setAttribute('data-rendered', 'true');
+                            await mermaid.run({ nodes: [element] });
+                        } catch (error) {
+                            console.error('Mermaid rendering error:', error);
+                        }
+                    }
+                });
+            }, 500);
+            
+            // Handle initial hash
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const section = document.getElementById(hash);
+                if (section) {
+                    toggleSection(hash);
+                    setTimeout(() => {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                    }, 200);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+
