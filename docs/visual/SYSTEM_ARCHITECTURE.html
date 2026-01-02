@@ -402,13 +402,15 @@
                     </div>
                     
                     <div style="margin-bottom: 20px;">
-                        <h4 style="color: #FFA500; margin-bottom: 10px;">🟡 V3 - PLANIRANO (Admin Dashboard & Features)</h4>
+                        <h4 style="color: #00FF00; margin-bottom: 10px;">✅ V3 - URAĐENO (Admin Dashboard & Payments & AI)</h4>
                         <ul style="color: #FFFFFF; line-height: 2; margin-left: 20px;">
-                            <li>Plan Renewal Feature (produžiti plan za 7 dana)</li>
-                            <li>Trainer Switch Handling (prebacivanje klijenta na drugog trenera)</li>
-                            <li>Analytics Endpoints (user growth, workout completion rates)</li>
-                            <li>Plan Expiration Notifications (obaveštavanje trenera)</li>
-                            <li>Check-ins Management Endpoints (admin dashboard)</li>
+                            <li>✅ Admin Dashboard (user management, stats, assign/unassign clients)</li>
+                            <li>✅ Payments Module (monthly invoice generation, balance clearing)</li>
+                            <li>✅ AI Message System (message generation, tone selection)</li>
+                            <li>✅ Gamification Enhancements (balance, clear-balance, penalty management)</li>
+                            <li>🟡 Plan Renewal Feature (produžiti plan za 7 dana) - PLANIRANO</li>
+                            <li>🟡 Trainer Switch Handling (prebacivanje klijenta na drugog trenera) - PLANIRANO</li>
+                            <li>🟡 Analytics Endpoints (user growth, workout completion rates) - PLANIRANO</li>
                         </ul>
                     </div>
                     
@@ -491,7 +493,10 @@
         <strong>V2 Collections:</strong> <code>aimessages</code> (AI Message System)
     </p>
     <p style="margin-bottom: 15px; color: #B3B3B3;">
-        <strong>Note:</strong> Phase 2 collections (V4): <code>clientpayments</code>, <code>monthlyinvoices</code>, <code>planeffectivenesses</code>
+        <strong>V3 Collections:</strong> <code>monthlyinvoices</code> (Monthly Invoice System)
+    </p>
+    <p style="margin-bottom: 15px; color: #B3B3B3;">
+        <strong>V4 Collections (PLANNED):</strong> <code>clientpayments</code> (Stripe Payment Integration), <code>planeffectivenesses</code> (Plan Performance Analytics)
     </p>
     <div class="mermaid">
 erDiagram
@@ -507,7 +512,13 @@ erDiagram
     CLIENT_PROFILE ||--o{ WEIGH_IN : records
     CLIENT_PROFILE ||--o{ PENALTY_RECORD : has
     CLIENT_PROFILE ||--o{ AI_MESSAGE : receives
+    CLIENT_PROFILE ||--o{ MONTHLY_INVOICE : has
+    CLIENT_PROFILE ||--o{ CLIENT_PAYMENT : has "V4 - PLANNED"
+    CLIENT_PROFILE ||--o{ PLAN_EFFECTIVENESS : has "V4 - PLANNED"
     
+    TRAINER_PROFILE ||--o{ CLIENT_PAYMENT : receives "V4 - PLANNED"
+    
+    WEEKLY_PLAN ||--o{ PLAN_EFFECTIVENESS : tracks "V4 - PLANNED"
     WEEKLY_PLAN ||--o{ WORKOUT_DAY : contains "embedded array"
     WEEKLY_PLAN ||--o{ PLAN_HISTORY : assigned_to "via ClientProfile"
     WEEKLY_PLAN ||--o{ WORKOUT_LOG : generates
@@ -675,6 +686,44 @@ erDiagram
         boolean isRead "V2: Client read status"
         Date createdAt "V2: When message was generated"
     }
+    
+    MONTHLY_INVOICE {
+        ObjectId id PK "Collection: monthlyinvoices"
+        ObjectId clientId FK "ref: ClientProfile [indexed, unique with month]"
+        Date month "First day of month [Compound Unique with clientId]"
+        number totalBalance "Total amount due"
+        number planCosts "Sum of all plan costs"
+        number penalties "Sum of all penalties"
+        string status "UNPAID|PAID|OVERDUE [indexed]"
+        Date dueDate "End of month [indexed]"
+        Date paidAt "nullable"
+    }
+    
+    CLIENT_PAYMENT {
+        ObjectId id PK "Collection: clientpayments [V4 - PLANNED]"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed]"
+        number amount "Total amount in euros"
+        number planCost "Base plan cost"
+        number penalties "Accumulated penalties"
+        number kinetixFee "20% of planCost (Phase 2)"
+        number trainerPayout "80% of planCost (Phase 2)"
+        string status "PENDING|PAID|FAILED [indexed]"
+        string stripePaymentIntentId "Stripe payment intent ID (Phase 2)"
+        Date paidAt "nullable"
+    }
+    
+    PLAN_EFFECTIVENESS {
+        ObjectId id PK "Collection: planeffectivenesses [V4 - PLANNED]"
+        ObjectId planId FK "ref: WeeklyPlan [indexed]"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        number completionRate "0-100% of workouts completed"
+        number averagePerformance "Average weight/reps improvement"
+        string clientFeedback "Optional feedback from client"
+        string trainerNotes "Trainer's assessment"
+        Date weekStartDate "Week this effectiveness data is for [indexed]"
+        Date weekEndDate
+    }
     </div>
 </div>
 
@@ -703,6 +752,11 @@ erDiagram
         <li><strong>weighins → weeklyplans:</strong> <code>WeighIn.planId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
         <li><strong>penaltyrecords → clientprofiles:</strong> <code>PenaltyRecord.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
         <li><strong>aimessages → clientprofiles:</strong> <code>AIMessage.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+        <li><strong>monthlyinvoices → clientprofiles:</strong> <code>MonthlyInvoice.clientId</code> refs <code>ClientProfile._id</code> [Indexed, unique with month]</li>
+        <li><strong>clientpayments → clientprofiles:</strong> <code>ClientPayment.clientId</code> refs <code>ClientProfile._id</code> [Indexed] - <strong>V4 - PLANNED</strong></li>
+        <li><strong>clientpayments → trainerprofiles:</strong> <code>ClientPayment.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed] - <strong>V4 - PLANNED</strong></li>
+        <li><strong>planeffectivenesses → weeklyplans:</strong> <code>PlanEffectiveness.planId</code> refs <code>WeeklyPlan._id</code> [Indexed] - <strong>V4 - PLANNED</strong></li>
+        <li><strong>planeffectivenesses → clientprofiles:</strong> <code>PlanEffectiveness.clientId</code> refs <code>ClientProfile._id</code> [Indexed] - <strong>V4 - PLANNED</strong></li>
     </ul>
     
     <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Embedded Documents (Stored in parent document, not separate collections)</h4>
@@ -781,6 +835,25 @@ erDiagram
                 <li><code>clientId</code> [Single] - All messages for client</li>
                 <li><code>clientId + isRead</code> [Compound] - Unread messages</li>
                 <li><code>clientId + createdAt</code> [Compound] - Latest messages first</li>
+            </ul>
+        </li>
+        <li><strong>monthlyinvoices:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId + month</code> [Compound, Unique] - One invoice per client per month</li>
+                <li><code>status + dueDate</code> [Compound] - For finding overdue invoices</li>
+            </ul>
+        </li>
+        <li><strong>clientpayments:</strong> <strong>V4 - PLANNED</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>clientId + createdAt</code> [Compound, Descending] - Payment history for client</li>
+                <li><code>trainerId + createdAt</code> [Compound, Descending] - Payments for trainer</li>
+                <li><code>status</code> [Single] - Filter by payment status (PENDING, PAID, FAILED)</li>
+            </ul>
+        </li>
+        <li><strong>planeffectivenesses:</strong> <strong>V4 - PLANNED</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li><code>planId + clientId + weekStartDate</code> [Compound, Descending] - Effectiveness by plan and client</li>
+                <li><code>clientId + weekStartDate</code> [Compound, Descending] - Client's plan effectiveness history</li>
             </ul>
         </li>
     </ul>
@@ -1731,6 +1804,42 @@ sequenceDiagram
     <p>
         <strong>Bezbednost:</strong> Admin akcije su zaštićene RBAC (Role-Based Access Control) - samo korisnici sa role='ADMIN' mogu da pristupe admin endpoint-ima.
     </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoints</h4>
+    <ul>
+        <li><strong>GET /api/admin/users</strong> - Vraća sve korisnike sa trainer informacijama (ADMIN)</li>
+        <li><strong>GET /api/admin/stats</strong> - Vraća sistem statistike (ADMIN)</li>
+        <li><strong>POST /api/admin/assign-client</strong> - Dodeljuje clienta traineru (ADMIN)</li>
+        <li><strong>GET /api/admin/plans</strong> - Vraća sve planove preko svih trenera (ADMIN)</li>
+        <li><strong>GET /api/admin/workouts/all</strong> - Vraća sve workout logs preko svih clienta (ADMIN)</li>
+        <li><strong>GET /api/admin/workouts/stats</strong> - Vraća workout statistike (ADMIN)</li>
+        <li><strong>PATCH /api/admin/users/:id</strong> - Ažurira korisnika (ADMIN)</li>
+        <li><strong>DELETE /api/admin/users/:id</strong> - Briše korisnika sa cascade delete (ADMIN)</li>
+        <li><strong>PATCH /api/admin/users/:id/status</strong> - Ažurira status korisnika (suspend/activate) (ADMIN)</li>
+        <li><strong>PATCH /api/admin/workouts/:id/status</strong> - Ažurira workout status (isCompleted, isMissed) (ADMIN)</li>
+        <li><strong>DELETE /api/admin/workouts/:id</strong> - Briše workout log (ADMIN)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Admin Bypass Logic</h4>
+    <p>
+        <strong>Kako radi:</strong> Admin može da zaobiđe sve ownership checks i pristupi svim podacima.
+    </p>
+    <ul>
+        <li><strong>Plans:</strong> Admin može da kreira, edituje, briše i dodeljuje planove bilo kom treneru (bypass trainer ownership)</li>
+        <li><strong>Workouts:</strong> Admin može da vidi, ažurira i briše sve workout logs (bypass client ownership)</li>
+        <li><strong>Clients:</strong> Admin može da vidi sve client profile-e i reassign-uje ih trenerima (bypass trainer ownership)</li>
+        <li><strong>Users:</strong> Admin može da kreira, edituje, briše i suspenduje korisnike bilo koje role</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Cascade Delete</h4>
+    <p>
+        <strong>Kada se briše korisnik:</strong>
+    </p>
+    <ul>
+        <li><strong>TRAINER role:</strong> Automatski se briše TrainerProfile i svi povezani ClientProfile-ovi se unassign-uju (trainerId = null)</li>
+        <li><strong>CLIENT role:</strong> Automatski se briše ClientProfile i svi povezani workout logs, check-ins, weigh-ins se brišu</li>
+        <li><strong>ADMIN role:</strong> Ne može se obrisati (zaštita od slučajnog brisanja)</li>
+    </ul>
 </div>
 
             </div>
@@ -1838,10 +1947,894 @@ sequenceDiagram
 </div>
 
             </div>
+        </div>        <div class="diagram-section collapsed" id="guards-security">
+            <div class="section-header" onclick="toggleSection('guards-security')">
+                <h2>
+                    <span class="section-number">7.</span>
+                    <span class="section-title">Guards & Security Mechanisms</span>
+                    <span class="version-badge v3">✓ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('guards-security', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Guards & Security Mechanisms</strong> pokazuju kako sistem zaštiti endpoint-e i proverava dozvole korisnika.
+        Guards su NestJS mehanizmi koji se izvršavaju pre nego što zahtev stigne do kontrolera.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>JwtAuthGuard</code> - Proverava JWT token validnost (401 Unauthorized ako token nije validan)</li>
+        <li><code>RolesGuard</code> - Proverava role korisnika (CLIENT, TRAINER, ADMIN) - 403 Forbidden ako role nije dozvoljena</li>
+        <li><code>SaasKillswitchGuard</code> - Proverava trainer subscription status (blokira sve cliente ako trainer ne plaća) - 403 Forbidden</li>
+        <li><code>MonthlyPaywallGuard</code> - Proverava monthlyBalance (blokira ako monthlyBalance > 0 na početku meseca) - 403 Forbidden</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar pokušava da pristupi <code>GET /api/clients/profile</code> endpoint-u.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Zahtev dolazi sa JWT tokenom u Authorization header-u</li>
+        <li>JwtAuthGuard proverava token - ako je validan, nastavlja se</li>
+        <li>RolesGuard proverava da li je Petar CLIENT role - ako jeste, nastavlja se</li>
+        <li>SaasKillswitchGuard proverava da li je Petrov trainer aktivan - ako jeste, nastavlja se</li>
+        <li>MonthlyPaywallGuard proverava da li je monthlyBalance > 0 na početku meseca - ako nije, nastavlja se</li>
+        <li>Zahtev stiže do kontrolera i vraća profil</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar vidi svoj profil samo ako prođe sve guard provere.
+    </p>
+</div>
+
+<div class="mermaid">
+graph TD
+    A[API Request] --> B[JwtAuthGuard]
+    B -->|Valid Token| C[RolesGuard]
+    B -->|Invalid Token| Z1[401 Unauthorized]
+    
+    C -->|Correct Role| D{Endpoint requires<br/>SaasKillswitchGuard?}
+    C -->|Wrong Role| Z2[403 Forbidden]
+    
+    D -->|Yes| E{User is CLIENT?}
+    D -->|No| F[Continue to Controller]
+    
+    E -->|Yes| G[Check Trainer<br/>Subscription Status]
+    E -->|No| F
+    
+    G -->|Active| H{Endpoint requires<br/>MonthlyPaywallGuard?}
+    G -->|Inactive| Z3[403 Forbidden<br/>Trainer subscription inactive]
+    
+    H -->|Yes| I{Is First Day<br/>of Month?}
+    H -->|No| F
+    
+    I -->|Yes| J{monthlyBalance > 0?}
+    I -->|No| F
+    
+    J -->|Yes| Z4[403 Forbidden<br/>Monthly balance not cleared]
+    J -->|No| F
+    
+    F --> K[Controller Method]
+    K --> L[200 OK Response]
+    
+    style A fill:#9D4EDD,stroke:#fff,stroke-width:2px
+    style B fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style C fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style E fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style G fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style H fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style I fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style J fill:#1E1E1E,stroke:#9D4EDD,stroke-width:2px
+    style K fill:#00FF00,stroke:#000,stroke-width:2px
+    style L fill:#00FF00,stroke:#000,stroke-width:2px
+    style Z1 fill:#FF6B6B,stroke:#000,stroke-width:2px
+    style Z2 fill:#FF6B6B,stroke:#000,stroke-width:2px
+    style Z3 fill:#FF6B6B,stroke:#000,stroke-width:2px
+    style Z4 fill:#FF6B6B,stroke:#000,stroke-width:2px
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">JwtAuthGuard</h4>
+    <p>
+        <strong>Šta radi:</strong> Proverava da li je JWT token validan i nije istekao.
+    </p>
+    <p>
+        <strong>Kada se koristi:</strong> Na svim zaštićenim endpoint-ima (skoro svi osim /api/auth/register i /api/auth/login).
+    </p>
+    <p>
+        <strong>Error response:</strong> 401 Unauthorized - "Invalid or expired token"
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">RolesGuard</h4>
+    <p>
+        <strong>Šta radi:</strong> Proverava da li korisnik ima dozvoljenu role za endpoint (CLIENT, TRAINER, ADMIN).
+    </p>
+    <p>
+        <strong>Kada se koristi:</strong> Na endpoint-ima koji zahtevaju specifičnu role (npr. @Roles('CLIENT'), @Roles('TRAINER'), @Roles('ADMIN')).
+    </p>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "Insufficient permissions"
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">SaasKillswitchGuard</h4>
+    <p>
+        <strong>Šta radi:</strong> Proverava da li je trainer subscription aktivan. Ako trainer ne plaća pretplatu, svi njegovi klijenti se blokiraju.
+    </p>
+    <p>
+        <strong>Kada se koristi:</strong> Na endpoint-ima za CLIENT role (ne za TRAINER ili ADMIN).
+    </p>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "Your trainer's subscription is inactive"
+    </p>
+    <p>
+        <strong>Napomena:</strong> Ako je subscriptionExpiresAt prošao, trener se automatski suspenduje (isActive = false, subscriptionStatus = 'SUSPENDED').
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">MonthlyPaywallGuard</h4>
+    <p>
+        <strong>Šta radi:</strong> Proverava da li je monthlyBalance > 0 na početku meseca (day 1). Ako jeste, blokira pristup endpoint-u.
+    </p>
+    <p>
+        <strong>Kada se koristi:</strong> Na endpoint-ima za CLIENT role koji zahtevaju aktivnu pretplatu (npr. workout logging, check-in).
+    </p>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "Monthly balance not cleared. Please pay your balance to continue."
+    </p>
+    <p>
+        <strong>Napomena:</strong> Guard se aktivira samo na prvi dan meseca. Nakon toga, korisnik može da pristupi endpoint-u (ali balance i dalje postoji).
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Guard Execution Order</h4>
+    <p>
+        Guards se izvršavaju u sledećem redosledu:
+    </p>
+    <ol>
+        <li><strong>JwtAuthGuard</strong> - Prvo proverava token</li>
+        <li><strong>RolesGuard</strong> - Zatim proverava role</li>
+        <li><strong>SaasKillswitchGuard</strong> - Proverava trainer subscription (samo za CLIENT)</li>
+        <li><strong>MonthlyPaywallGuard</strong> - Proverava monthly balance (samo za CLIENT, samo day 1)</li>
+    </ol>
+    <p>
+        Ako bilo koji guard baca grešku, zahtev se prekida i vraća se error response (401 ili 403).
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 30px; margin-bottom: 10px;">Ownership Checks (Service-Level Security)</h4>
+    <p>
+        Pored guard-ova, sistem proverava ownership (vlasništvo) na nivou servisa. Ovo osigurava da korisnici mogu pristupiti samo svojim podacima.
+    </p>
+    
+    <h5 style="color: #9D4EDD; margin-top: 20px; margin-bottom: 10px;">Workout Ownership</h5>
+    <p>
+        <strong>Endpoint-i:</strong> <code>GET /api/workouts/:id</code>, <code>PATCH /api/workouts/:id</code>
+    </p>
+    <p>
+        <strong>Provera:</strong> Servis proverava da li workout pripada ulogovanom korisniku (poređenje <code>workoutLog.clientId</code> sa <code>user.sub</code>).
+    </p>
+    <p>
+        <strong>Exception:</strong> ADMIN role može pristupiti svim workout-ima (bypass ownership check).
+    </p>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "You can only access your own workouts"
+    </p>
+    
+    <h5 style="color: #9D4EDD; margin-top: 20px; margin-bottom: 10px;">CheckIn Ownership</h5>
+    <p>
+        <strong>Endpoint:</strong> <code>GET /api/checkins/:id</code>
+    </p>
+    <p>
+        <strong>Provera:</strong>
+    </p>
+    <ul>
+        <li><strong>CLIENT role:</strong> Proverava da li check-in pripada clientu (poređenje <code>checkIn.clientId</code> sa <code>user.sub</code>)</li>
+        <li><strong>TRAINER role:</strong> Proverava da li check-in pripada trainerovom clientu (proverava da li <code>checkIn.trainerId</code> odgovara trainerovom <code>trainerProfileId</code>)</li>
+        <li><strong>ADMIN role:</strong> Može pristupiti svim check-in-ima (bypass ownership check)</li>
+    </ul>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "You can only access your own check-ins" (CLIENT) ili "You can only access check-ins of your clients" (TRAINER)
+    </p>
+    
+    <h5 style="color: #9D4EDD; margin-top: 20px; margin-bottom: 10px;">Plan Ownership</h5>
+    <p>
+        <strong>Endpoint:</strong> <code>GET /api/plans/:id</code>
+    </p>
+    <p>
+        <strong>Provera:</strong>
+    </p>
+    <ul>
+        <li><strong>TRAINER role:</strong> Proverava da li plan pripada traineru (poređenje <code>plan.trainerId</code> sa trainerovim <code>trainerProfileId</code>)</li>
+        <li><strong>CLIENT role:</strong> Proverava da li plan postoji u <code>planHistory</code> ili <code>assignedClientIds</code> (proverava da li je plan dodeljen clientu)</li>
+        <li><strong>ADMIN role:</strong> Može pristupiti svim planovima (bypass ownership check)</li>
+    </ul>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "You can only access your own plans" (TRAINER) ili "Plan not found or access denied" (CLIENT)
+    </p>
+    
+    <h5 style="color: #9D4EDD; margin-top: 20px; margin-bottom: 10px;">Invoice Ownership (Payments)</h5>
+    <p>
+        <strong>Endpoint:</strong> <code>GET /api/payments/invoice/:clientId/:month</code>
+    </p>
+    <p>
+        <strong>Provera:</strong>
+    </p>
+    <ul>
+        <li><strong>CLIENT role:</strong> Proverava da li invoice pripada clientu (poređenje <code>invoice.clientId</code> sa <code>user.sub</code>)</li>
+        <li><strong>TRAINER role:</strong> Proverava da li client pripada traineru (proverava da li je client u trainerovom <code>clientIds</code> nizu)</li>
+        <li><strong>ADMIN role:</strong> Može pristupiti svim invoice-ima (bypass ownership check)</li>
+    </ul>
+    <p>
+        <strong>Error response:</strong> 403 Forbidden - "You can only access your own invoices" (CLIENT) ili "You can only access invoices of your clients" (TRAINER)
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 30px; margin-bottom: 10px;">Security Best Practices</h4>
+    <ul>
+        <li><strong>Defense in Depth:</strong> Guards proveravaju na nivou endpoint-a, ownership checks proveravaju na nivou servisa</li>
+        <li><strong>Fail Secure:</strong> Ako ownership check ne može da se izvrši (npr. dokument ne postoji), sistem vraća 403 Forbidden (ne 404 Not Found) da ne otkriva informacije</li>
+        <li><strong>ADMIN Bypass:</strong> ADMIN role može pristupiti svim podacima, ali samo sa eksplicitnom proverom u kodu</li>
+        <li><strong>Error Messages:</strong> Error poruke su generičke da ne otkrivaju informacije o strukturi podataka</li>
+    </ul>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="cron-jobs">
+            <div class="section-header" onclick="toggleSection('cron-jobs')">
+                <h2>
+                    <span class="section-number">7.1.</span>
+                    <span class="section-title">Cron Jobs & Scheduled Tasks</span>
+                    <span class="version-badge v2">✓ V2</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('cron-jobs', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Cron Jobs & Scheduled Tasks</strong> dokumentuje sve automatske zadatke koji se izvršavaju u određeno vreme.
+        Ovi zadaci su kritični za funkcionisanje sistema - od penalty analize do cleanup operacija.
+    </p>
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">1. WeeklyPenaltyJob</h4>
+    <ul>
+        <li><strong>Fajl:</strong> <code>src/gamification/jobs/weekly-penalty.job.ts</code></li>
+        <li><strong>Vreme izvršavanja:</strong> Svakog ponedeljka u 00:00 (midnight) - <code>@Cron('0 0 * * 1')</code></li>
+        <li><strong>Funkcionalnost:</strong> Analizira prošlu nedelju za sve aktivne klijente</li>
+        <li><strong>Logika:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li>Broji propuštene treninge u prošloj nedelji</li>
+                <li>Ako je > 2 propuštena treninga → aktivira penalty mode, resetuje streak, dodaje "Penalty Cardio"</li>
+                <li>Ako je ≤ 2 propuštena treninga → ažurira streak, isključuje penalty mode</li>
+                <li>Kreira ili ažurira PenaltyRecord dokument za svakog klijenta</li>
+            </ul>
+        </li>
+        <li><strong>Status:</strong> ✅ Implementirano i testirano</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">2. DailyWorkoutChecker</h4>
+    <ul>
+        <li><strong>Fajl:</strong> <code>src/workouts/jobs/daily-workout-checker.job.ts</code></li>
+        <li><strong>Vreme izvršavanja:</strong> Svakog dana u 02:00 - <code>@Cron('0 2 * * *')</code></li>
+        <li><strong>Funkcionalnost:</strong> Označava propuštene treninge kao missed</li>
+        <li><strong>Logika:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li>Poziva <code>WorkoutsService.markMissedWorkouts()</code></li>
+                <li>Pronalazi sve workout logs koji su prošli (workoutDate < today) i nisu completed</li>
+                <li>Označava ih kao <code>isMissed: true</code></li>
+                <li>Loguje broj označenih workout-a</li>
+            </ul>
+        </li>
+        <li><strong>Status:</strong> ✅ Implementirano</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">3. CleanupOldLogs</h4>
+    <ul>
+        <li><strong>Fajl:</strong> <code>src/workouts/jobs/cleanup-old-logs.job.ts</code></li>
+        <li><strong>Vreme izvršavanja:</strong> Svake nedelje u 03:00 - <code>@Cron('0 3 * * 0')</code></li>
+        <li><strong>Funkcionalnost:</strong> Briše stare workout logs i check-ins (starije od 90 dana)</li>
+        <li><strong>Logika:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li>Računa cutoff date (90 dana unazad)</li>
+                <li>Briše sve WorkoutLog dokumente gde je <code>createdAt < cutoffDate</code></li>
+                <li>Briše sve CheckIn dokumente gde je <code>createdAt < cutoffDate</code></li>
+                <li>Loguje broj obrisanih dokumentata</li>
+            </ul>
+        </li>
+        <li><strong>Status:</strong> ✅ Implementirano</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">4. SubscriptionChecker</h4>
+    <ul>
+        <li><strong>Fajl:</strong> <code>src/trainers/jobs/subscription-checker.job.ts</code></li>
+        <li><strong>Vreme izvršavanja:</strong> Svakog dana u 01:00 - <code>@Cron('0 1 * * *')</code></li>
+        <li><strong>Funkcionalnost:</strong> Proverava i suspenduje istekle pretplate</li>
+        <li><strong>Logika:</strong>
+            <ul style="margin-top: 5px; margin-left: 20px;">
+                <li>Pronalazi sve TrainerProfile gde je <code>subscriptionExpiresAt < today</code> i <code>isActive === true</code></li>
+                <li>Ažurira ih sa <code>isActive: false</code> i <code>subscriptionStatus: 'SUSPENDED'</code></li>
+                <li>Loguje broj suspendovanih pretplata</li>
+                <li><strong>Efekat:</strong> SaasKillswitchGuard automatski blokira sve klijente suspendovanih trenera</li>
+            </ul>
+        </li>
+        <li><strong>Status:</strong> ✅ Implementirano</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Cron Job Execution Order (Daily)</h4>
+    <ol>
+        <li><strong>01:00</strong> - SubscriptionChecker (proverava istekle pretplate)</li>
+        <li><strong>02:00</strong> - DailyWorkoutChecker (označava propuštene treninge)</li>
+        <li><strong>03:00</strong> - CleanupOldLogs (samo nedeljom - briše stare logove)</li>
+        <li><strong>00:00 (Monday)</strong> - WeeklyPenaltyJob (analizira prošlu nedelju)</li>
+    </ol>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Napomene</h4>
+    <ul>
+        <li>Svi cron jobs koriste <code>@nestjs/schedule</code> modul</li>
+        <li>Cron jobs se automatski registruju kada se aplikacija pokrene</li>
+        <li>Greške u cron jobs se loguju u konzolu (console.error)</li>
+        <li>Cron jobs ne blokiraju API zahteve (izvršavaju se asinhrono)</li>
+    </ul>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="api-endpoints-overview">
+            <div class="section-header" onclick="toggleSection('api-endpoints-overview')">
+                <h2>
+                    <span class="section-number">8.1.</span>
+                    <span class="section-title">API Endpoints Overview</span>
+                    <span class="version-badge v3">✓ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('api-endpoints-overview', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>API Endpoints Overview</strong> dokumentuje sve API endpoint-e u sistemu, organizovane po modulima.
+        Svaki endpoint ima informacije o HTTP metodi, role zahtevima, guard-ovima i RBAC proverama.
+    </p>
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Auth Module</h4>
+    <ul>
+        <li><strong>POST /api/auth/register</strong> - Registruje novog korisnika (CLIENT, TRAINER, ADMIN)</li>
+        <li><strong>POST /api/auth/login</strong> - Loguje korisnika (vraća JWT token)</li>
+        <li><strong>POST /api/auth/refresh</strong> - Refresh-uje access token</li>
+        <li><strong>GET /api/auth/me</strong> - Vraća trenutnog korisnika (sa JwtAuthGuard)</li>
+        <li><strong>POST /api/auth/logout</strong> - Logout endpoint (sa JwtAuthGuard)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Clients Module</h4>
+    <ul>
+        <li><strong>GET /api/clients/profile</strong> - Vraća client profil (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>PATCH /api/clients/profile</strong> - Ažurira client profil (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/current-plan</strong> - Vraća trenutni plan (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/plan-history</strong> - Vraća plan history (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/workouts/upcoming</strong> - Vraća upcoming workout-e (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/workouts/history</strong> - Vraća workout istoriju (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/workouts/all</strong> - Vraća sve workout logs (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/trainer</strong> - Vraća trainer informacije (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/clients/stats</strong> - Vraća workout statistike (CLIENT, sa SaasKillswitchGuard)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Trainers Module</h4>
+    <ul>
+        <li><strong>GET /api/trainers/profile</strong> - Vraća trainer profil (TRAINER)</li>
+        <li><strong>PATCH /api/trainers/profile</strong> - Ažurira trainer profil (TRAINER)</li>
+        <li><strong>GET /api/trainers/clients</strong> - Vraća listu clienta (TRAINER)</li>
+        <li><strong>GET /api/trainers/subscription</strong> - Vraća subscription detalje (TRAINER)</li>
+        <li><strong>PATCH /api/trainers/subscription</strong> - Ažurira subscription (TRAINER)</li>
+        <li><strong>POST /api/trainers/clients/:id/assign</strong> - Dodeljuje clienta (TRAINER)</li>
+        <li><strong>DELETE /api/trainers/clients/:id</strong> - Uklanja clienta (TRAINER)</li>
+        <li><strong>POST /api/trainers/subscription/upgrade</strong> - Upgrade subscription tier (TRAINER)</li>
+        <li><strong>GET /api/trainers/pending-week-requests</strong> - Vraća pending week requests (TRAINER)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Plans Module</h4>
+    <ul>
+        <li><strong>POST /api/plans</strong> - Kreira plan (TRAINER, ADMIN)</li>
+        <li><strong>GET /api/plans</strong> - Vraća sve planove (TRAINER, ADMIN)</li>
+        <li><strong>GET /api/plans/:id</strong> - Vraća plan po ID (TRAINER, ADMIN, CLIENT) - sa ownership proverom</li>
+        <li><strong>PATCH /api/plans/:id</strong> - Ažurira plan (TRAINER, ADMIN)</li>
+        <li><strong>DELETE /api/plans/:id</strong> - Briše plan (TRAINER, ADMIN)</li>
+        <li><strong>POST /api/plans/:id/assign</strong> - Dodeljuje plan clientima (TRAINER, ADMIN)</li>
+        <li><strong>POST /api/plans/:id/duplicate</strong> - Duplira plan (TRAINER, ADMIN)</li>
+        <li><strong>POST /api/plans/:id/cancel/:clientId</strong> - Otkazuje plan (TRAINER, ADMIN)</li>
+        <li><strong>GET /api/plans/unlock-next-week/:clientId</strong> - Proverava da li može unlock next week (CLIENT, TRAINER, ADMIN)</li>
+        <li><strong>POST /api/plans/request-next-week/:clientId</strong> - Zatraži next week (CLIENT)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Workouts Module</h4>
+    <ul>
+        <li><strong>POST /api/workouts/log</strong> - Loguje workout (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/workouts/:id</strong> - Vraća workout po ID (CLIENT, ADMIN) - sa ownership proverom</li>
+        <li><strong>PATCH /api/workouts/:id</strong> - Ažurira workout (CLIENT) - sa ownership proverom</li>
+        <li><strong>GET /api/workouts/today</strong> - Vraća današnji workout (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/workouts/week/:date</strong> - Vraća workout-e za nedelju (CLIENT, ADMIN, sa SaasKillswitchGuard za CLIENT)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">CheckIns Module</h4>
+    <ul>
+        <li><strong>POST /api/checkins</strong> - Kreira check-in (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/checkins</strong> - Vraća sve check-in-e (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/checkins/pending</strong> - Vraća pending check-in-e (TRAINER)</li>
+        <li><strong>GET /api/checkins/:id</strong> - Vraća check-in po ID (CLIENT, TRAINER) - sa ownership proverom</li>
+        <li><strong>PATCH /api/checkins/:id/verify</strong> - Verifikuje check-in (TRAINER)</li>
+        <li><strong>GET /api/checkins/range/start/:startDate/end/:endDate</strong> - Vraća check-in-e za date range (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>DELETE /api/checkins/:id</strong> - Briše check-in (CLIENT, sa SaasKillswitchGuard) - sa ownership proverom</li>
+        <li><strong>POST /api/checkins/weigh-in</strong> - Kreira weigh-in (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/checkins/weigh-in/history</strong> - Vraća weigh-in istoriju (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/checkins/weigh-in/latest</strong> - Vraća najnoviji weigh-in (CLIENT, sa SaasKillswitchGuard)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Training Module (Sync)</h4>
+    <ul>
+        <li><strong>GET /api/training/sync/changes</strong> - Vraća sync promene (CLIENT, TRAINER, ADMIN, sa SaasKillswitchGuard za CLIENT)</li>
+        <li><strong>POST /api/training/sync/batch</strong> - Batch sync workout logs i check-ins (CLIENT, TRAINER, sa SaasKillswitchGuard)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Media Module</h4>
+    <ul>
+        <li><strong>GET /api/media/signature</strong> - Vraća Cloudinary upload signature (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>POST /api/media/batch-signatures</strong> - Vraća batch signatures (CLIENT, sa SaasKillswitchGuard, rate limited)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Gamification Module</h4>
+    <ul>
+        <li><strong>GET /api/gamification/status</strong> - Vraća penalty status (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/gamification/penalties</strong> - Vraća penalty history (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/gamification/leaderboard</strong> - Vraća leaderboard (TRAINER)</li>
+        <li><strong>POST /api/gamification/reset-penalty/:clientId</strong> - Resetuje penalty (TRAINER)</li>
+        <li><strong>GET /api/gamification/balance</strong> - Vraća balance i monthlyBalance (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>POST /api/gamification/clear-balance</strong> - Čisti balance (CLIENT, sa SaasKillswitchGuard i MonthlyPaywallGuard)</li>
+        <li><strong>POST /api/gamification/generate-message</strong> - Generiše AI message (TRAINER, ADMIN)</li>
+        <li><strong>GET /api/gamification/messages/all</strong> - Vraća sve messages (ADMIN)</li>
+        <li><strong>GET /api/gamification/messages/:clientId</strong> - Vraća messages za clienta (CLIENT, TRAINER, ADMIN)</li>
+        <li><strong>PATCH /api/gamification/messages/:messageId/read</strong> - Označava message kao pročitan (CLIENT, sa SaasKillswitchGuard)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Payments Module</h4>
+    <ul>
+        <li><strong>POST /api/payments/generate-invoice</strong> - Generiše monthly invoice (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/payments/invoice/:clientId/:month</strong> - Vraća invoice (CLIENT, TRAINER, ADMIN, sa SaasKillswitchGuard za CLIENT) - sa ownership proverom</li>
+        <li><strong>PATCH /api/payments/invoice/:id/paid</strong> - Označava invoice kao plaćen (CLIENT, sa SaasKillswitchGuard) - sa ownership proverom</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Admin Module</h4>
+    <ul>
+        <li><strong>GET /api/admin/users</strong> - Vraća sve korisnike (ADMIN)</li>
+        <li><strong>GET /api/admin/stats</strong> - Vraća statistike (ADMIN)</li>
+        <li><strong>POST /api/admin/assign-client</strong> - Dodeljuje clienta traineru (ADMIN)</li>
+        <li><strong>GET /api/admin/plans</strong> - Vraća sve planove (ADMIN)</li>
+        <li><strong>GET /api/admin/workouts/all</strong> - Vraća sve workout logs (ADMIN)</li>
+        <li><strong>GET /api/admin/workouts/stats</strong> - Vraća workout statistike (ADMIN)</li>
+        <li><strong>PATCH /api/admin/users/:id</strong> - Ažurira korisnika (ADMIN)</li>
+        <li><strong>DELETE /api/admin/users/:id</strong> - Briše korisnika (ADMIN)</li>
+        <li><strong>PATCH /api/admin/users/:id/status</strong> - Ažurira status (suspend/activate) (ADMIN)</li>
+        <li><strong>PATCH /api/admin/workouts/:id/status</strong> - Ažurira workout status (ADMIN)</li>
+        <li><strong>DELETE /api/admin/workouts/:id</strong> - Briše workout log (ADMIN)</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Guard Usage Summary</h4>
+    <ul>
+        <li><strong>JwtAuthGuard:</strong> Koristi se na svim zaštićenim endpoint-ima (skoro svi osim /api/auth/register i /api/auth/login)</li>
+        <li><strong>RolesGuard:</strong> Koristi se na svim endpoint-ima koji zahtevaju specifičnu role (@Roles decorator)</li>
+        <li><strong>SaasKillswitchGuard:</strong> Koristi se na endpoint-ima za CLIENT role (proverava trainer subscription status)</li>
+        <li><strong>MonthlyPaywallGuard:</strong> Koristi se na endpoint-ima za CLIENT role koji zahtevaju aktivnu pretplatu (npr. clear-balance, workout logging)</li>
+    </ul>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="payments-module">
+            <div class="section-header" onclick="toggleSection('payments-module')">
+                <h2>
+                    <span class="section-number">8.</span>
+                    <span class="section-title">Payments Module - Invoice Generation & Balance Clearing</span>
+                    <span class="version-badge v3">✓ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('payments-module', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Payments Module</strong> pokazuje kako sistem generiše monthly invoice-e i upravlja balance clearing-om.
+        Invoice se generiše na osnovu penaltyHistory i plan costs, a balance se čisti kada se invoice označi kao plaćen.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>MonthlyInvoice</code> - Dokument koji se generiše jednom mesečno za svakog clienta</li>
+        <li><code>penaltyHistory</code> - Embedded array u ClientProfile koji sadrži sve balance transakcije</li>
+        <li><code>balance</code> - Ukupni balance (running tab) u ClientProfile</li>
+        <li><code>monthlyBalance</code> - Balance za trenutni mesec</li>
+        <li><code>clearBalance</code> - Operacija koja briše balance i monthlyBalance nakon plaćanja</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario:</strong> Klijent Petar ima balance od 15€ (10€ plan costs + 5€ penalties). Na početku meseca, sistem generiše invoice.
+    </p>
+    <p>
+        <strong>Šta se dešava:</strong>
+    </p>
+    <ol>
+        <li>Petar poziva <code>POST /api/payments/generate-invoice</code> sa month parametrom</li>
+        <li>Backend agregira penaltyHistory za taj mesec (planCosts + penalties)</li>
+        <li>Backend kreira MonthlyInvoice dokument sa statusom UNPAID</li>
+        <li>Petar vidi invoice sa totalBalance: 15€</li>
+        <li>Petar poziva <code>PATCH /api/payments/invoice/:id/paid</code> da označi invoice kao plaćen</li>
+        <li>Backend poziva <code>clearBalance()</code> koji briše balance i monthlyBalance</li>
+        <li>Invoice status se menja na PAID</li>
+    </ol>
+    <p>
+        <strong>Rezultat:</strong> Petar je platio balance, invoice je generisan i označen kao plaćen, balance je obrisan.
+    </p>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Client App
+    participant API as Backend API
+    participant PaymentsService as PaymentsService
+    participant GamificationService as GamificationService
+    participant DB as MongoDB
+
+    Note over Client,DB: Invoice Generation Flow
+
+    Client->>API: POST /api/payments/generate-invoice<br/>{month: "2025-01-15T00:00:00.000Z"}
+    API->>PaymentsService: generateMonthlyInvoice(clientId, monthDate)
+    
+    PaymentsService->>DB: Find ClientProfile by clientId
+    DB-->>PaymentsService: ClientProfile with penaltyHistory
+    
+    PaymentsService->>PaymentsService: Aggregate penaltyHistory for month:<br/>- Sum planCosts<br/>- Sum penalties<br/>- Calculate totalBalance
+    
+    PaymentsService->>DB: Check if invoice exists<br/>(clientId + month)
+    
+    alt Invoice already exists
+        DB-->>PaymentsService: Existing Invoice
+        PaymentsService-->>API: {invoice, isNew: false}
+        API-->>Client: 200 OK (invoice already exists)
+    else Invoice does not exist
+        PaymentsService->>DB: Create MonthlyInvoice:<br/>{clientId, month, totalBalance,<br/>planCosts, penalties, status: UNPAID,<br/>dueDate: end of month}
+        DB-->>PaymentsService: Created Invoice
+        PaymentsService-->>API: {invoice, isNew: true}
+        API-->>Client: 201 Created (new invoice)
+    end
+
+    Note over Client,DB: Balance Clearing Flow (Mark Invoice as Paid)
+
+    Client->>API: PATCH /api/payments/invoice/:id/paid
+    API->>PaymentsService: markInvoiceAsPaid(invoiceId)
+    
+    PaymentsService->>DB: Find Invoice by invoiceId
+    DB-->>PaymentsService: Invoice with clientId
+    
+    PaymentsService->>PaymentsService: Verify ownership<br/>(client can only pay own invoice)
+    
+    PaymentsService->>GamificationService: clearBalance(clientProfileId)
+    
+    GamificationService->>DB: Update ClientProfile:<br/>$set balance: 0,<br/>monthlyBalance: 0,<br/>lastBalanceReset: now
+    DB-->>GamificationService: Updated ClientProfile
+    
+    GamificationService->>DB: Clear penaltyHistory<br/>(remove entries for paid month)
+    DB-->>GamificationService: Cleared penaltyHistory
+    
+    GamificationService-->>PaymentsService: Balance cleared
+    
+    PaymentsService->>DB: Update Invoice:<br/>$set status: PAID,<br/>paidAt: now
+    DB-->>PaymentsService: Updated Invoice
+    
+    PaymentsService-->>API: Invoice marked as paid
+    API-->>Client: 200 OK (invoice paid, balance cleared)
+
+    Note over Client,DB: Result: Invoice generated with penaltyHistory aggregation,<br/>Balance cleared when invoice marked as paid,<br/>MonthlyPaywallGuard allows access after clearing
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoints</h4>
+    <ul>
+        <li><strong>POST /api/payments/generate-invoice</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>Body: <code>{month: "ISO date string"}</code></li>
+                <li>Response: 200 OK (existing) ili 201 Created (new invoice)</li>
+                <li>Agregira penaltyHistory za mesec i kreira MonthlyInvoice</li>
+            </ul>
+        </li>
+        <li><strong>GET /api/payments/invoice/:clientId/:month</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT, TRAINER, ADMIN (sa SaasKillswitchGuard za CLIENT)</li>
+                <li>CLIENT: može samo svoj invoice</li>
+                <li>TRAINER: može invoice-e svojih klijenata</li>
+                <li>ADMIN: može sve invoice-e</li>
+                <li>Response: 200 OK (invoice) ili 404 Not Found</li>
+            </ul>
+        </li>
+        <li><strong>PATCH /api/payments/invoice/:id/paid</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>CLIENT: može samo svoj invoice</li>
+                <li>Poziva <code>clearBalance()</code> i menja invoice status na PAID</li>
+                <li>Response: 200 OK (invoice paid, balance cleared)</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Penalty History Aggregation</h4>
+    <p>
+        <strong>Kako radi:</strong> Sistem agregira <code>penaltyHistory[]</code> array iz ClientProfile za određeni mesec.
+    </p>
+    <ul>
+        <li><strong>planCosts:</strong> Suma svih <code>amount</code> gde je <code>reason === 'PLAN_COST'</code></li>
+        <li><strong>penalties:</strong> Suma svih <code>amount</code> gde je <code>reason === 'MISSED_WORKOUT'</code></li>
+        <li><strong>totalBalance:</strong> planCosts + penalties</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Balance Clearing</h4>
+    <p>
+        <strong>Kada se poziva:</strong> Kada se invoice označi kao plaćen (<code>PATCH /api/payments/invoice/:id/paid</code>).
+    </p>
+    <p>
+        <strong>Šta radi:</strong>
+    </p>
+    <ul>
+        <li>Postavlja <code>balance = 0</code> i <code>monthlyBalance = 0</code></li>
+        <li>Postavlja <code>lastBalanceReset = now</code></li>
+        <li>Briše penaltyHistory entries za plaćeni mesec</li>
+        <li>Menja invoice status na PAID</li>
+    </ul>
+    <p>
+        <strong>Rezultat:</strong> MonthlyPaywallGuard više ne blokira pristup (monthlyBalance = 0).
+    </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">RBAC Provere</h4>
+    <ul>
+        <li><strong>CLIENT:</strong> Može generisati, videti i platiti samo svoj invoice</li>
+        <li><strong>TRAINER:</strong> Može videti invoice-e svojih klijenata (ne može generisati ili platiti)</li>
+        <li><strong>ADMIN:</strong> Može videti sve invoice-e (ne može generisati ili platiti)</li>
+    </ul>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="gamification-module">
+            <div class="section-header" onclick="toggleSection('gamification-module')">
+                <h2>
+                    <span class="section-number">9.</span>
+                    <span class="section-title">Gamification Module - Balance & AI Messages</span>
+                    <span class="version-badge v3">✓ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('gamification-module', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Gamification Module</strong> pokazuje kako sistem upravlja balance-om, penalty-ima i AI message-ima.
+        Balance se akumulira kroz propuštene treninge i plan costs, a AI message-i se generišu na osnovu performansi klijenta.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>balance</code> - Ukupni running tab balance (plan costs + penalties)</li>
+        <li><code>monthlyBalance</code> - Balance za trenutni mesec</li>
+        <li><code>clearBalance</code> - Operacija koja briše balance i monthlyBalance</li>
+        <li><code>AI Message</code> - Automatski generisane poruke na osnovu performansi (tone, trigger, metadata)</li>
+        <li><code>MessageType</code> - Tip poruke (PASSIVE_AGGRESSIVE, EMPATHY, MOTIVATION, WARNING, PENALTY, CELEBRATION)</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario 1 - Balance Clearing:</strong> Klijent Petar ima balance od 10€ i želi da ga očisti.
+    </p>
+    <ol>
+        <li>Petar poziva <code>POST /api/gamification/clear-balance</code></li>
+        <li>Backend proverava MonthlyPaywallGuard (ako je day 1 i monthlyBalance > 0, blokira)</li>
+        <li>Backend poziva <code>clearBalance()</code> koji postavlja balance = 0, monthlyBalance = 0</li>
+        <li>Backend postavlja lastBalanceReset = now</li>
+        <li>Petar može nastaviti sa treningom</li>
+    </ol>
+    <p>
+        <strong>Scenario 2 - AI Message Generation:</strong> Trener Marko želi da generiše poruku za klijenta Petar koji je propustio 3 treninga.
+    </p>
+    <ol>
+        <li>Marko poziva <code>POST /api/gamification/generate-message</code> sa trigger: "MISSED_WORKOUTS", metadata: {missedCount: 3}</li>
+        <li>Backend generiše poruku sa tone: "PASSIVE_AGGRESSIVE" (jer je trigger MISSED_WORKOUTS)</li>
+        <li>Backend čuva poruku u AIMessage collection</li>
+        <li>Petar vidi poruku u aplikaciji</li>
+    </ol>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Client App
+    participant API as Backend API
+    participant GamificationService as GamificationService
+    participant AIMessageService as AIMessageService
+    participant MonthlyPaywallGuard as MonthlyPaywallGuard
+    participant DB as MongoDB
+
+    Note over Client,DB: Balance Clearing Flow
+
+    Client->>API: POST /api/gamification/clear-balance
+    API->>MonthlyPaywallGuard: Check monthlyBalance (if day 1)
+    
+    alt Day 1 AND monthlyBalance > 0
+        MonthlyPaywallGuard-->>API: 403 Forbidden<br/>"Monthly balance not cleared"
+        API-->>Client: 403 Forbidden
+    else NOT day 1 OR monthlyBalance = 0
+        MonthlyPaywallGuard-->>API: Allow request
+        API->>GamificationService: clearBalance(clientProfileId)
+        
+        GamificationService->>DB: Update ClientProfile:<br/>$set balance: 0,<br/>monthlyBalance: 0,<br/>lastBalanceReset: now
+        DB-->>GamificationService: Updated ClientProfile
+        
+        GamificationService->>DB: Clear penaltyHistory<br/>(remove entries for current month)
+        DB-->>GamificationService: Cleared penaltyHistory
+        
+        GamificationService-->>API: Balance cleared
+        API-->>Client: 200 OK (balance cleared)
+    end
+
+    Note over Client,DB: AI Message Generation Flow
+
+    Client->>API: POST /api/gamification/generate-message<br/>{clientId, trigger, metadata, messageType}
+    API->>AIMessageService: generateMessage(dto)
+    
+    AIMessageService->>AIMessageService: Select tone based on trigger:<br/>- MISSED_WORKOUTS → PASSIVE_AGGRESSIVE<br/>- STREAK → CELEBRATION<br/>- WEIGHT_SPIKE → WARNING<br/>- SICK_DAY → EMPATHY
+    
+    AIMessageService->>AIMessageService: Generate message template<br/>based on MessageType and tone
+    
+    AIMessageService->>DB: Create AIMessage:<br/>{clientId, message, tone, trigger,<br/>isRead: false, createdAt: now}
+    DB-->>AIMessageService: Created AIMessage
+    
+    AIMessageService-->>API: Message generated
+    API-->>Client: 200 OK (message created)
+
+    Note over Client,DB: Get Balance Flow
+
+    Client->>API: GET /api/gamification/balance
+    API->>GamificationService: getBalance(userId)
+    
+    GamificationService->>DB: Find ClientProfile by userId
+    DB-->>GamificationService: ClientProfile with balance,<br/>monthlyBalance, penaltyHistory
+    
+    GamificationService-->>API: {balance, monthlyBalance,<br/>lastBalanceReset, penaltyHistory}
+    API-->>Client: 200 OK (balance data)
+
+    Note over Client,DB: Result: Balance cleared with MonthlyPaywallGuard check,<br/>AI messages generated with tone selection,<br/>Balance retrieved with penalty history
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoints</h4>
+    <ul>
+        <li><strong>GET /api/gamification/balance</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>Response: <code>{balance, monthlyBalance, lastBalanceReset, penaltyHistory}</code></li>
+                <li>Vraća trenutni balance i penalty history</li>
+            </ul>
+        </li>
+        <li><strong>POST /api/gamification/clear-balance</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard i MonthlyPaywallGuard)</li>
+                <li>MonthlyPaywallGuard: Blokira ako je day 1 i monthlyBalance > 0</li>
+                <li>Poziva <code>clearBalance()</code> koji briše balance i monthlyBalance</li>
+                <li>Response: 200 OK (balance cleared) ili 403 Forbidden (monthly paywall)</li>
+            </ul>
+        </li>
+        <li><strong>POST /api/gamification/generate-message</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: TRAINER, ADMIN</li>
+                <li>Body: <code>{clientId, trigger, metadata, messageType}</code></li>
+                <li>Generiše AI message sa odgovarajućim tone-om</li>
+                <li>Response: 200 OK (message created)</li>
+            </ul>
+        </li>
+        <li><strong>GET /api/gamification/messages/all</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: ADMIN</li>
+                <li>Vraća sve AI message-e u sistemu</li>
+                <li>Response: 200 OK (array of messages)</li>
+            </ul>
+        </li>
+        <li><strong>GET /api/gamification/messages/:clientId</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT, TRAINER, ADMIN</li>
+                <li>CLIENT: može samo svoje message-e</li>
+                <li>TRAINER: može message-e svojih klijenata</li>
+                <li>ADMIN: može sve message-e</li>
+                <li>Response: 200 OK (array of messages)</li>
+            </ul>
+        </li>
+        <li><strong>PATCH /api/gamification/messages/:messageId/read</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>Označava message kao pročitan</li>
+                <li>Response: 200 OK (message marked as read)</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Balance Clearing Logic</h4>
+    <p>
+        <strong>Kada se poziva:</strong> Kada klijent pozove <code>POST /api/gamification/clear-balance</code>.
+    </p>
+    <p>
+        <strong>MonthlyPaywallGuard provera:</strong>
+    </p>
+    <ul>
+        <li>Ako je prvi dan meseca (day 1) i monthlyBalance > 0, guard blokira zahtev (403 Forbidden)</li>
+        <li>Ako nije day 1 ili monthlyBalance = 0, guard dozvoljava zahtev</li>
+    </ul>
+    <p>
+        <strong>clearBalance() operacija:</strong>
+    </p>
+    <ul>
+        <li>Postavlja <code>balance = 0</code> i <code>monthlyBalance = 0</code></li>
+        <li>Postavlja <code>lastBalanceReset = now</code></li>
+        <li>Briše penaltyHistory entries za trenutni mesec</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">AI Message Generation</h4>
+    <p>
+        <strong>Tone Selection:</strong> Tone se bira na osnovu trigger-a:
+    </p>
+    <ul>
+        <li><strong>MISSED_WORKOUTS</strong> → PASSIVE_AGGRESSIVE</li>
+        <li><strong>STREAK</strong> → CELEBRATION</li>
+        <li><strong>WEIGHT_SPIKE</strong> → WARNING</li>
+        <li><strong>SICK_DAY</strong> → EMPATHY</li>
+        <li><strong>PENALTY</strong> → WARNING</li>
+    </ul>
+    <p>
+        <strong>MessageType Enum:</strong>
+    </p>
+    <ul>
+        <li>PASSIVE_AGGRESSIVE - "Skipping again? Your bank account will feel this."</li>
+        <li>EMPATHY - "I understand you're going through a tough time. Let's get back on track."</li>
+        <li>MOTIVATION - "You've got this! Push through and show yourself what you're capable of."</li>
+        <li>WARNING - "Your balance is accumulating. Time to step up."</li>
+        <li>PENALTY - "Missed workout = +1€. Your balance is now X€."</li>
+        <li>CELEBRATION - "Beast mode activated! Keep the streak going!"</li>
+    </ul>
+</div>
+
+            </div>
         </div>        <div class="diagram-section collapsed" id="plan-history">
             <div class="section-header" onclick="toggleSection('plan-history')">
                 <h2>
-                    <span class="section-number">8.</span>
+                    <span class="section-number">10.</span>
                     <span class="section-title">Plan History vs Current Plan Logic</span>
                     <button class="open-section-btn" onclick="openSectionInNewWindow('plan-history', event)" title="Open in new window">Open</button>
                     <span class="collapse-icon"></span>
@@ -2182,6 +3175,17 @@ sequenceDiagram
     <p>
         <strong>Offline-first:</strong> Check-in se može snimiti i bez interneta. Foto se upload-uje kada se konekcija uspostavi.
     </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoints</h4>
+    <ul>
+        <li><strong>POST /api/checkins</strong> - Kreira check-in (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/checkins</strong> - Vraća sve check-in-e za clienta (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>GET /api/checkins/pending</strong> - Vraća pending check-in-e (TRAINER)</li>
+        <li><strong>GET /api/checkins/:id</strong> - Vraća check-in po ID (CLIENT, TRAINER) - sa ownership proverom</li>
+        <li><strong>PATCH /api/checkins/:id/verify</strong> - Verifikuje check-in (TRAINER)</li>
+        <li><strong>GET /api/checkins/range/start/:startDate/end/:endDate</strong> - Vraća check-in-e za date range (CLIENT, sa SaasKillswitchGuard)</li>
+        <li><strong>DELETE /api/checkins/:id</strong> - Briše check-in (CLIENT, sa SaasKillswitchGuard) - sa ownership proverom</li>
+    </ul>
 </div>
 
             </div>
@@ -2330,6 +3334,232 @@ sequenceDiagram
     <p>
         <strong>Spike threshold:</strong> Promena >5% se smatra značajnom i zahteva pažnju. AI će poslati poruku treneru da proveri šta se dešava.
     </p>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoints</h4>
+    <ul>
+        <li><strong>POST /api/checkins/weigh-in</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>Body: <code>{weight, date, notes?, planId?}</code></li>
+                <li>Automatski linkuje plan (planHistory prioritet, currentPlanId fallback)</li>
+                <li>Proverava mandatory flag (Monday check, plan week Monday check)</li>
+                <li>Detektuje weight spike (>5% increase, <-5% decrease)</li>
+                <li>AI flagging logiku (isWeightSpike, aiFlagged, aiMessage)</li>
+                <li>Response: 200 OK (weigh-in created)</li>
+            </ul>
+        </li>
+        <li><strong>GET /api/checkins/weigh-in/history</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>Vraća sve weigh-in-e za clienta (sortirano po datumu, najnoviji prvi)</li>
+                <li>Response: 200 OK (array of weigh-ins)</li>
+            </ul>
+        </li>
+        <li><strong>GET /api/checkins/weigh-in/latest</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT (sa SaasKillswitchGuard)</li>
+                <li>Vraća najnoviji weigh-in za clienta</li>
+                <li>Response: 200 OK (weigh-in) ili 404 Not Found (no weigh-ins)</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Weight Spike Detection Logic</h4>
+    <p>
+        <strong>Kako radi:</strong> Sistem poredi trenutnu težinu sa poslednjom težinom i računa procentualnu promenu.
+    </p>
+    <ul>
+        <li><strong>Weight increase > 5%:</strong> <code>isWeightSpike = true</code>, <code>aiFlagged = true</code>, <code>aiMessage = "Weight increased by X%"</code></li>
+        <li><strong>Weight decrease > 5%:</strong> <code>aiFlagged = true</code>, <code>aiMessage = "Weight decreased by X%"</code> (nije spike, ali je značajna promena)</li>
+        <li><strong>Change <= 5%:</strong> Normalna promena, nema flagging-a</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Plan Linking Logic</h4>
+    <p>
+        <strong>Prioritet:</strong>
+    </p>
+    <ol>
+        <li><strong>planHistory prioritet:</strong> Pronalazi aktivni plan u planHistory (planStartDate <= today <= planEndDate)</li>
+        <li><strong>currentPlanId fallback:</strong> Ako nema aktivnog plana u planHistory, koristi currentPlanId</li>
+        <li><strong>No plan:</strong> Ako nema ni planHistory ni currentPlanId, planId = null</li>
+    </ol>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Mandatory Flag Logic</h4>
+    <p>
+        <strong>Kada je isMandatory = true:</strong>
+    </p>
+    <ul>
+        <li>Ako je weigh-in datum ponedeljak (dayOfWeek === 1)</li>
+        <li>I ako je ponedeljak plan nedelje (planStartDate je ponedeljak)</li>
+        <li>I ako je weigh-in datum unutar plan nedelje (planStartDate <= date <= planStartDate + 6 days)</li>
+    </ul>
+    <p>
+        <strong>Napomena:</strong> isMandatory = true ne blokira weigh-in, samo označava da je preporučeno.
+    </p>
+</div>
+
+            </div>
+        </div>        <div class="diagram-section collapsed" id="sync-flow">
+            <div class="section-header" onclick="toggleSection('sync-flow')">
+                <h2>
+                    <span class="section-number">12.</span>
+                    <span class="section-title">Sync Flow - Batch Sync & Changes</span>
+                    <span class="version-badge v3">✓ V3</span>
+                    <button class="open-section-btn" onclick="openSectionInNewWindow('sync-flow', event)" title="Open in new window">Open</button>
+                    <span class="collapse-icon"></span>
+                </h2>
+            </div>
+            <div class="section-content">
+<div class="summary-card">
+    <h3>📋 Šta je ovo?</h3>
+    <p>
+        <strong>Sync Flow</strong> pokazuje kako mobilna aplikacija sinhronizuje podatke sa backend-om u offline-first režimu.
+        Batch sync omogućava sinhronizaciju više workout logs i check-ins odjednom, a sync changes vraća sve promene od poslednjeg sync-a.
+    </p>
+    <p>
+        <strong>Ključni pojmovi:</strong>
+    </p>
+    <ul>
+        <li><code>GET /api/training/sync/changes</code> - Vraća sve promene od poslednjeg sync timestamp-a</li>
+        <li><code>POST /api/training/sync/batch</code> - Batch sync workout logs i check-ins sa mobile app-a</li>
+        <li><code>Duplicate detection</code> - Sistem detektuje duplikate na osnovu clientId + workoutDate ili clientId + checkinDate</li>
+        <li><code>Mixed sync</code> - Batch sync može da sinhronizuje i workout logs i check-ins u jednom pozivu</li>
+    </ul>
+</div>
+
+<div class="example-card">
+    <h3>💡 Primer iz prakse</h3>
+    <p>
+        <strong>Scenario 1 - Sync Changes:</strong> Klijent Petar želi da vidi sve promene od poslednjeg sync-a.
+    </p>
+    <ol>
+        <li>Petar poziva <code>GET /api/training/sync/changes?since=2025-01-15T10:00:00.000Z</code></li>
+        <li>Backend vraća sve workout logs, plans i check-ins koji su ažurirani nakon timestamp-a</li>
+        <li>Petar vidi ažurirane podatke u aplikaciji</li>
+    </ol>
+    <p>
+        <strong>Scenario 2 - Batch Sync:</strong> Klijent Petar je bio offline i ima 3 dirty workout logs i 2 check-ins koje treba sinhronizovati.
+    </p>
+    <ol>
+        <li>Petar dobija internet konekciju</li>
+        <li>SyncManager poziva <code>POST /api/training/sync/batch</code> sa array-om workout logs i check-ins</li>
+        <li>Backend detektuje duplikate (ako već postoje) i preskače ih</li>
+        <li>Backend kreira/ ažurira workout logs i check-ins</li>
+        <li>Petar vidi sinhronizovane podatke</li>
+    </ol>
+</div>
+
+<div class="mermaid">
+sequenceDiagram
+    participant Client as Mobile App
+    participant SyncManager as SyncManager
+    participant API as Backend API
+    participant TrainingService as TrainingService
+    participant DB as MongoDB
+
+    Note over Client,DB: Sync Changes Flow
+
+    Client->>API: GET /api/training/sync/changes<br/>?since=2025-01-15T10:00:00.000Z
+    API->>TrainingService: getSyncChanges(userId, role, sinceDate)
+    
+    TrainingService->>DB: Find WorkoutLogs where:<br/>updatedAt >= sinceDate<br/>AND clientId = userId
+    DB-->>TrainingService: Array of updated WorkoutLogs
+    
+    TrainingService->>DB: Find Plans where:<br/>updatedAt >= sinceDate<br/>AND (trainerId = userId OR<br/>assignedClientIds contains userId)
+    DB-->>TrainingService: Array of updated Plans
+    
+    TrainingService->>DB: Find CheckIns where:<br/>updatedAt >= sinceDate<br/>AND clientId = userId
+    DB-->>TrainingService: Array of updated CheckIns
+    
+    TrainingService-->>API: {workouts, plans, checkIns}
+    API-->>Client: 200 OK (sync changes)
+
+    Note over Client,DB: Batch Sync Flow
+
+    Client->>SyncManager: Queue dirty workouts/check-ins
+    SyncManager->>API: POST /api/training/sync/batch<br/>{workouts: [...], checkIns: [...]}
+    
+    API->>TrainingService: syncBatch(userId, syncBatchDto)
+    
+    loop For each workout in batch
+        TrainingService->>DB: Check if workout exists<br/>(clientId + workoutDate)
+        
+        alt Workout already exists
+            TrainingService->>TrainingService: Skip duplicate<br/>(preserve server version)
+        else Workout does not exist
+            TrainingService->>DB: Create WorkoutLog document
+            DB-->>TrainingService: Created WorkoutLog
+        end
+    end
+    
+    loop For each check-in in batch
+        TrainingService->>DB: Check if check-in exists<br/>(clientId + checkinDate)
+        
+        alt Check-in already exists
+            TrainingService->>TrainingService: Skip duplicate<br/>(preserve server version)
+        else Check-in does not exist
+            TrainingService->>DB: Create CheckIn document
+            DB-->>TrainingService: Created CheckIn
+        end
+    end
+    
+    TrainingService-->>API: {synced: count, skipped: count}
+    API-->>SyncManager: 200 OK (sync completed)
+    SyncManager->>Client: Mark items as synced<br/>(isDirty = false)
+
+    Note over Client,DB: Result: Changes retrieved for pull sync,<br/>Batch sync completed with duplicate detection,<br/>Mixed sync (workouts + check-ins) supported
+</div>
+
+<div class="explanation-card">
+    <h3>🔍 Detaljno objašnjenje</h3>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">API Endpoints</h4>
+    <ul>
+        <li><strong>GET /api/training/sync/changes</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT, TRAINER, ADMIN (sa SaasKillswitchGuard za CLIENT)</li>
+                <li>Query: <code>?since=ISO date string</code> (optional, default: epoch)</li>
+                <li>Vraća sve promene (workout logs, plans, check-ins) od poslednjeg sync timestamp-a</li>
+                <li>Response: <code>{workouts: [], plans: [], checkIns: []}</code></li>
+            </ul>
+        </li>
+        <li><strong>POST /api/training/sync/batch</strong>
+            <ul style="margin-left: 20px;">
+                <li>Role: CLIENT, TRAINER (sa SaasKillswitchGuard)</li>
+                <li>Body: <code>{workouts: [...], checkIns: [...]}</code></li>
+                <li>Batch sync workout logs i check-ins sa mobile app-a</li>
+                <li>Duplicate detection: preskače duplikate (clientId + workoutDate ili clientId + checkinDate)</li>
+                <li>Response: <code>{synced: count, skipped: count}</code></li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Duplicate Detection</h4>
+    <p>
+        <strong>Kako radi:</strong> Sistem proverava da li već postoji workout log ili check-in sa istim clientId i datumom.
+    </p>
+    <ul>
+        <li><strong>Workout logs:</strong> Duplikat se detektuje po <code>clientId + workoutDate</code> (compound unique index)</li>
+        <li><strong>Check-ins:</strong> Duplikat se detektuje po <code>clientId + checkinDate</code> (compound unique index)</li>
+        <li><strong>Server wins:</strong> Ako postoji duplikat, server verzija se zadržava, client verzija se preskače</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Mixed Sync</h4>
+    <p>
+        <strong>Kako radi:</strong> Batch sync može da sinhronizuje i workout logs i check-ins u jednom pozivu.
+    </p>
+    <ul>
+        <li><strong>Workout logs:</strong> Array workout logs u <code>syncBatchDto.workouts</code></li>
+        <li><strong>Check-ins:</strong> Array check-ins u <code>syncBatchDto.checkIns</code></li>
+        <li><strong>Processing:</strong> Sistem obrađuje oba tipa podataka u istom batch-u</li>
+    </ul>
+    
+    <h4 style="color: #B3B3B3; margin-top: 20px; margin-bottom: 10px;">Error Handling</h4>
+    <ul>
+        <li><strong>Invalid data:</strong> Nevalidni podaci se preskaču, validni se obrađuju</li>
+        <li><strong>Non-existent plan:</strong> Ako workout log referiše nepostojeći plan, workout se preskače</li>
+        <li><strong>Network errors:</strong> SyncManager retry logika sa exponential backoff</li>
+    </ul>
 </div>
 
             </div>

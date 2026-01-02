@@ -3,6 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
 import { TrainingService, SyncResult } from './training.service';
 import { ClientsService } from '../clients/clients.service';
+import { TrainersService } from '../trainers/trainers.service';
 import { WorkoutsService } from '../workouts/workouts.service';
 import { CheckInsService } from '../checkins/checkins.service';
 import { WorkoutLog } from '../workouts/schemas/workout-log.schema';
@@ -10,6 +11,7 @@ import { CheckIn } from '../checkins/schemas/checkin.schema';
 import { WeeklyPlan } from '../plans/schemas/weekly-plan.schema';
 import { SyncBatchDto } from './dto/sync-batch.dto';
 import { Types } from 'mongoose';
+import { Model } from 'mongoose';
 
 describe('TrainingService', () => {
   let service: TrainingService;
@@ -41,6 +43,13 @@ describe('TrainingService', () => {
           provide: ClientsService,
           useValue: {
             getProfile: jest.fn(),
+          },
+        },
+        {
+          provide: TrainersService,
+          useValue: {
+            getProfile: jest.fn(),
+            getProfileById: jest.fn(),
           },
         },
         {

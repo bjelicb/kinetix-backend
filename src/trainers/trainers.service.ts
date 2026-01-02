@@ -329,5 +329,32 @@ export class TrainersService {
 
     return clients as ClientProfile[];
   }
+
+  /**
+   * Verify that a client belongs to the trainer
+   * This method is used by other services (like WorkoutsService) to verify trainer-client relationship
+   * @param trainerId Trainer's userId
+   * @param clientProfileId Client's profile ID
+   * @throws ForbiddenException if client does not belong to trainer
+   * @throws NotFoundException if client not found
+   */
+  async verifyClientBelongsToTrainer(
+    trainerId: string,
+    clientProfileId: string,
+  ): Promise<ClientProfileDocument> {
+    const trainerProfile = await this.getProfile(trainerId);
+    const trainerProfileId = (trainerProfile as any)._id;
+
+    const clientProfile = await this.clientModel.findById(clientProfileId).exec();
+    if (!clientProfile) {
+      throw new NotFoundException('Client profile not found');
+    }
+
+    if (!clientProfile.trainerId || clientProfile.trainerId.toString() !== trainerProfileId.toString()) {
+      throw new ForbiddenException('Client does not belong to this trainer');
+    }
+
+    return clientProfile;
+  }
 }
 

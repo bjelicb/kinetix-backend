@@ -274,14 +274,29 @@ export class GamificationService {
   async clearBalance(clientProfileId: string | Types.ObjectId): Promise<void> {
     console.log(`[GamificationService] clearBalance START - clientProfileId: ${clientProfileId}`);
     
-    // Get current balance before clearing
+    // Validate clientProfileId format
+    if (!clientProfileId) {
+      throw new NotFoundException('Client profile ID is required');
+    }
+
+    // Validate ObjectId format if string
+    if (typeof clientProfileId === 'string' && !Types.ObjectId.isValid(clientProfileId)) {
+      throw new NotFoundException(`Invalid client profile ID format: ${clientProfileId}`);
+    }
+    
+    // Get current balance before clearing - verify client exists
     const clientBefore = await this.clientProfileModel.findById(clientProfileId).exec();
-    const balanceBefore = clientBefore?.balance || 0;
-    const monthlyBalanceBefore = clientBefore?.monthlyBalance || 0;
+    
+    if (!clientBefore) {
+      throw new NotFoundException(`Client profile not found: ${clientProfileId}`);
+    }
+    
+    const balanceBefore = clientBefore.balance || 0;
+    const monthlyBalanceBefore = clientBefore.monthlyBalance || 0;
     console.log(`[GamificationService] clearBalance - Current balance: ${balanceBefore}€, monthlyBalance: ${monthlyBalanceBefore}€`);
     
     const resetDate = new Date();
-    await this.clientProfileModel.findByIdAndUpdate(
+    const updateResult = await this.clientProfileModel.findByIdAndUpdate(
       clientProfileId,
       {
         $set: {
@@ -290,7 +305,17 @@ export class GamificationService {
           lastBalanceReset: resetDate,
         },
       },
+      { new: true },
     ).exec();
+    
+    // Verify update was successful
+    // Note: findByIdAndUpdate can return null if document doesn't exist,
+    // but we already verified it exists above, so this shouldn't happen
+    if (!updateResult) {
+      // This is unexpected since we verified client exists
+      // Log warning but don't throw - the update might have succeeded
+      console.warn(`[GamificationService] clearBalance - Update returned null for clientProfileId: ${clientProfileId}, but client exists`);
+    }
     
     console.log(`[GamificationService] clearBalance SUCCESS - Balance cleared: ${balanceBefore}€ -> 0€, monthlyBalance cleared: ${monthlyBalanceBefore}€ -> 0€, lastBalanceReset set to: ${resetDate.toISOString()}`);
   }

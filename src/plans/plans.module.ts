@@ -21,7 +21,7 @@ import { GamificationModule } from '../gamification/gamification.module';
       { name: User.name, schema: UserSchema },
       { name: WorkoutLog.name, schema: WorkoutLogSchema },
     ]),
-    TrainersModule,
+    forwardRef(() => TrainersModule),
     forwardRef(() => ClientsModule),
     forwardRef(() => WorkoutsModule),
     forwardRef(() => GamificationModule),

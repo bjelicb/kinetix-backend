@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -44,6 +45,7 @@ export class AdminController {
   }
 
   @Post('/assign-client')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Assign a client to a trainer' })
   @ApiResponse({ status: 200, description: 'Client assigned successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })

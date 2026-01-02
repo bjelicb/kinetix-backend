@@ -80,7 +80,8 @@ async function listWorkoutLogs() {
       try {
         const planId = log.weeklyPlanId?.toString();
         if (planId) {
-          const plan = await plansService.getPlanById(planId);
+          // CLI command uses ADMIN role to bypass ownership checks
+          const plan = await plansService.getPlanById(planId, '', 'ADMIN');
           if (plan && (plan as any).workouts) {
             const planWorkout = ((plan as any).workouts as any[]).find(
               (w: any) => w.dayOfWeek === log.dayOfWeek,

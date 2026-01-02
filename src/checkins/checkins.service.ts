@@ -108,9 +108,12 @@ export class CheckInsService {
       // But we flag it for review
     }
 
+    // Normalize trainerId - handle both ObjectId and populated object
+    const trainerIdValue = (clientProfile.trainerId as any)?._id || clientProfile.trainerId;
+    
     const checkIn = new this.checkInModel({
       clientId: clientProfileId,
-      trainerId: clientProfile.trainerId,
+      trainerId: trainerIdValue, // Use normalized trainerId
       workoutLogId: createCheckInDto.workoutLogId ? new Types.ObjectId(createCheckInDto.workoutLogId) : undefined,
       checkinDate: new Date(createCheckInDto.checkinDate),
       photoUrl: createCheckInDto.photoUrl,
@@ -147,7 +150,7 @@ export class CheckInsService {
       .exec();
   }
 
-  async getCheckInById(checkInId: string): Promise<CheckIn> {
+  async getCheckInById(checkInId: string, userId: string, userRole: string): Promise<CheckIn> {
     // Validate ObjectId format
     if (!Types.ObjectId.isValid(checkInId)) {
       throw new NotFoundException('Check-in not found');
@@ -156,6 +159,35 @@ export class CheckInsService {
     if (!checkIn) {
       throw new NotFoundException('Check-in not found');
     }
+
+    // Verify ownership based on user role
+    if (userRole === 'CLIENT') {
+      // For CLIENT: verify that check-in belongs to this client
+      const clientProfile = await this.clientsService.getProfile(userId);
+      if (!clientProfile) {
+        throw new NotFoundException('Client profile not found');
+      }
+      const clientProfileId = (clientProfile as any)._id || clientProfile.userId;
+      
+      if (checkIn.clientId.toString() !== clientProfileId.toString()) {
+        throw new ForbiddenException('You can only access your own check-ins');
+      }
+    } else if (userRole === 'TRAINER') {
+      // For TRAINER: verify that check-in belongs to one of their clients
+      const trainerProfile = await this.trainersService.getProfile(userId);
+      if (!trainerProfile) {
+        throw new NotFoundException('Trainer profile not found');
+      }
+      const trainerProfileId = (trainerProfile as any)._id.toString();
+      
+      // Check if check-in's trainerId matches this trainer's profileId
+      const checkInTrainerId = (checkIn.trainerId as any)?._id?.toString() || checkIn.trainerId?.toString();
+      
+      if (!checkInTrainerId || checkInTrainerId !== trainerProfileId) {
+        throw new ForbiddenException('You can only access check-ins from your own clients');
+      }
+    }
+
     return checkIn;
   }
 
@@ -174,7 +206,11 @@ export class CheckInsService {
     const trainerProfileId = (trainerProfile as any)._id.toString();
 
     // Verify that the trainer is authorized to verify this check-in
-    if (checkIn.trainerId.toString() !== trainerProfileId) {
+    // Normalize both IDs to strings for comparison
+    // Handle both ObjectId and populated object cases
+    const checkInTrainerId = (checkIn.trainerId as any)?._id?.toString() || checkIn.trainerId?.toString();
+    
+    if (!checkInTrainerId || checkInTrainerId !== trainerProfileId) {
       throw new ForbiddenException('You are not authorized to verify this check-in.');
     }
 

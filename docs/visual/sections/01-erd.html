@@ -1253,8 +1253,14 @@ erDiagram
     CLIENT_PROFILE ||--o| WEEKLY_PLAN : "current plan"
     CLIENT_PROFILE ||--o{ WORKOUT_LOG : "logs"
     CLIENT_PROFILE ||--o{ CHECK_IN : "performs"
+    CLIENT_PROFILE ||--o{ MONTHLY_INVOICE : "has"
+    CLIENT_PROFILE ||--o{ CLIENT_PAYMENT : "has"
+    CLIENT_PROFILE ||--o{ PLAN_EFFECTIVENESS : "has"
+    
+    TRAINER_PROFILE ||--o{ CLIENT_PAYMENT : "receives"
     
     WEEKLY_PLAN ||--o{ WORKOUT_LOG : "generates"
+    WEEKLY_PLAN ||--o{ PLAN_EFFECTIVENESS : "tracks"
     
     USER {
         string id PK
@@ -1294,6 +1300,30 @@ erDiagram
         ObjectId id PK
         ObjectId clientId FK
         string photoUrl
+    }
+    
+    MONTHLY_INVOICE {
+        ObjectId id PK
+        ObjectId clientId FK
+        Date month
+        number totalBalance
+        string status
+    }
+    
+    CLIENT_PAYMENT {
+        ObjectId id PK "V4 - PLANNED"
+        ObjectId clientId FK
+        ObjectId trainerId FK
+        number amount
+        string status
+    }
+    
+    PLAN_EFFECTIVENESS {
+        ObjectId id PK "V4 - PLANNED"
+        ObjectId planId FK
+        ObjectId clientId FK
+        number completionRate
+        number averagePerformance
     }
             </div>
         </div>
@@ -1341,11 +1371,17 @@ erDiagram
     CLIENT_PROFILE ||--o{ WEIGH_IN : records
     CLIENT_PROFILE ||--o{ PENALTY_RECORD : has
     CLIENT_PROFILE ||--o{ AI_MESSAGE : receives
+    CLIENT_PROFILE ||--o{ MONTHLY_INVOICE : has
+    CLIENT_PROFILE ||--o{ CLIENT_PAYMENT : has "V4 - PLANNED"
+    CLIENT_PROFILE ||--o{ PLAN_EFFECTIVENESS : has "V4 - PLANNED"
+    
+    TRAINER_PROFILE ||--o{ CLIENT_PAYMENT : receives "V4 - PLANNED"
     
     WEEKLY_PLAN ||--o{ WORKOUT_DAY : contains "embedded array"
     WEEKLY_PLAN ||--o{ PLAN_HISTORY : assigned_to "via ClientProfile"
     WEEKLY_PLAN ||--o{ WORKOUT_LOG : generates
     WEEKLY_PLAN ||--o{ WEIGH_IN : linked_to
+    WEEKLY_PLAN ||--o{ PLAN_EFFECTIVENESS : tracks "V4 - PLANNED"
     
     WORKOUT_DAY ||--o{ EXERCISE : contains "embedded array"
     WORKOUT_LOG ||--o{ COMPLETED_EXERCISE : tracks "embedded array"
@@ -1509,6 +1545,44 @@ erDiagram
         boolean isRead "V2: Client read status"
         Date createdAt "V2: When message was generated"
     }
+    
+    MONTHLY_INVOICE {
+        ObjectId id PK "Collection: monthlyinvoices"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        Date month "First day of month [Compound Unique with clientId]"
+        number totalBalance "Total amount due in euros"
+        number planCosts "Sum of all plan costs"
+        number penalties "Sum of all penalties"
+        string status "UNPAID|PAID|OVERDUE [indexed]"
+        Date dueDate "End of month [indexed]"
+        Date paidAt "nullable"
+    }
+    
+    CLIENT_PAYMENT {
+        ObjectId id PK "Collection: clientpayments - V4 PLANNED"
+        ObjectId clientId FK "ref: ClientProfile [indexed]"
+        ObjectId trainerId FK "ref: TrainerProfile [indexed]"
+        number amount "Total amount in euros"
+        number planCost "Base plan cost"
+        number penalties "Accumulated penalties"
+        number kinetixFee "20% of planCost (Phase 2)"
+        number trainerPayout "80% of planCost (Phase 2)"
+        string status "PENDING|PAID|FAILED [indexed]"
+        string stripePaymentIntentId "Stripe payment intent ID (Phase 2)"
+        Date paidAt "nullable"
+    }
+    
+    PLAN_EFFECTIVENESS {
+        ObjectId id PK "Collection: planeffectivenesses - V4 PLANNED"
+        ObjectId planId FK "ref: WeeklyPlan [indexed in compound]"
+        ObjectId clientId FK "ref: ClientProfile [indexed in compound]"
+        number completionRate "0-100% of workouts completed"
+        number averagePerformance "Average weight/reps improvement"
+        string clientFeedback "Optional feedback from client"
+        string trainerNotes "Trainer's assessment"
+        Date weekStartDate "Week this effectiveness data is for [indexed]"
+        Date weekEndDate
+    }
             </div>
         </div>
         
@@ -1558,6 +1632,11 @@ erDiagram
                     <li><strong>weighins → weeklyplans:</strong> <code>WeighIn.planId</code> refs <code>WeeklyPlan._id</code> [Indexed, nullable]</li>
                     <li><strong>penaltyrecords → clientprofiles:</strong> <code>PenaltyRecord.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
                     <li><strong>aimessages → clientprofiles:</strong> <code>AIMessage.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                    <li><strong>monthlyinvoices → clientprofiles:</strong> <code>MonthlyInvoice.clientId</code> refs <code>ClientProfile._id</code> [Indexed]</li>
+                    <li><strong>clientpayments → clientprofiles:</strong> <code>ClientPayment.clientId</code> refs <code>ClientProfile._id</code> [Indexed] (V4 - PLANNED)</li>
+                    <li><strong>clientpayments → trainerprofiles:</strong> <code>ClientPayment.trainerId</code> refs <code>TrainerProfile._id</code> [Indexed] (V4 - PLANNED)</li>
+                    <li><strong>planeffectivenesses → weeklyplans:</strong> <code>PlanEffectiveness.planId</code> refs <code>WeeklyPlan._id</code> [Indexed in compound] (V4 - PLANNED)</li>
+                    <li><strong>planeffectivenesses → clientprofiles:</strong> <code>PlanEffectiveness.clientId</code> refs <code>ClientProfile._id</code> [Indexed in compound] (V4 - PLANNED)</li>
                 </ul>
                 
                 <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
@@ -1588,6 +1667,9 @@ erDiagram
                     <li><strong>weighins:</strong> <code>clientId + date</code> [Compound, Unique], <code>planId + planStartDate</code> [Compound], <code>clientId + planId + date</code> [Compound]</li>
                     <li><strong>penaltyrecords:</strong> <code>clientId + weekStartDate</code> [Compound, Unique]</li>
                     <li><strong>aimessages:</strong> <code>clientId</code> [Single], <code>clientId + isRead</code> [Compound], <code>clientId + createdAt</code> [Compound]</li>
+                    <li><strong>monthlyinvoices:</strong> <code>clientId + month</code> [Compound, Unique], <code>status + dueDate</code> [Compound]</li>
+                    <li><strong>clientpayments:</strong> <code>clientId + createdAt</code> [Compound] (V4 - PLANNED), <code>trainerId + createdAt</code> [Compound] (V4 - PLANNED), <code>status</code> [Single] (V4 - PLANNED)</li>
+                    <li><strong>planeffectivenesses:</strong> <code>planId + clientId + weekStartDate</code> [Compound] (V4 - PLANNED), <code>clientId + weekStartDate</code> [Compound] (V4 - PLANNED)</li>
                 </ul>
                 
                 <h4 style="color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; font-size: 1.3em; border-bottom: 2px solid var(--success); padding-bottom: 10px;">
@@ -1801,6 +1883,62 @@ erDiagram
                     { name: 'tone', type: 'string', description: 'AGGRESSIVE|EMPATHETIC|MOTIVATIONAL|WARNING' },
                     { name: 'trigger', type: 'string', description: 'MISSED_WORKOUTS|STREAK|WEIGHT_SPIKE|SICK_DAY' },
                     { name: 'isRead', type: 'boolean', description: 'V2: Client read status', indexed: true, compound: true }
+                ]
+            },
+            {
+                id: 'monthlyInvoice',
+                name: 'MonthlyInvoice',
+                category: 'business',
+                description: 'Monthly invoice tracking for client balances and payments',
+                collection: 'monthlyinvoices',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true },
+                    { name: 'month', type: 'Date', description: 'First day of month [Compound Unique with clientId]', unique: true, compound: true },
+                    { name: 'totalBalance', type: 'number', description: 'Total amount due in euros' },
+                    { name: 'planCosts', type: 'number', description: 'Sum of all plan costs' },
+                    { name: 'penalties', type: 'number', description: 'Sum of all penalties' },
+                    { name: 'status', type: 'string', description: 'UNPAID|PAID|OVERDUE', indexed: true },
+                    { name: 'dueDate', type: 'Date', description: 'End of month', indexed: true },
+                    { name: 'paidAt', type: 'Date', nullable: true }
+                ]
+            },
+            {
+                id: 'clientPayment',
+                name: 'ClientPayment',
+                category: 'business',
+                description: 'Stripe payment records for client payments (V4 - PLANNED)',
+                collection: 'clientpayments',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true },
+                    { name: 'trainerId', type: 'ObjectId', isForeign: true, ref: 'TrainerProfile', indexed: true },
+                    { name: 'amount', type: 'number', description: 'Total amount in euros' },
+                    { name: 'planCost', type: 'number', description: 'Base plan cost' },
+                    { name: 'penalties', type: 'number', description: 'Accumulated penalties' },
+                    { name: 'kinetixFee', type: 'number', description: '20% of planCost (Phase 2)' },
+                    { name: 'trainerPayout', type: 'number', description: '80% of planCost (Phase 2)' },
+                    { name: 'status', type: 'string', description: 'PENDING|PAID|FAILED', indexed: true },
+                    { name: 'stripePaymentIntentId', type: 'string', description: 'Stripe payment intent ID (Phase 2)' },
+                    { name: 'paidAt', type: 'Date', nullable: true }
+                ]
+            },
+            {
+                id: 'planEffectiveness',
+                name: 'PlanEffectiveness',
+                category: 'activity',
+                description: 'Plan performance analytics tracking completion and effectiveness (V4 - PLANNED)',
+                collection: 'planeffectivenesses',
+                fields: [
+                    { name: 'id', type: 'ObjectId', isPrimary: true },
+                    { name: 'planId', type: 'ObjectId', isForeign: true, ref: 'WeeklyPlan', indexed: true, compound: true },
+                    { name: 'clientId', type: 'ObjectId', isForeign: true, ref: 'ClientProfile', indexed: true, compound: true },
+                    { name: 'completionRate', type: 'number', description: '0-100% of workouts completed' },
+                    { name: 'averagePerformance', type: 'number', description: 'Average weight/reps improvement' },
+                    { name: 'clientFeedback', type: 'string', description: 'Optional feedback from client', nullable: true },
+                    { name: 'trainerNotes', type: 'string', description: 'Trainer\'s assessment', nullable: true },
+                    { name: 'weekStartDate', type: 'Date', description: 'Week this effectiveness data is for', indexed: true },
+                    { name: 'weekEndDate', type: 'Date' }
                 ]
             }
         ];

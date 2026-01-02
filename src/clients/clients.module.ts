@@ -19,7 +19,7 @@ import { PlansModule } from '../plans/plans.module';
     ]),
     forwardRef(() => CommonModule),
     UsersModule,
-    TrainersModule,
+    forwardRef(() => TrainersModule),
     forwardRef(() => WorkoutsModule),
     forwardRef(() => PlansModule),
   ],

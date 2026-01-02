@@ -20,8 +20,9 @@ export class PaymentsService {
   /**
    * Generate monthly invoice for a client
    * Called at the end of each month
+   * Returns invoice and whether it was newly created
    */
-  async generateMonthlyInvoice(clientId: string, month: Date): Promise<MonthlyInvoice> {
+  async generateMonthlyInvoice(clientId: string, month: Date): Promise<{ invoice: MonthlyInvoice; isNew: boolean }> {
     const client = await this.clientsService.getProfile(clientId);
     const clientProfileId = (client as any)._id;
 
@@ -32,7 +33,7 @@ export class PaymentsService {
     }).exec();
 
     if (existing) {
-      return existing;
+      return { invoice: existing, isNew: false };
     }
 
     // Calculate totals from penalty history
@@ -63,22 +64,32 @@ export class PaymentsService {
       dueDate: monthEnd,
     });
 
-    return invoice.save();
+    const savedInvoice = await invoice.save();
+    return { invoice: savedInvoice, isNew: true };
   }
 
   /**
    * Get monthly invoice for a client
    */
   async getMonthlyInvoice(clientId: string, month: Date): Promise<MonthlyInvoice | null> {
-    const client = await this.clientsService.getProfile(clientId);
-    const clientProfileId = (client as any)._id;
+    try {
+      const client = await this.clientsService.getProfile(clientId);
+      const clientProfileId = (client as any)._id;
 
-    const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
+      const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
 
-    return this.invoiceModel.findOne({
-      clientId: clientProfileId,
-      month: monthStart,
-    }).exec();
+      return this.invoiceModel.findOne({
+        clientId: clientProfileId,
+        month: monthStart,
+      }).exec();
+    } catch (error) {
+      // If client not found, propagate NotFoundException
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      // For other errors, re-throw (they will be handled by global exception filter)
+      throw error;
+    }
   }
 
   /**

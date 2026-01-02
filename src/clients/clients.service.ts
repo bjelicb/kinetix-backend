@@ -229,13 +229,13 @@ export class ClientsService {
             ).exec();
             
             // Return as previous plan
-            const plan = await this.plansService.getPlanById(planId);
+            const plan = await this.plansService.getPlanById(planId, userId, 'CLIENT');
             if (plan) {
               return { ...plan, isFromHistory: true, planStatus: 'previous' };
             }
           } else {
             // Plan is not completed - return as current
-            const plan = await this.plansService.getPlanById(planId);
+            const plan = await this.plansService.getPlanById(planId, userId, 'CLIENT');
             if (plan) {
               // Return plan with flag indicating it's the current (unlocked) plan
               return { ...plan, isFromHistory: false, planStatus: 'current' };
@@ -262,7 +262,7 @@ export class ClientsService {
       if (futurePlan) {
         const planId = this.extractObjectIdAsString(futurePlan.planId);
         if (planId) {
-          const plan = await this.plansService.getPlanById(planId);
+          const plan = await this.plansService.getPlanById(planId, userId, 'CLIENT');
           if (plan) {
             // Return plan with flag indicating it's from history (future plan, not unlocked)
             return { ...plan, isFromHistory: true, planStatus: 'future' };
@@ -285,7 +285,7 @@ export class ClientsService {
       if (previousPlan) {
         const planId = this.extractObjectIdAsString(previousPlan.planId);
         if (planId) {
-          const plan = await this.plansService.getPlanById(planId);
+          const plan = await this.plansService.getPlanById(planId, userId, 'CLIENT');
           if (plan) {
             // Return plan with flag indicating it's from history (previous plan, completed)
             return { ...plan, isFromHistory: true, planStatus: 'previous' };
@@ -324,7 +324,7 @@ export class ClientsService {
         const isActive = activePlanId === planId;
         
         try {
-          const planDetails = await this.plansService.getPlanById(planId);
+          const planDetails = await this.plansService.getPlanById(planId, userId, 'CLIENT');
           return {
             ...entry,
             planId: planId,

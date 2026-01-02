@@ -71,6 +71,34 @@ export class PlansService {
     return String(planId);
   }
 
+  /**
+   * Helper method to normalize trainer profile ID to string
+   * Handles: ObjectId, populated object with _id, string, null/undefined
+   */
+  private normalizeTrainerProfileId(trainerId: any): string {
+    if (!trainerId) {
+      return '';
+    }
+    
+    // If it's an object with _id property (populated object)
+    if (typeof trainerId === 'object' && trainerId._id) {
+      return trainerId._id.toString();
+    }
+    
+    // If it's an ObjectId or has toString method
+    if (typeof trainerId === 'object' && typeof trainerId.toString === 'function') {
+      return trainerId.toString();
+    }
+    
+    // If it's already a string
+    if (typeof trainerId === 'string') {
+      return trainerId;
+    }
+    
+    // Fallback: convert to string
+    return String(trainerId);
+  }
+
   async createPlan(userId: string, dto: CreatePlanDto): Promise<WeeklyPlan> {
     let trainerProfileId: Types.ObjectId;
     
@@ -112,15 +140,16 @@ export class PlansService {
       .exec();
   }
 
-  async getPlanById(planId: string): Promise<any> {
-    console.log('[PlansService] getPlanById() START');
-    console.log('[PlansService] → Plan ID:', planId);
+  async getPlanById(planId: string, userId: string, userRole: string): Promise<any> {
+    // For TRAINER: allow access to soft-deleted plans (they own)
+    // For CLIENT and ADMIN: filter out soft-deleted plans
+    const query: any = { _id: planId };
+    if (userRole !== 'TRAINER') {
+      query.isDeleted = { $ne: true };
+    }
     
     const plan = await this.planModel
-      .findOne({ 
-        _id: planId,
-        isDeleted: { $ne: true } // Filter out soft deleted plans
-      })
+      .findOne(query)
       .populate('trainerId', 'businessName userId')
       .populate('assignedClientIds', 'userId')
       .lean()
@@ -129,6 +158,121 @@ export class PlansService {
     if (!plan) {
       console.log('[PlansService] ✗ Plan not found');
       throw new NotFoundException('Plan not found');
+    }
+
+    // Verify ownership (ADMIN can access all plans)
+    if (userRole !== 'ADMIN') {
+      const planObj = plan as any;
+      
+      if (userRole === 'CLIENT') {
+        // For CLIENT: verify that plan is assigned to this client
+        let clientProfile: any;
+        let clientProfileId: string;
+        
+        try {
+          clientProfile = await this.clientsService.getProfile(userId);
+          clientProfileId = (clientProfile as any)._id.toString();
+        } catch (e) {
+          try {
+            clientProfile = await this.clientsService.getProfileById(userId);
+            clientProfileId = (clientProfile as any)._id.toString();
+          } catch (e2) {
+            throw new NotFoundException('Client profile not found');
+          }
+        }
+        
+        if (!clientProfile) {
+          throw new NotFoundException('Client profile not found');
+        }
+        
+        const planIdStr = planObj._id.toString();
+        const clientProfileIdObj = new Types.ObjectId(clientProfileId);
+        
+        // Check if plan is in assignedClientIds (primary check)
+        const planWithClients = await this.planModel
+          .findById(planIdStr)
+          .select('assignedClientIds')
+          .lean()
+          .exec();
+        
+        const assignedClientIds = planWithClients?.assignedClientIds || [];
+        
+        const isAssignedToClient = assignedClientIds.some((clientId: any) => {
+          if (!clientId) {
+            return false;
+          }
+          
+          try {
+            // assignedClientIds stores clientProfileId as ObjectId (from $addToSet)
+            const clientIdObj = clientId instanceof Types.ObjectId 
+              ? clientId 
+              : new Types.ObjectId(clientId);
+            const equals = clientIdObj.equals(clientProfileIdObj);
+            return equals;
+          } catch (e) {
+            // Fallback to string comparison
+            const clientIdStr = this.normalizePlanId(clientId);
+            const stringEquals = clientIdStr === clientProfileId;
+            return stringEquals;
+          }
+        });
+        
+        // Also check planHistory as fallback
+        let planInHistory = false;
+        if (!isAssignedToClient) {
+          // Use direct DB query to ensure we get fresh data
+          const clientWithHistory = await this.clientModel
+            .findById(clientProfileId)
+            .select('planHistory')
+            .lean()
+            .exec();
+          
+          if (clientWithHistory?.planHistory && clientWithHistory.planHistory.length > 0) {
+            const planIdObj = new Types.ObjectId(planIdStr);
+            planInHistory = (clientWithHistory.planHistory || []).some((entry: any) => {
+              if (!entry || !entry.planId) {
+                return false;
+              }
+              
+              try {
+                const entryPlanIdObj = entry.planId instanceof Types.ObjectId 
+                  ? entry.planId 
+                  : new Types.ObjectId(entry.planId);
+                const equals = entryPlanIdObj.equals(planIdObj);
+                return equals;
+              } catch (e) {
+                const entryPlanIdStr = this.normalizePlanId(entry.planId);
+                const stringEquals = entryPlanIdStr === planIdStr;
+                return stringEquals;
+              }
+            });
+          }
+        }
+        
+        if (!planInHistory && !isAssignedToClient) {
+          throw new ForbiddenException('You can only access plans assigned to you');
+        }
+      } else if (userRole === 'TRAINER') {
+        // For TRAINER: verify that plan belongs to this trainer
+        const planTrainerProfileId = (planObj.trainerId as any)?._id?.toString() || (planObj.trainerId as any)?.toString() || null;
+        
+        if (!planTrainerProfileId) {
+          throw new NotFoundException('Plan trainer not found');
+        }
+
+        // Get trainer profile to verify ownership
+        const trainerProfile = await this.trainersService.getProfile(userId);
+        if (!trainerProfile) {
+          throw new NotFoundException('Trainer profile not found');
+        }
+        const trainerProfileId = (trainerProfile as any)._id.toString();
+
+        // Verify that plan belongs to this trainer
+        if (planTrainerProfileId !== trainerProfileId) {
+          console.log('[PlansService] Forbidden: Plan trainerId does not match current user');
+          throw new ForbiddenException('You can only access your own plans');
+        }
+      }
     }
 
     console.log('[PlansService] ✓ Plan found in database');
@@ -392,20 +536,14 @@ export class PlansService {
 
     const client = await this.clientsService.getProfileById(clientId);
     
-    // If no currentPlanId, client can unlock first plan
+    // If no currentPlanId, client can unlock (they will unlock the first plan from planHistory)
+    // Plan can be unlocked before it starts - the first workout can only be done when plan starts
     if (!client.currentPlanId) {
-      AppLogger.logOperation('CAN_UNLOCK_CHECK_NO_CURRENT_PLAN', {
-        clientId,
-        canUnlock: true,
-        reason: 'No currentPlanId - can unlock first plan',
-      }, 'info');
-      
       AppLogger.logComplete('CAN_UNLOCK_CHECK', {
         clientId,
         result: true,
-        reason: 'No currentPlanId',
+        reason: 'No currentPlanId - can unlock first plan',
       });
-      
       return true;
     }
     
@@ -508,21 +646,21 @@ export class PlansService {
     }, 'info');
     
     if (currentPlanLogs.length === 0) {
-      // No workout logs for current plan (shouldn't happen, but allow unlock)
+      // No workout logs for current plan - cannot unlock until at least one workout is logged
       AppLogger.logOperation('CAN_UNLOCK_CHECK_NO_WORKOUT_LOGS', {
         clientId,
         currentPlanId: currentPlanIdStr,
-        canUnlock: true,
-        reason: 'No workout logs for current plan - allow unlock',
-      }, 'warn');
+        canUnlock: false,
+        reason: 'No workout logs for current plan - must complete at least one workout before unlocking next week',
+      }, 'info');
       
       AppLogger.logComplete('CAN_UNLOCK_CHECK', {
         clientId,
-        result: true,
-        reason: 'No workout logs',
+        result: false,
+        reason: 'No workout logs - plan not started',
       });
       
-      return true;
+      return false;
     }
     
     // Get plan to check rest days
@@ -743,13 +881,17 @@ export class PlansService {
           continue; // Skip unlock check if it's the same plan
         }
         
-        // Only check unlock if client has a different active plan
-        const canUnlock = await this.canUnlockNextWeek(clientProfileId);
-        if (!canUnlock) {
-          throw new BadRequestException(
-            `Client cannot be assigned a new plan. Current week must be completed first. Complete all workouts in the current week before assigning a new plan.`
-          );
+        // Only check unlock if client has a currentPlanId (active plan)
+        // If client has no currentPlanId, they can be assigned a new plan (it will be unlocked via requestNextWeek)
+        if (client.currentPlanId) {
+          const canUnlock = await this.canUnlockNextWeek(clientProfileId);
+          if (!canUnlock) {
+            throw new BadRequestException(
+              `Client cannot be assigned a new plan. Current week must be completed first. Complete all workouts in the current week before assigning a new plan.`
+            );
+          }
         }
+        // If no currentPlanId, allow assign (plan will be unlocked via requestNextWeek)
       } catch (error) {
         if (error instanceof BadRequestException) {
           throw error;
@@ -1067,9 +1209,11 @@ export class PlansService {
 
       // Convert userId to clientProfileId (clientId might be userId from frontend)
       let clientProfileId: string;
+      let clientProfile: ClientProfileDocument;
       try {
         const client = await this.clientsService.getProfile(clientId);
-        clientProfileId = (client as any)._id.toString();
+        clientProfile = client as any;
+        clientProfileId = clientProfile._id.toString();
         AppLogger.logOperation('PLAN_CANCEL_CLIENT_FOUND', {
           userId: clientId,
           clientProfileId,
@@ -1078,7 +1222,8 @@ export class PlansService {
         // If not found as userId, try as clientProfileId
         try {
           const client = await this.clientsService.getProfileById(clientId);
-          clientProfileId = (client as any)._id.toString();
+          clientProfile = client as any;
+          clientProfileId = clientProfile._id.toString();
           AppLogger.logOperation('PLAN_CANCEL_CLIENT_FOUND_BY_ID', {
             clientId,
             clientProfileId,
@@ -1088,6 +1233,32 @@ export class PlansService {
           throw new NotFoundException('Client profile not found');
         }
       }
+
+      // Validate ownership: TRAINER can only cancel plans for their own clients
+      if (userRole === 'TRAINER') {
+        // Get trainer profile to get trainerProfileId from userId
+        const trainerProfile = await this.trainersService.getProfile(userId);
+        if (!trainerProfile) {
+          AppLogger.logError('PLAN_CANCEL', { planId, clientId, userId }, new NotFoundException('Trainer profile not found'));
+          throw new NotFoundException('Trainer profile not found');
+        }
+        const userTrainerProfileId = (trainerProfile as any)._id.toString();
+        
+        // Get client's trainer profile ID - normalize to handle populated objects
+        const clientTrainerProfileId = this.normalizeTrainerProfileId(clientProfile.trainerId);
+        
+        if (!clientTrainerProfileId || clientTrainerProfileId !== userTrainerProfileId) {
+          AppLogger.logError('PLAN_CANCEL', { 
+            planId, 
+            clientId, 
+            userId, 
+            userTrainerProfileId,
+            clientTrainerProfileId 
+          }, new ForbiddenException('You can only cancel plans for your own clients'));
+          throw new ForbiddenException('You can only cancel plans for your own clients');
+        }
+      }
+      // ADMIN can cancel plans for any client (no ownership check needed)
 
       // Delete uncompleted workout logs (instead of marking as missed)
       AppLogger.logOperation('PLAN_CANCEL_DELETE_WORKOUTS', {

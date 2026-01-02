@@ -2,19 +2,32 @@
 ## Faza 4: Produkcija (Deploy & Monitoring)
 
 **Prioritet:** 🟢 **POSLE TESTIRANJA**  
-**Status:** ❌ Nije početo  
+**Status:** ⚠️ **STRUKTURE PRIREMLJENE**  
 **Timeline:** 1-2 nedelje
 
 > **FOKUS:** Produkcijski taskovi - Stripe payments, monitoring, security enhancements.
+
+> **⚠️ NAPOMENA:** Neke strukture su već pripremljene (ClientPayment schema, AppLogger, TrainerProfile Stripe polja). Ova faza implementira logiku i production-ready verzije.
 
 ---
 
 ## 📋 **ZADACI:**
 
 ### **4.1 Stripe Payment Integration** 🔴
+
+**⚠️ STATUS:** ⚠️ **STRUKTURA PRIREMLJENA**
+- ✅ ClientPayment schema postoji u `src/payments/schemas/client-payment.schema.ts`
+- ✅ ClientPayment je registrovana u `payments.module.ts`
+- ✅ ClientPayment se inject-uje u `PaymentsService` kao `paymentModel`
+- ✅ TrainerProfile ima `stripeCustomerId` i `stripeSubscriptionId` polja
+- ❌ ClientPayment se NIKADA ne koristi (samo MonthlyInvoice se koristi)
+- ❌ Nema Stripe integracije (webhook, payment intent, itd.)
+
+**Zadaci:**
+- [ ] Implementirati Stripe integraciju i koristiti ClientPayment
 - [ ] Webhook endpoint za subscription events
 - [ ] Subscription upgrade endpoint sa plaćanjem
-- [ ] Invoice generation
+- [ ] Invoice generation (koristiti ClientPayment umesto samo MonthlyInvoice)
 - [ ] Payment history
 
 ### **4.2 Push Notifications** 🟡
@@ -23,7 +36,17 @@
 - [ ] Templates za notifikacije
 
 ### **4.3 Monitoring & Logging** 🟡
-- [ ] Production logging (Winston/Pino)
+
+**⚠️ STATUS:** ⚠️ **OSNOVNA STRUKTURA POSTOJI**
+- ✅ AppLogger postoji u `src/common/utils/logger.utils.ts`
+- ✅ Osnovna struktura za logging
+- ⚠️ Nije production-ready (nema Winston/Pino)
+- ❌ Nema Sentry integraciju
+- ❌ Nema performance monitoring
+- ❌ Nema health checks endpoint
+
+**Zadaci:**
+- [ ] Migrirati AppLogger na Winston/Pino za produkciju
 - [ ] Error tracking (Sentry)
 - [ ] Performance monitoring
 - [ ] Health checks endpoint

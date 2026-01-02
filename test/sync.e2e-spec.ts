@@ -83,7 +83,7 @@ describe('Sync Flow E2E (e2e)', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -114,7 +114,7 @@ describe('Sync Flow E2E (e2e)', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -149,7 +149,7 @@ describe('Sync Flow E2E (e2e)', () => {
 
       // First sync
       const firstResponse = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -163,7 +163,7 @@ describe('Sync Flow E2E (e2e)', () => {
 
       // Second sync with same data (should detect duplicates)
       const secondResponse = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -191,7 +191,7 @@ describe('Sync Flow E2E (e2e)', () => {
 
       // First sync
       const firstResponse = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -205,7 +205,7 @@ describe('Sync Flow E2E (e2e)', () => {
 
       // Second sync with same data (should detect duplicates)
       const secondResponse = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -239,7 +239,7 @@ describe('Sync Flow E2E (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(invalidSyncDto)
         .expect(400);
@@ -254,7 +254,7 @@ describe('Sync Flow E2E (e2e)', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {
@@ -284,7 +284,7 @@ describe('Sync Flow E2E (e2e)', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post('/api/training/sync')
+        .post('/api/training/sync/batch')
         .set('Authorization', `Bearer ${client.token}`)
         .send(syncDto)
         .expect((res) => {

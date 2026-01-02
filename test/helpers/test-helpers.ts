@@ -56,7 +56,7 @@ export async function createTestTrainer(
 
       return {
         token,
-        userId: profileData.userId,
+        userId: typeof profileData.userId === 'string' ? profileData.userId : (profileData.userId?._id?.toString() || profileData.userId?.toString() || String(profileData.userId)),
         profileId: profileData._id,
         email: trainerEmail,
       };
@@ -129,7 +129,7 @@ export async function createTestTrainer(
 
   return {
     token,
-    userId: profileData.userId,
+    userId: typeof profileData.userId === 'string' ? profileData.userId : (profileData.userId?._id?.toString() || profileData.userId?.toString() || String(profileData.userId)),
     profileId: profileData._id,
     email: trainerEmail,
   };
@@ -171,7 +171,7 @@ export async function createTestClient(
 
       return {
         token,
-        userId: profileData.userId,
+        userId: typeof profileData.userId === 'string' ? profileData.userId : (profileData.userId?._id?.toString() || profileData.userId?.toString() || String(profileData.userId)),
         profileId: profileData._id,
         email: clientEmail,
       };
@@ -274,7 +274,7 @@ export async function createTestClient(
 
   return {
     token,
-    userId: profileData.userId,
+    userId: typeof profileData.userId === 'string' ? profileData.userId : (profileData.userId?._id?.toString() || profileData.userId?.toString() || String(profileData.userId)),
     profileId: profileData._id,
     email: clientEmail,
   };
@@ -453,18 +453,24 @@ export function createSyncBatchDto(planId: string, options?: {
   includeCheckIns?: boolean;
   logCount?: number;
   checkInCount?: number;
+  startDate?: Date; // Optional start date for workout logs (defaults to tomorrow)
 }): any {
-  const { includeLogs = true, includeCheckIns = true, logCount = 2, checkInCount = 1 } = options || {};
+  const { includeLogs = true, includeCheckIns = true, logCount = 2, checkInCount = 1, startDate } = options || {};
   
   const syncDto: any = {
     syncedAt: new Date().toISOString(),
   };
 
   if (includeLogs) {
-    const today = new Date();
+    // Use provided startDate or default to tomorrow to match assignPlanToClient default behavior
+    const workoutStartDate = startDate || (() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow;
+    })();
     syncDto.newLogs = [];
     for (let i = 0; i < logCount; i++) {
-      const workoutDate = new Date(today);
+      const workoutDate = new Date(workoutStartDate);
       workoutDate.setDate(workoutDate.getDate() + i);
       syncDto.newLogs.push({
         workoutDate: workoutDate.toISOString(),

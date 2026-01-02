@@ -54,9 +54,12 @@ export class PlansController {
   }
 
   @Get(':id')
-  @Roles('TRAINER', 'ADMIN')
-  async getPlanById(@Param('id') id: string) {
-    return this.plansService.getPlanById(id);
+  @Roles('TRAINER', 'ADMIN', 'CLIENT')
+  async getPlanById(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.plansService.getPlanById(id, user.sub, user.role);
   }
 
   @Patch(':id')
@@ -182,9 +185,14 @@ export class PlansController {
     @CurrentUser() user: JwtPayload,
     @Param('clientId') clientId: string,
   ) {
-    // Get client profile ID
+    // Get client profile ID from user.sub (CLIENT can only request for themselves)
     const client = await this.plansService['clientsService'].getProfile(user.sub);
     const clientProfileId = (client as any)._id.toString();
+    
+    // Validate that clientId parameter matches the authenticated user's client profile
+    if (clientProfileId !== clientId) {
+      throw new BadRequestException('You can only request next week for your own account');
+    }
     
     AppLogger.logOperation('CONTROLLER_UNLOCK_REQUEST', {
       userId: user.sub,

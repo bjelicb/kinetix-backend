@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetix Test Coverage Roadmap</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            
+            /* Status Colors */
+            --excellent: #00e676;      /* >75% - Zeleno */
+            --good: #2979ff;           /* 50-75% - Plavo */
+            --warning: #ffb300;        /* 25-50% - Žuto */
+            --danger: #ff1744;         /* <25% - Crveno */
+            --critical: #d50000;       /* 0% - Tamno crveno */
+            
+            --backend-accent: rgba(124, 77, 255, 0.2);
+            --frontend-accent: rgba(41, 121, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: var(--text-main);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(124, 77, 255, 0.1) 0%, rgba(41, 121, 255, 0.1) 100%);
+            border-radius: 15px;
+            border: 2px solid rgba(124, 77, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #7c4dff 0%, #2979ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+
+        /* SENIOR RECOMMENDATION SECTION */
+        .senior-section {
+            background: rgba(0, 230, 118, 0.1);
+            border: 2px solid var(--excellent);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .senior-section h2 {
+            color: var(--excellent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .priority-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .priority-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .priority-item.p1 { border-left-color: var(--critical); }
+        .priority-item.p2 { border-left-color: var(--danger); }
+        .priority-item.p3 { border-left-color: var(--warning); }
+        .priority-item.p4 { border-left-color: var(--good); }
+
+        .priority-number {
+            background: var(--card-bg);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .priority-item.p1 .priority-number { background: var(--critical); color: white; }
+        .priority-item.p2 .priority-number { background: var(--danger); color: white; }
+        .priority-item.p3 .priority-number { background: var(--warning); color: black; }
+        .priority-item.p4 .priority-number { background: var(--good); color: white; }
+
+        .priority-content h3 {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .priority-content p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* MODULE GRID */
+        .section-title {
+            font-size: 1.8em;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        /* MODULE CARD */
+        .module-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--excellent);
+        }
+
+        .module-card.excellent::before { background: var(--excellent); }
+        .module-card.good::before { background: var(--good); }
+        .module-card.warning::before { background: var(--warning); }
+        .module-card.danger::before { background: var(--danger); }
+        .module-card.critical::before { background: var(--critical); }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .module-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .module-status {
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .module-card.excellent .module-status { 
+            background: rgba(0, 230, 118, 0.2); 
+            color: var(--excellent); 
+        }
+        .module-card.good .module-status { 
+            background: rgba(41, 121, 255, 0.2); 
+            color: var(--good); 
+        }
+        .module-card.warning .module-status { 
+            background: rgba(255, 179, 0, 0.2); 
+            color: var(--warning); 
+        }
+        .module-card.danger .module-status { 
+            background: rgba(255, 23, 68, 0.2); 
+            color: var(--danger); 
+        }
+        .module-card.critical .module-status { 
+            background: rgba(213, 0, 0, 0.2); 
+            color: var(--critical); 
+        }
+
+        /* PROGRESS BAR */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 1s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-weight: bold;
+            font-size: 0.85em;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .module-card.excellent .progress-fill { background: linear-gradient(90deg, var(--excellent) 0%, #00c853 100%); }
+        .module-card.good .progress-fill { background: linear-gradient(90deg, var(--good) 0%, #2962ff 100%); }
+        .module-card.warning .progress-fill { background: linear-gradient(90deg, var(--warning) 0%, #ff8f00 100%); }
+        .module-card.danger .progress-fill { background: linear-gradient(90deg, var(--danger) 0%, #ff5252 100%); }
+        .module-card.critical .progress-fill { background: linear-gradient(90deg, var(--critical) 0%, #b71c1c 100%); }
+
+        .progress-target {
+            position: absolute;
+            right: 75%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+
+        .progress-target::after {
+            content: '75%';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7em;
+            color: var(--text-muted);
+        }
+
+        /* MODULE INFO */
+        .module-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.9em;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+        }
+
+        .info-value {
+            font-weight: bold;
+        }
+
+        .gap-to-target {
+            color: var(--warning);
+            font-size: 0.85em;
+        }
+
+        /* LEGEND */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.excellent { background: var(--excellent); }
+        .legend-dot.good { background: var(--good); }
+        .legend-dot.warning { background: var(--warning); }
+        .legend-dot.danger { background: var(--danger); }
+        .legend-dot.critical { background: var(--critical); }
+
+        /* SUMMARY STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .badge-new {
+            background: var(--excellent);
+            color: #000;
+        }
+
+        .badge-todo {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h1><i class="fas fa-road"></i> Kinetix Test Coverage Roadmap</h1>
+        <p class="subtitle">Vizuelni prikaz gde si i gde trebaš da stigneš</p>
+    </div>
+
+    <!-- SENIOR RECOMMENDATION -->
+    <div class="senior-section">
+        <h2><i class="fas fa-user-tie"></i> Seniorski Predlog - Prioriteti</h2>
+        <ul class="priority-list">
+            <li class="priority-item p4">
+                <div class="priority-number">1</div>
+                <div class="priority-content">
+                    <h3>BLIZU CILJA MODULI (70-75%) - NISAK PRIORITET</h3>
+                    <p><strong>Clients (70.54%), Workouts (74.37%), Plans (74.26%)</strong> - Blizu target-a od 75%! Treba dodati samo malo testova da se dostigne cilj. <strong>Target: 75% coverage</strong>.</p>
+                </div>
+            </li>
+            <li class="priority-item p4">
+                <div class="priority-number">2</div>
+                <div class="priority-content">
+                    <h3>KOMPLETIRANI MODULI (>75%) - ODRŽAVANJE</h3>
+                    <p><strong>Auth (100%), AI (100%), Media (100%), Payments (96.2%), Gamification (96.96%), CheckIns (85.57%), Training (86.95%), Trainers (92%), Admin (80.61%)</strong> - Odlično! Svi su preko target-a. Fokus na održavanje i edge case-ove.</p>
+                </div>
+            </li>
+            <li class="priority-item p4">
+                <div class="priority-number">3</div>
+                <div class="priority-content">
+                    <h3>GLOBALNI COVERAGE - DOSTIGNUTO!</h3>
+                    <p><strong>Statements: 79.29% ✅, Branches: 64.5% ⚠️ (nedostaje 0.5%), Functions: 86.06% ✅, Lines: 79.05% ✅</strong> - Globalni cilj od 75% je dostignut! Ostaje samo 0.5% za branches coverage.</p>
+                </div>
+            </li>
+            <li class="priority-item p4">
+                <div class="priority-number">4</div>
+                <div class="priority-content">
+                    <h3>TEST SUCCESS RATE - 100%!</h3>
+                    <p><strong>601 testova (~312+ Unit + ~289+ E2E)</strong> - Svi testovi prolaze (100% success rate)! 34 test suites, sve sigurnosne rupe zatvorene. ✅🎉</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- SUMMARY STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Backend Coverage</div>
+            <div class="stat-value" style="color: var(--excellent);">79.29%</div>
+            <div class="stat-label">Target: 75% ✅ DOSTIGNUTO</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Frontend Tests</div>
+            <div class="stat-value" style="color: var(--excellent);">100%</div>
+            <div class="stat-label">72/72 prolaze</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Kompletirani Moduli</div>
+            <div class="stat-value" style="color: var(--excellent);">9</div>
+            <div class="stat-label">>75% coverage</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Ukupno Testova</div>
+            <div class="stat-value" style="color: var(--excellent);">601</div>
+            <div class="stat-label">~312+ Unit + ~289+ E2E</div>
+        </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot excellent"></div>
+            <span><strong>Odlično</strong> (>75%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot good"></div>
+            <span><strong>Dobro</strong> (50-75%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot warning"></div>
+            <span><strong>Upozorenje</strong> (25-50%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot danger"></div>
+            <span><strong>Opasnost</strong> (<25%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot critical"></div>
+            <span><strong>Kritično</strong> (0%)</span>
+        </div>
+    </div>
+
+    <!-- BACKEND MODULES -->
+    <h2 class="section-title">
+        <i class="fas fa-server"></i> Backend Moduli (NestJS)
+    </h2>
+    <div class="module-grid">
+
+        <!-- AUTH -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-key"></i> Auth Module
+                </div>
+                <div class="module-status">100%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>100% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;">100%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Testovi:</span>
+                    <span class="info-value">Svi prolaze</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Preporuka:</span>
+                    <span class="info-value">Održavanje, edge case-ovi</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAINERS -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-user-tie"></i> Trainers Module
+                </div>
+                <div class="module-status">92%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>92% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 92%;">92%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+17% (preko targeta)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAINING -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-sync"></i> Training (Sync)
+                </div>
+                <div class="module-status">86.95%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>86.95% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 86.95%;">86.95%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+11.95% (preko targeta)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKOUTS -->
+        <div class="module-card warning">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-dumbbell"></i> Workouts Module
+                </div>
+                <div class="module-status">74.37%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>74.37% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 74.37%;">74.37%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--warning);">⚠️ Blizu cilja</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value gap-to-target">-0.63% (treba dodati)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Nizak</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHECKINS -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-camera"></i> CheckIns Module
+                </div>
+                <div class="module-status">85.57%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>85.57% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 85.57%;">85.57%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+10.57% (preko targeta)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Održavanje</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEDIA -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-image"></i> Media Module
+                </div>
+                <div class="module-status">100%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>100% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;">100%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+25% (preko targeta)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Održavanje</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLIENTS -->
+        <div class="module-card good">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-users"></i> Clients Module
+                </div>
+                <div class="module-status">70.54%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>70.54% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 70.54%;">70.54%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--good);">⚠️ Blizu cilja</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value gap-to-target">-4.46% (treba dodati)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Nizak</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLANS -->
+        <div class="module-card warning">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-calendar-alt"></i> Plans Module
+                </div>
+                <div class="module-status">74.26%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>74.26% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 74.26%;">74.26%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--warning);">⚠️ Blizu cilja</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value gap-to-target">-0.74% (treba dodati)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Nizak</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAMIFICATION -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-trophy"></i> Gamification Module
+                </div>
+                <div class="module-status">96.96%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>96.96% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 96.96%;">96.96%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+21.96% (preko targeta)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Održavanje</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-user-shield"></i> Admin Module
+                </div>
+                <div class="module-status">80.61%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>80.61% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 80.61%;">80.61%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+5.61% (preko targeta)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Održavanje</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-robot"></i> AI Module
+                </div>
+                <div class="module-status">100%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>100% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;">100%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+25% (preko targeta)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Održavanje</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYMENTS -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-credit-card"></i> Payments Module
+                </div>
+                <div class="module-status">96.2%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Statements Coverage</span>
+                    <span>96.2% / 75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 96.2%;">96.2%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gap do 75%:</span>
+                    <span class="info-value" style="color: var(--excellent);">+21.2% (preko targeta)</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Prioritet:</span>
+                    <span class="info-value">Održavanje</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FRONTEND MODULES -->
+    <h2 class="section-title">
+        <i class="fas fa-mobile-alt"></i> Frontend Moduli (Flutter)
+    </h2>
+    <div class="module-grid">
+
+        <!-- FRONTEND OVERALL -->
+        <div class="module-card excellent">
+            <div class="module-header">
+                <div class="module-name">
+                    <i class="fas fa-check-circle"></i> Frontend Testovi
+                </div>
+                <div class="module-status">100%</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Test Success Rate</span>
+                    <span>72/72 (100%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;">100%</div>
+                    <div class="progress-target"></div>
+                </div>
+            </div>
+            <div class="module-info">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: var(--excellent);">✅ Odlično</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Unit Testovi:</span>
+                    <span class="info-value">72/72 prolaze</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Integration Testovi:</span>
+                    <span class="info-value">2/2 implementirana, 6 TODO</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Preporuka:</span>
+                    <span class="info-value">Implementirati 6 TODO integration testova</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ROADMAP VISUALIZATION -->
+    <h2 class="section-title">
+        <i class="fas fa-map-marked-alt"></i> Putanja do Cilja
+    </h2>
+    <div style="background: var(--card-bg); padding: 30px; border-radius: 15px; margin-bottom: 40px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 200px;">
+                <div style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px;">Trenutno Stanje</div>
+                <div style="font-size: 2em; font-weight: bold; color: var(--excellent);">79.29%</div>
+                <div style="font-size: 0.9em; color: var(--text-muted); margin-top: 5px;">Backend Coverage ✅</div>
+            </div>
+            <div style="flex: 1; min-width: 200px; text-align: center;">
+                <div style="font-size: 3em; color: var(--excellent);">✅</div>
+            </div>
+            <div style="flex: 1; min-width: 200px; text-align: right;">
+                <div style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 10px;">Cilj</div>
+                <div style="font-size: 2em; font-weight: bold; color: var(--excellent);">75%</div>
+                <div style="font-size: 0.9em; color: var(--text-muted); margin-top: 5px;">Target Coverage</div>
+            </div>
+        </div>
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 1.1em; margin-bottom: 15px; color: var(--text-muted);">Gap do cilja:</div>
+            <div style="font-size: 2.5em; font-weight: bold; color: var(--excellent);">+4.29% ✅ DOSTIGNUTO!</div>
+            <div style="margin-top: 20px; padding: 20px; background: rgba(0, 230, 118, 0.1); border-radius: 10px; border-left: 4px solid var(--excellent);">
+                <strong style="color: var(--excellent);">🎉 CILJ DOSTIGNUT!</strong>
+                <ul style="margin-top: 10px; padding-left: 20px; line-height: 1.8;">
+                    <li><strong>9 modula kompletirano</strong> (>75% coverage): Auth, AI, Media, Payments, Gamification, CheckIns, Training, Trainers, Admin</li>
+                    <li><strong>3 modula blizu cilja</strong> (70-75%): Clients (70.54%), Workouts (74.37%), Plans (74.26%)</li>
+                    <li><strong>Globalni coverage:</strong> Statements 79.29% ✅, Branches 64.5% ⚠️ (nedostaje 0.5%), Functions 86.06% ✅, Lines 79.05% ✅</li>
+                    <li><strong>Test success rate:</strong> 601/601 testova (100%) ✅</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align: center; padding: 30px; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.1);">
+        <p><i class="fas fa-info-circle"></i> Dashboard ažuriran: 31. Decembar 2025 (Final)</p>
+        <p style="margin-top: 10px;">Svi testovi prolaze (601/601 = 100%) ✅ | Sigurnosne rupe zatvorene 🔒 | Globalni coverage: 79.29% ✅</p>
+    </div>
+
+</div>
+
+</body>
+</html>
+

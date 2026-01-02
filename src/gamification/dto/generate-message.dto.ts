@@ -1,8 +1,9 @@
-import { IsEnum, IsString, IsOptional, IsObject } from 'class-validator';
+import { IsEnum, IsString, IsOptional, IsObject, IsNotEmpty, IsMongoId } from 'class-validator';
 import { AIMessageTrigger, AIMessageTone } from '../schemas/ai-message.schema';
 
 export class GenerateMessageDto {
-  @IsString()
+  @IsMongoId()
+  @IsNotEmpty()
   clientId: string;
 
   @IsEnum(AIMessageTrigger)

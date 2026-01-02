@@ -167,16 +167,94 @@ describe('CheckInsService', () => {
   });
 
   describe('getCheckInById', () => {
-    it('should return a check-in by ID', async () => {
+    const mockUserId = '507f1f77bcf86cd799439012';
+    const mockClientProfileId = mockClientProfile._id as Types.ObjectId;
+
+    beforeEach(() => {
+      (clientsService.getProfile as jest.Mock).mockResolvedValue({
+        _id: mockClientProfileId,
+        userId: mockClientProfile.userId,
+      });
+    });
+
+    it('should return a check-in by ID for CLIENT role when check-in belongs to client', async () => {
       const validObjectId = new Types.ObjectId().toString();
+      const checkInWithMatchingClientId = {
+        ...mockCheckIn,
+        clientId: mockClientProfileId,
+      };
+      
       jest
         .spyOn(checkInModel, 'findById')
-        .mockReturnValue({ exec: jest.fn().mockResolvedValue(mockCheckIn) } as any);
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(checkInWithMatchingClientId) } as any);
 
-      const result = await service.getCheckInById(validObjectId);
+      const result = await service.getCheckInById(validObjectId, mockUserId, 'CLIENT');
 
-      expect(result).toEqual(mockCheckIn);
+      expect(result).toEqual(checkInWithMatchingClientId);
       expect((checkInModel as any).findById).toHaveBeenCalledWith(validObjectId);
+      expect(clientsService.getProfile).toHaveBeenCalledWith(mockUserId);
+    });
+
+    it('should throw ForbiddenException for CLIENT role when check-in does not belong to client', async () => {
+      const validObjectId = new Types.ObjectId().toString();
+      const differentClientId = new Types.ObjectId();
+      const checkInWithDifferentClientId = {
+        ...mockCheckIn,
+        clientId: differentClientId,
+      };
+      
+      jest
+        .spyOn(checkInModel, 'findById')
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(checkInWithDifferentClientId) } as any);
+
+      await expect(service.getCheckInById(validObjectId, mockUserId, 'CLIENT')).rejects.toThrow(ForbiddenException);
+      expect(clientsService.getProfile).toHaveBeenCalledWith(mockUserId);
+    });
+
+    it('should return a check-in by ID for TRAINER role when check-in belongs to trainer', async () => {
+      const validObjectId = new Types.ObjectId().toString();
+      const mockTrainerProfileId = new Types.ObjectId();
+      const checkInWithMatchingTrainerId = {
+        ...mockCheckIn,
+        trainerId: mockTrainerProfileId,
+      };
+      
+      jest
+        .spyOn(checkInModel, 'findById')
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(checkInWithMatchingTrainerId) } as any);
+
+      (trainersService.getProfile as jest.Mock).mockResolvedValue({
+        _id: mockTrainerProfileId,
+        userId: mockUserId,
+      });
+
+      const result = await service.getCheckInById(validObjectId, mockUserId, 'TRAINER');
+
+      expect(result).toEqual(checkInWithMatchingTrainerId);
+      expect((checkInModel as any).findById).toHaveBeenCalledWith(validObjectId);
+      expect(trainersService.getProfile).toHaveBeenCalledWith(mockUserId);
+    });
+
+    it('should throw ForbiddenException for TRAINER role when check-in does not belong to trainer', async () => {
+      const validObjectId = new Types.ObjectId().toString();
+      const differentTrainerId = new Types.ObjectId();
+      const checkInWithDifferentTrainerId = {
+        ...mockCheckIn,
+        trainerId: differentTrainerId,
+      };
+      
+      jest
+        .spyOn(checkInModel, 'findById')
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(checkInWithDifferentTrainerId) } as any);
+
+      const mockTrainerProfileId = new Types.ObjectId();
+      (trainersService.getProfile as jest.Mock).mockResolvedValue({
+        _id: mockTrainerProfileId,
+        userId: mockUserId,
+      });
+
+      await expect(service.getCheckInById(validObjectId, mockUserId, 'TRAINER')).rejects.toThrow(ForbiddenException);
+      expect(trainersService.getProfile).toHaveBeenCalledWith(mockUserId);
     });
 
     it('should throw NotFoundException if check-in not found', async () => {
@@ -185,7 +263,7 @@ describe('CheckInsService', () => {
         .spyOn(checkInModel, 'findById')
         .mockReturnValue({ exec: jest.fn().mockResolvedValue(null) } as any);
 
-      await expect(service.getCheckInById(validObjectId)).rejects.toThrow(NotFoundException);
+      await expect(service.getCheckInById(validObjectId, mockUserId, 'CLIENT')).rejects.toThrow(NotFoundException);
     });
   });
 

@@ -24,7 +24,7 @@ import { WorkoutLog, WorkoutLogSchema } from '../workouts/schemas/workout-log.sc
     ScheduleModule.forRoot(),
     CommonModule,
     forwardRef(() => ClientsModule),
-    TrainersModule,
+    forwardRef(() => TrainersModule),
   ],
   controllers: [GamificationController],
   providers: [GamificationService, AIMessageService, WeeklyPenaltyJob],

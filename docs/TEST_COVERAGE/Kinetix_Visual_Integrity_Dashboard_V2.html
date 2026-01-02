@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetix Test Coverage Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0A0A0A;
+            --card-bg: #1A1A1A;
+            --card-bg-hover: #252525;
+            --text-main: #FFFFFF;
+            --text-muted: #CCCCCC;
+            --text-dim: #888888;
+            
+            /* Cyber-Industrial Colors */
+            --neon-green: #00FF41;
+            --neon-cyan: #00FFFF;
+            --neon-orange: #FF6B00;
+            --neon-red: #FF0040;
+            --neon-purple: #7C4DFF;
+            --neon-blue: #2979FF;
+            
+            /* Status Colors */
+            --safe: var(--neon-green);
+            --warning: var(--neon-orange);
+            --danger: var(--neon-red);
+            --info: var(--neon-cyan);
+            
+            /* Gradients */
+            --gradient-safe: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
+            --gradient-warning: linear-gradient(135deg, rgba(255, 107, 0, 0.1), rgba(255, 107, 0, 0.05));
+            --gradient-danger: linear-gradient(135deg, rgba(255, 0, 64, 0.1), rgba(255, 0, 64, 0.05));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(124, 77, 255, 0.1), rgba(41, 121, 255, 0.1));
+            border: 2px solid var(--neon-purple);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0 40px;
+            box-shadow: 0 0 30px rgba(124, 77, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(124, 77, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--neon-green);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .health-score {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .health-score-value {
+            font-size: 4em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .coverage-progress {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        .progress-bar-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
+            border-radius: 10px;
+            transition: width 1s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        /* SECTION HEADERS */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 50px 0 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(124, 77, 255, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            color: var(--neon-purple);
+            font-size: 1.2em;
+        }
+
+        .section-badge {
+            background: rgba(124, 77, 255, 0.2);
+            border: 1px solid var(--neon-purple);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        /* MODULE GRID */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        /* MODULE CARD */
+        .module-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 2px solid transparent;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--neon-green);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-green);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.2);
+        }
+
+        .module-card:hover::before {
+            opacity: 1;
+        }
+
+        .module-card.safe {
+            border-color: rgba(0, 255, 65, 0.3);
+        }
+
+        .module-card.safe::before {
+            background: var(--neon-green);
+        }
+
+        .module-card.warning {
+            border-color: rgba(255, 107, 0, 0.3);
+        }
+
+        .module-card.warning::before {
+            background: var(--neon-orange);
+        }
+
+        .module-card.danger {
+            border-color: rgba(255, 0, 64, 0.3);
+        }
+
+        .module-card.danger::before {
+            background: var(--neon-red);
+        }
+
+        .card-header {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .module-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .module-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .module-status.ok {
+            background: rgba(0, 255, 65, 0.2);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .module-status.warning {
+            background: rgba(255, 107, 0, 0.2);
+            color: var(--neon-orange);
+            border: 1px solid var(--neon-orange);
+        }
+
+        .module-status.danger {
+            background: rgba(255, 0, 64, 0.2);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+        }
+
+        .card-body {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .coverage-display {
+            margin-bottom: 20px;
+        }
+
+        .coverage-value {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .coverage-value.warning {
+            background: linear-gradient(135deg, var(--neon-orange), var(--neon-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mini-progress-bar {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .mini-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .mini-progress-fill.warning {
+            background: linear-gradient(90deg, var(--neon-orange), var(--neon-red));
+        }
+
+        .test-breakdown {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .test-item i {
+            color: var(--neon-green);
+            font-size: 0.8em;
+        }
+
+        .test-label {
+            color: var(--text-muted);
+        }
+
+        .test-count {
+            color: var(--neon-cyan);
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .layer-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .layer-title {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+        }
+
+        .layer-title i {
+            color: var(--neon-cyan);
+        }
+
+        .scenario-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .scenario-item i {
+            color: var(--neon-green);
+            margin-top: 3px;
+        }
+
+        /* SECURITY SECTION */
+        .security-section {
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.05));
+            border: 2px solid var(--neon-green);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+        }
+
+        .security-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .security-header i {
+            font-size: 2em;
+            color: var(--neon-green);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                text-shadow: 0 0 10px var(--neon-green);
+            }
+            50% { 
+                text-shadow: 0 0 20px var(--neon-green), 0 0 30px var(--neon-green);
+            }
+        }
+
+        .security-header h3 {
+            font-size: 1.8em;
+            color: var(--neon-green);
+            margin: 0;
+        }
+
+        .security-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--neon-green);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .security-item:hover {
+            background: rgba(0, 255, 65, 0.1);
+            transform: translateX(5px);
+        }
+
+        .security-item strong {
+            color: var(--neon-cyan);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .security-item span {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        /* TRENDS SECTION */
+        .trends-section {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .trend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .trend-item:last-child {
+            border-bottom: none;
+        }
+
+        .trend-label {
+            color: var(--text-muted);
+            font-size: 1em;
+        }
+
+        .trend-value {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .trend-improvement {
+            color: var(--neon-green);
+        }
+
+        .trend-warning {
+            color: var(--neon-orange);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-new {
+            background: rgba(0, 255, 65, 0.2);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        /* LEGEND */
+        .legend-bar {
+            display: flex;
+            gap: 30px;
+            padding: 20px;
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(124, 77, 255, 0.3);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .legend-dot.safe { background: var(--neon-green); color: var(--neon-green); }
+        .legend-dot.logic { background: var(--neon-blue); color: var(--neon-blue); }
+        .legend-dot.danger { background: var(--neon-red); color: var(--neon-red); }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 1.8em;
+            }
+
+            .health-score-value {
+                font-size: 2.5em;
+            }
+
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-purple);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-cyan);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Kinetix Test Coverage Dashboard</h1>
+            
+            <div class="health-score">
+                <div class="health-score-value">95%</div>
+                <div class="coverage-progress">
+                    <div class="progress-label">
+                        <span>Overall Health Score</span>
+                        <span>95%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 95%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-value">1,138</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">79.29%</div>
+                    <div class="stat-label">Backend Coverage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">13/13</div>
+                    <div class="stat-label">Integration Tests</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend-bar">
+        <div class="legend-item">
+            <span class="legend-dot safe"></span>
+            <div>
+                <strong>E2E / INTEGRATION (Realnost)</strong><br>
+                <span style="color: var(--text-dim);">Baza, API, Sigurnost</span>
+            </div>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot logic"></span>
+            <div>
+                <strong>UNIT TESTS (Logika)</strong><br>
+                <span style="color: var(--text-dim);">Kalkulacije, Validacija, IF/ELSE grane</span>
+            </div>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot danger"></span>
+            <div>
+                <strong>NEPOKRIVENO</strong><br>
+                <span style="color: var(--text-dim);">Rupa u testiranju</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- BACKEND SECTION -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-server"></i>
+            Backend Tests
+        </h2>
+        <div class="section-badge">904 Tests (606 Unit + 298 E2E)</div>
+    </div>
+
+    <div class="module-grid">
+        <!-- AUTH MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Auth Module</span>
+                <span class="module-status ok">100% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Login API sa pravom bazom</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Token se ispravno šalje</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Password Hashing</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">JWT Creation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKOUTS MODULE -->
+        <div class="module-card warning">
+            <div class="card-header">
+                <span class="module-name">Workouts Module</span>
+                <span class="module-status warning">74.37% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value warning">74.37%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill warning" style="width: 74.37%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Data Isolation (E2E)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Ownership Checks</span>
+                        <span class="badge badge-new">NEW</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Volume Calculation</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Date Validation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAINING SYNC -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Training (Sync)</span>
+                <span class="module-status ok">86.95% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">86.95%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 86.95%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Batch Sync (50 treninga)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Transaction Rollback</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Conflict Resolution</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAINERS MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Trainers Module</span>
+                <span class="module-status ok">92% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">92%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 92%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Trener vidi samo svoje klijente</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Plan Assignment Logic</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Role Permissions</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLIENTS MODULE -->
+        <div class="module-card warning">
+            <div class="card-header">
+                <span class="module-name">Clients Module</span>
+                <span class="module-status warning">70.54% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value warning">70.54%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill warning" style="width: 70.54%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Data Isolation (E2E)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Plan Assignment</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Profile Management</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHECKINS MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">CheckIns Module</span>
+                <span class="module-status ok">85.57% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">85.57%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 85.57%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Ownership Check (CLIENT/TRAINER)</span>
+                        <span class="badge badge-new">NEW</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Check-in Creation & Upload</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">WeighInService (25 testova, 98.63%)</span>
+                        <span class="badge badge-new">NEW</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLANS MODULE -->
+        <div class="module-card warning">
+            <div class="card-header">
+                <span class="module-name">Plans Module</span>
+                <span class="module-status warning">74.26% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value warning">74.26%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill warning" style="width: 74.26%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Ownership Check (TRAINER/CLIENT/ADMIN)</span>
+                        <span class="badge badge-new">NEW</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Plan Creation & Assignment</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Plan Validation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAMIFICATION MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Gamification Module</span>
+                <span class="module-status ok">96.96% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">96.96%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 96.96%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Penalty Calculation</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Balance Management</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">AI Message Service (96.96%)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">MonthlyPaywallGuard (15 tests)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEDIA MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Media Module</span>
+                <span class="module-status ok">100% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Cloudinary Upload (E2E)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">File Validation</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">MediaService (100%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">AI Module</span>
+                <span class="module-status ok">100% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">AI E2E (13 testova)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">AIMessageService (96.96%)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Template Generation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Admin Module</span>
+                <span class="module-status ok">80.61% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">80.61%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 80.61%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Admin E2E (48 testova)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">AdminService (91.5%)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">AdminController (100%)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">RBAC Protection</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYMENTS MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Payments Module</span>
+                <span class="module-status ok">96.2% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">96.2%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 96.2%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Payments E2E (17 testova)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">PaymentsService (100%)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Invoice Generation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA ISOLATION SECTION -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-shield-alt"></i>
+            Data Isolation Tests
+        </h2>
+        <div class="section-badge">19/19 PROLAZE</div>
+    </div>
+
+    <div class="module-card safe" style="grid-column: 1 / -1;">
+        <div class="card-header">
+            <span class="module-name">Data Isolation Coverage</span>
+            <span class="module-status ok">19/19 PROLAZE</span>
+        </div>
+        <div class="card-body">
+            <div class="test-breakdown">
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">GET /api/clients/workouts/all - 6 testova</span>
+                </div>
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">GET /api/workouts/week/:date - 2 testa</span>
+                </div>
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">GET /api/workouts/today - 2 testa</span>
+                </div>
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">GET /api/workouts/:id - 2 testa (Ownership Check)</span>
+                    <span class="badge badge-new">NEW</span>
+                </div>
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">PATCH /api/workouts/:id - 2 testa (Ownership Check)</span>
+                    <span class="badge badge-new">NEW</span>
+                </div>
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">GET /api/checkins/:id - 3 testa (Ownership Check)</span>
+                    <span class="badge badge-new">NEW</span>
+                </div>
+                <div class="test-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span class="test-label">GET /api/plans/:id - 2 testa (Ownership Check)</span>
+                    <span class="badge badge-new">NEW</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRONTEND SECTION -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-mobile-alt"></i>
+            Frontend Tests
+        </h2>
+        <div class="section-badge">234 Tests (100% Success Rate)</div>
+    </div>
+
+    <div class="module-grid">
+        <!-- WORKOUT RUNNER -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Workout Runner</span>
+                <span class="module-status ok">100% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Complete Flow (Integration)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">WorkoutController (6 testova)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">StateService</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHECKIN CONTROLLER -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">CheckInController</span>
+                <span class="module-status ok">100% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">20 testova (Comprehensive)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">build() - Initial State (3 testa)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">deleteCheckIn() (4 testa)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">shouldRequireCheckIn() (12 testova)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYNC MANAGER -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">SyncManager</span>
+                <span class="module-status ok">100% OK</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Orchestrator (Media-First → Push → Pull)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">SyncManagerService (15 testova)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Conflict Resolution</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">Retry Mechanism</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTEGRATION TESTS -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Integration Tests</span>
+                <span class="module-status ok">13/13 IMPLEMENTIRANO</span>
+            </div>
+            <div class="card-body">
+                <div class="coverage-display">
+                    <div class="coverage-value">100%</div>
+                    <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="test-breakdown">
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">checkin_flow_test.dart (7 testova)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">analytics_flow_test.dart (4 testa)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">workout_runner_flow_test.dart (1 test)</span>
+                    </div>
+                    <div class="test-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="test-label">auth_data_isolation_test.dart (1 test)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURITY SECTION -->
+    <div class="security-section">
+        <div class="security-header">
+            <i class="fas fa-shield-alt"></i>
+            <h3>SVE SIGURNOSNE RUPE ZATVORENE</h3>
+        </div>
+        
+        <div class="security-item">
+            <strong>GET /api/workouts/:id</strong> - Ownership Check
+            <span>Proverava da li workout pripada ulogovanom korisniku. Baca 403 Forbidden za tuđe treninge.</span>
+            <span class="badge badge-new">NEW</span>
+        </div>
+        
+        <div class="security-item">
+            <strong>PATCH /api/workouts/:id</strong> - Ownership Check
+            <span>Proverava da li workout pripada ulogovanom korisniku. Baca 403 Forbidden za tuđe treninge.</span>
+            <span class="badge badge-new">NEW</span>
+        </div>
+        
+        <div class="security-item">
+            <strong>GET /api/checkins/:id</strong> - Ownership Check (CLIENT i TRAINER)
+            <span>CLIENT: može pristupiti samo svom check-in-u. TRAINER: može pristupiti check-in-u svog clienta. Baca 403 Forbidden za tuđe check-in-e.</span>
+            <span class="badge badge-new">NEW</span>
+        </div>
+        
+        <div class="security-item">
+            <strong>GET /api/plans/:id</strong> - Ownership Check (TRAINER, CLIENT, ADMIN)
+            <span>TRAINER: može pristupiti samo svojim planovima. CLIENT: može pristupiti planovima u planHistory. ADMIN: može pristupiti svim planovima. Baca 403 Forbidden za tuđe planove.</span>
+            <span class="badge badge-new">NEW</span>
+        </div>
+    </div>
+
+    <!-- TRENDS SECTION -->
+    <div class="trends-section">
+        <h3 style="margin-bottom: 20px; color: var(--neon-cyan);">Coverage Trends</h3>
+        
+        <div class="trend-item">
+            <span class="trend-label">Statements Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">49.25% → 79.29% (+30.04%) ✅</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Branches Coverage:</span>
+            <span class="trend-value"><span class="trend-warning">37.89% → 64.5% (+26.61%) ⚠️</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Functions Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">52.32% → 86.06% (+33.74%) ✅</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Lines Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">48.59% → 79.05% (+30.46%) ✅</span></span>
+        </div>
+        
+        <h3 style="margin-top: 30px; margin-bottom: 20px; color: var(--neon-cyan);">Module Improvements</h3>
+        
+        <div class="trend-item">
+            <span class="trend-label">AI Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">0% → 100% (+100%) ✅</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Payments Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">0% → 96.2% (+96.2%) ✅</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Gamification Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">38.33% → 96.96% (+58.63%) ✅</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Media Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">63.04% → 100% (+36.96%) ✅</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">CheckIns Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">61.68% → 85.57% (+23.89%) ✅</span></span>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

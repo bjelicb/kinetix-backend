@@ -144,5 +144,6 @@ export class TrainersController {
   async getPendingWeekRequests(@CurrentUser() user: JwtPayload) {
     return this.trainersService.getPendingWeekRequests(user.sub);
   }
+
 }
 

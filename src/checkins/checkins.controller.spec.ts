@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CheckInsController } from './checkins.controller';
 import { CheckInsService } from './checkins.service';
+import { WeighInService } from './weighin.service';
 import { ClientsService } from '../clients/clients.service';
 import { TrainersService } from '../trainers/trainers.service';
 import { CreateCheckInDto } from './dto/create-checkin.dto';
@@ -66,6 +67,12 @@ describe('CheckInsController', () => {
           useValue: mockCheckInsService,
         },
         {
+          provide: WeighInService,
+          useValue: {
+            // mock methods if needed
+          },
+        },
+        {
           provide: ClientsService,
           useValue: mockClientsService,
         },
@@ -99,6 +106,26 @@ describe('CheckInsController', () => {
       expect(checkInsService.createCheckIn).toHaveBeenCalledWith(mockClientJwtPayload.sub, createDto);
       expect(result).toEqual(mockCheckIn);
     });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.createCheckIn.mockRejectedValue(new Error('Service error'));
+
+      await expect(
+        controller.createCheckIn(mockClientJwtPayload, createDto),
+      ).rejects.toThrow('Service error');
+    });
+
+    it('should handle invalid DTO data', async () => {
+      const invalidDto = {
+        checkinDate: 'invalid-date',
+        photoUrl: '',
+      } as any;
+      checkInsService.createCheckIn.mockRejectedValue(new Error('Invalid DTO'));
+
+      await expect(
+        controller.createCheckIn(mockClientJwtPayload, invalidDto),
+      ).rejects.toThrow('Invalid DTO');
+    });
   });
 
   describe('getCheckInsByClient', () => {
@@ -111,6 +138,20 @@ describe('CheckInsController', () => {
       expect(checkInsService.getCheckInsByClient).toHaveBeenCalledWith(mockClientJwtPayload.sub);
       expect(result).toEqual(mockCheckIns);
     });
+
+    it('should return empty array if no check-ins found', async () => {
+      checkInsService.getCheckInsByClient.mockResolvedValue([]);
+
+      const result = await controller.getCheckInsByClient(mockClientJwtPayload);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.getCheckInsByClient.mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.getCheckInsByClient(mockClientJwtPayload)).rejects.toThrow('Service error');
+    });
   });
 
   describe('getCheckInById', () => {
@@ -119,16 +160,35 @@ describe('CheckInsController', () => {
     it('should return check-in by id', async () => {
       checkInsService.getCheckInById.mockResolvedValue(mockCheckIn as any);
 
-      const result = await controller.getCheckInById(checkInId);
+      const result = await controller.getCheckInById(checkInId, mockClientJwtPayload);
 
-      expect(checkInsService.getCheckInById).toHaveBeenCalledWith(checkInId);
+      expect(checkInsService.getCheckInById).toHaveBeenCalledWith(checkInId, mockClientJwtPayload.sub, mockClientJwtPayload.role);
       expect(result).toEqual(mockCheckIn);
     });
 
     it('should throw NotFoundException if check-in not found', async () => {
       checkInsService.getCheckInById.mockRejectedValue(new NotFoundException('Check-in not found'));
 
-      await expect(controller.getCheckInById(checkInId)).rejects.toThrow(NotFoundException);
+      await expect(controller.getCheckInById(checkInId, mockClientJwtPayload)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw ForbiddenException if check-in does not belong to client', async () => {
+      checkInsService.getCheckInById.mockRejectedValue(new ForbiddenException('You can only access your own check-ins'));
+
+      await expect(controller.getCheckInById(checkInId, mockClientJwtPayload)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.getCheckInById.mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.getCheckInById(checkInId, mockClientJwtPayload)).rejects.toThrow('Service error');
+    });
+
+    it('should handle invalid check-in ID format', async () => {
+      const invalidId = 'invalid-id';
+      checkInsService.getCheckInById.mockRejectedValue(new Error('Invalid ID format'));
+
+      await expect(controller.getCheckInById(invalidId, mockClientJwtPayload)).rejects.toThrow('Invalid ID format');
     });
   });
 
@@ -166,6 +226,21 @@ describe('CheckInsController', () => {
         ForbiddenException,
       );
     });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.verifyCheckIn.mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.verifyCheckIn(checkInId, mockTrainerJwtPayload, verifyDto)).rejects.toThrow('Service error');
+    });
+
+    it('should handle invalid verification status', async () => {
+      const invalidDto = {
+        verificationStatus: 'INVALID_STATUS',
+      } as any;
+      checkInsService.verifyCheckIn.mockRejectedValue(new Error('Invalid verification status'));
+
+      await expect(controller.verifyCheckIn(checkInId, mockTrainerJwtPayload, invalidDto)).rejects.toThrow('Invalid verification status');
+    });
   });
 
   describe('getPendingCheckIns', () => {
@@ -178,6 +253,20 @@ describe('CheckInsController', () => {
 
       expect(checkInsService.getPendingCheckIns).toHaveBeenCalledWith(mockTrainerJwtPayload.sub);
       expect(result).toEqual(mockPendingCheckIns);
+    });
+
+    it('should return empty array if no pending check-ins', async () => {
+      checkInsService.getPendingCheckIns.mockResolvedValue([]);
+
+      const result = await controller.getPendingCheckIns(mockTrainerJwtPayload.sub);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.getPendingCheckIns.mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.getPendingCheckIns(mockTrainerJwtPayload.sub)).rejects.toThrow('Service error');
     });
   });
 
@@ -197,6 +286,31 @@ describe('CheckInsController', () => {
         expect.any(Date),
       );
       expect(result).toEqual(mockCheckIns);
+    });
+
+    it('should return empty array if no check-ins in date range', async () => {
+      checkInsService.getCheckInsByDateRange.mockResolvedValue([]);
+
+      const result = await controller.getCheckInsByDateRange(mockClientJwtPayload, startDate, endDate);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.getCheckInsByDateRange.mockRejectedValue(new Error('Service error'));
+
+      await expect(
+        controller.getCheckInsByDateRange(mockClientJwtPayload, startDate, endDate),
+      ).rejects.toThrow('Service error');
+    });
+
+    it('should handle invalid date format', async () => {
+      const invalidStartDate = 'invalid-date';
+      checkInsService.getCheckInsByDateRange.mockRejectedValue(new Error('Invalid date format'));
+
+      await expect(
+        controller.getCheckInsByDateRange(mockClientJwtPayload, invalidStartDate, endDate),
+      ).rejects.toThrow('Invalid date format');
     });
   });
 
@@ -219,6 +333,18 @@ describe('CheckInsController', () => {
       await expect(controller.deleteCheckIn(mockClientJwtPayload, checkInId)).rejects.toThrow(
         ForbiddenException,
       );
+    });
+
+    it('should throw NotFoundException if check-in not found', async () => {
+      checkInsService.deleteCheckIn.mockRejectedValue(new NotFoundException('Check-in not found'));
+
+      await expect(controller.deleteCheckIn(mockClientJwtPayload, checkInId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should handle error when CheckInsService fails', async () => {
+      checkInsService.deleteCheckIn.mockRejectedValue(new Error('Service error'));
+
+      await expect(controller.deleteCheckIn(mockClientJwtPayload, checkInId)).rejects.toThrow('Service error');
     });
   });
 });

@@ -249,4 +249,77 @@ describe('Gamification E2E (e2e)', () => {
         .expect(401);
     });
   });
+
+  describe('POST /api/gamification/clear-balance', () => {
+    it('should clear balance for authenticated client', async () => {
+      // First, set a balance for the client (via direct DB update or service call)
+      // For E2E, we'll test with a client that has balance
+      const response = await request(app.getHttpServer())
+        .post('/api/gamification/clear-balance')
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect((res) => {
+          if (res.status !== 200 && res.status !== 201) {
+            throw new Error(`Expected 200 or 201, got ${res.status}`);
+          }
+        });
+
+      const responseData = response.body?.data || response.body;
+      expect(responseData).toHaveProperty('message');
+      expect(responseData.message).toContain('cleared');
+
+      // Verify balance is cleared in database
+      const balanceResponse = await request(app.getHttpServer())
+        .get('/api/gamification/balance')
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect(200);
+
+      const balanceData = balanceResponse.body?.data || balanceResponse.body;
+      expect(balanceData.balance).toBe(0);
+      expect(balanceData.monthlyBalance).toBe(0);
+    });
+
+    it('should return 401 if not authenticated', async () => {
+      await request(app.getHttpServer())
+        .post('/api/gamification/clear-balance')
+        .expect(401);
+    });
+
+    it('should return 403 if not CLIENT role', async () => {
+      await request(app.getHttpServer())
+        .post('/api/gamification/clear-balance')
+        .set('Authorization', `Bearer ${trainer.token}`)
+        .expect(403);
+    });
+  });
+
+  describe('GET /api/gamification/balance', () => {
+    it('should return balance and monthlyBalance', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/gamification/balance')
+        .set('Authorization', `Bearer ${client.token}`)
+        .expect(200);
+
+      const responseData = response.body?.data || response.body;
+      expect(responseData).toHaveProperty('balance');
+      expect(responseData).toHaveProperty('monthlyBalance');
+      expect(responseData).toHaveProperty('lastBalanceReset');
+      expect(responseData).toHaveProperty('penaltyHistory');
+      expect(Array.isArray(responseData.penaltyHistory)).toBe(true);
+      expect(typeof responseData.balance).toBe('number');
+      expect(typeof responseData.monthlyBalance).toBe('number');
+    });
+
+    it('should return 401 if not authenticated', async () => {
+      await request(app.getHttpServer())
+        .get('/api/gamification/balance')
+        .expect(401);
+    });
+
+    it('should return 403 if not CLIENT role', async () => {
+      await request(app.getHttpServer())
+        .get('/api/gamification/balance')
+        .set('Authorization', `Bearer ${trainer.token}`)
+        .expect(403);
+    });
+  });
 });

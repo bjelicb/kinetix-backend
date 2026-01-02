@@ -69,8 +69,11 @@ export class CheckInsController {
 
   @Get(':id')
   @Roles(UserRole.CLIENT, UserRole.TRAINER)
-  async getCheckInById(@Param('id') id: string) {
-    return this.checkInsService.getCheckInById(id);
+  async getCheckInById(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.checkInsService.getCheckInById(id, user.sub, user.role);
   }
 
   @Patch(':id/verify')

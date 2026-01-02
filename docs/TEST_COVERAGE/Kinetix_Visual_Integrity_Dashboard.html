@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetix System Visual Map</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            
+            /* Status Colors */
+            --safe: #00e676;      /* E2E - Beton */
+            --logic: #2979ff;     /* Unit - Logika */
+            --warning: #ffb300;   /* Partial */
+            --danger: #ff1744;    /* Missing */
+            
+            --backend-bg: rgba(124, 77, 255, 0.1);
+            --frontend-bg: rgba(41, 121, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        h1, h2 { text-transform: uppercase; letter-spacing: 1px; margin-top: 40px; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+
+        /* GRID SYSTEM */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Wider cards for split view */
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        /* MODULE CARD DESIGN */
+        .module-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            position: relative;
+            border-top: 4px solid #555;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .module-card.safe { border-top-color: var(--safe); }
+        .module-card.warning { border-top-color: var(--warning); }
+        .module-card.danger { border-top-color: var(--danger); }
+
+        .card-header { 
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.05);
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #333;
+        }
+        .module-name { font-weight: bold; font-size: 1.2em; }
+        
+        /* SPLIT VIEW LAYOUT */
+        .layer-section {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .layer-title {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* E2E LAYER (Top) */
+        .layer-e2e { background: rgba(0, 230, 118, 0.02); }
+        .title-e2e { color: var(--safe); }
+
+        /* UNIT LAYER (Bottom) */
+        .layer-unit { background: rgba(41, 121, 255, 0.05); flex-grow: 1; }
+        .title-unit { color: var(--logic); }
+
+        /* SCENARIO LIST */
+        .scenario-item { display: flex; align-items: flex-start; margin-bottom: 6px; gap: 10px; font-size: 0.9em; line-height: 1.4; }
+        .icon-box { width: 20px; text-align: center; }
+        .check-e2e { color: var(--safe); }
+        .check-unit { color: var(--logic); }
+        .cross-icon { color: var(--danger); }
+
+        /* ARCHITECTURE FLOW */
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            flex: 1;
+            background: #252525;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            min-width: 200px;
+        }
+
+        /* LEGEND */
+        .legend-bar {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: #252525;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9em; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .badge-new {
+            background: var(--safe);
+            color: #000;
+        }
+        .badge-todo {
+            background: var(--warning);
+            color: #000;
+        }
+
+        /* TREND SECTION */
+        .trend-section {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 40px 0;
+        }
+        .trend-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+        .trend-item:last-child { border-bottom: none; }
+        .trend-label { color: var(--text-muted); }
+        .trend-value { font-weight: bold; }
+        .trend-improvement { color: var(--safe); }
+
+        /* SECURITY SECTION */
+        .security-section {
+            background: rgba(0, 230, 118, 0.05);
+            border: 2px solid var(--safe);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 40px 0;
+        }
+        .security-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>KINETIX TEST ARCHITECTURE</h1>
+    
+    <div class="legend-bar">
+        <div class="legend-item">
+            <span class="dot" style="background: var(--safe)"></span>
+            <div><strong>E2E / INTEGRATION (Realnost)</strong><br><span style="color:#777">Baza, API, Sigurnost</span></div>
+        </div>
+        <div class="legend-item">
+            <span class="dot" style="background: var(--logic)"></span>
+            <div><strong>UNIT TESTS (Logika)</strong><br><span style="color:#777">Kalkulacije, Validacija, IF/ELSE grane</span></div>
+        </div>
+        <div class="legend-item">
+            <span class="dot" style="background: var(--danger)"></span>
+            <div><strong>NEPOKRIVENO</strong><br><span style="color:#777">Rupa u testiranju</span></div>
+        </div>
+    </div>
+
+    <!-- 1. BACKEND MODULES (NESTJS) -->
+    <h2><i class="fas fa-server"></i> BACKEND TESTOVI (606 Unit + 298 E2E = 904 ukupno)</h2>
+    <div class="module-grid">
+
+        <!-- AUTH MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Auth Module</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <!-- E2E LAYER -->
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-globe"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> Login API radi sa pravom bazom</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> Token se ispravno šalje klijentu</div>
+            </div>
+
+            <!-- UNIT LAYER -->
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Password Hashing:</strong> Da li funkcija dobro muti lozinku?</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>JWT Creation:</strong> Da li token sadrži tačan User ID?</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Validation:</strong> Odbijanje praznog email-a</div>
+            </div>
+        </div>
+
+        <!-- WORKOUTS MODULE -->
+        <div class="module-card warning">
+            <div class="card-header">
+                <span class="module-name">Workouts Module</span>
+                <span style="color: var(--warning); font-weight:bold;">74.37% OK</span>
+            </div>
+            
+            <!-- E2E LAYER -->
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-shield-alt"></i> REALNOST (E2E) - SIGURNOST</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Data Isolation:</strong> Pera ne vidi Žikine treninge</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>CRUD:</strong> Upis treninga u MongoDB radi</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Ownership Check:</strong> GET /api/workouts/:id - 403 Forbidden za tuđe treninge <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Ownership Check:</strong> PATCH /api/workouts/:id - 403 Forbidden za tuđe treninge <span class="badge badge-new">NEW</span></div>
+            </div>
+
+            <!-- UNIT LAYER -->
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT) - MATEMATIKA</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Volume Calc:</strong> (Sets x Reps x Weight) radi tačno</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Date Checks:</strong> Ne dozvoljava datum u budućnosti</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>DTO Mapping:</strong> Pretvaranje JSON-a u Objekat</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation:</strong> getWorkoutById baca ForbiddenException <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation:</strong> updateWorkoutLog baca ForbiddenException <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>WorkoutLogSchema:</strong> 3 testa za pre-save hook-ove ✅ <span class="badge badge-new">NEW</span></div>
+            </div>
+        </div>
+
+        <!-- TRAINING SYNC -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Training (Sync)</span>
+                <span style="color: var(--safe); font-weight:bold;">86.95% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-network-wired"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Batch Sync:</strong> 50 treninga prolazi odjednom</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Transaction:</strong> Ako jedan pukne, svi se vraćaju (Rollback)</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Conflict Logic:</strong> Šta ako trening već postoji?</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Data Parsing:</strong> Provera formata datuma iz mobilne aplikacije</div>
+            </div>
+        </div>
+
+        <!-- TRAINERS MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Trainers Module</span>
+                <span style="color: var(--safe); font-weight:bold;">92% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-user-tie"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> Trener vidi samo svoje klijente</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Assignment:</strong> Logika dodele plana klijentu</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Permissions:</strong> Provera da li je user ROLE_TRAINER</div>
+            </div>
+        </div>
+
+        <!-- CLIENTS MODULE -->
+        <div class="module-card warning">
+            <div class="card-header">
+                <span class="module-name">Clients Module</span>
+                <span style="color: var(--warning); font-weight:bold;">70.54% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-users"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Data Isolation:</strong> Trener vidi samo svoje klijente</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Assignment:</strong> Logika dodele plana klijentu</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Profile Management:</strong> Update client profile logika</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-times cross-icon"></i></span> Nedostaju testovi za edge case-ove</div>
+            </div>
+        </div>
+
+        <!-- CHECKINS MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">CheckIns Module</span>
+                <span style="color: var(--safe); font-weight:bold;">85.57% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-camera"></i> REALNOST (E2E) - SIGURNOST</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Data Isolation:</strong> GET /api/checkins/:id - ownership check (CLIENT i TRAINER) <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>CRUD:</strong> Check-in creation i upload radi</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Verify Endpoint:</strong> PATCH /api/checkins/:id/verify - već zaštićeno u servisu</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT) - +30 novih testova</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Validation:</strong> Check-in creation validacija</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation (CLIENT):</strong> Proverava da check-in pripada clientu <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation (TRAINER):</strong> Proverava da check-in pripada trainerovom clientu <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>ForbiddenException (CLIENT):</strong> Baca za tuđi check-in <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>ForbiddenException (TRAINER):</strong> Baca za tuđi check-in <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Controller:</strong> getCheckInById sa ownership proverom <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>WeighInService:</strong> 25 testova, 98.63% coverage ✅ <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>WeighInService:</strong> Plan linking, mandatory flag, weight spike detection, AI flagging ✅</div>
+            </div>
+        </div>
+
+        <!-- PLANS MODULE -->
+        <div class="module-card warning">
+            <div class="card-header">
+                <span class="module-name">Plans Module</span>
+                <span style="color: var(--warning); font-weight:bold;">74.26% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-calendar-alt"></i> REALNOST (E2E) - SIGURNOST</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Data Isolation:</strong> GET /api/plans/:id - ownership check (TRAINER, CLIENT, ADMIN) <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>CRUD:</strong> Plan creation i assignment radi</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT) - +5 novih testova</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Plan Creation:</strong> Validacija plan strukture</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Assignment:</strong> Logika dodele plana klijentu</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation (TRAINER):</strong> Proverava da plan pripada traineru <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation (CLIENT):</strong> Proverava planHistory <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Ownership Validation (ADMIN):</strong> Dozvoljava pristup svim planovima <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>ForbiddenException:</strong> Baca za tuđi plan (TRAINER) <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Controller:</strong> getPlanById sa ownership proverom <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-times cross-icon"></i></span> Nedostaju testovi za plan history logiku</div>
+            </div>
+        </div>
+
+        <!-- GAMIFICATION MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Gamification Module</span>
+                <span style="color: var(--safe); font-weight:bold;">96.96% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-trophy"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Gamification E2E:</strong> Balance, penalties, rewards testovi</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Penalty Calculation:</strong> Dodavanje kazne za missed workout</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Balance Management:</strong> Running tab kalkulacije</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AI Message Service:</strong> 96.96% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>GamificationController:</strong> 100% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>MonthlyPaywallGuard:</strong> 15 integration testova ✅</div>
+            </div>
+        </div>
+
+        <!-- MEDIA MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Media Module</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-cloud-upload-alt"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Media Upload:</strong> Cloudinary upload testovi</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>File Validation:</strong> Validacija tipa i veličine fajla</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Upload Logic:</strong> Cloudinary integration logika</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>MediaService:</strong> 100% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>MediaController:</strong> 100% coverage ✅</div>
+            </div>
+        </div>
+
+        <!-- AI MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">AI Module</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-robot"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>AI E2E:</strong> 13 testova za message generation</div>
+            </div>
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AIMessageService:</strong> 96.96% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Template Generation:</strong> Svi MessageType-ovi testirani</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Tone Selection:</strong> Logika testirana</div>
+            </div>
+        </div>
+
+        <!-- ADMIN MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Admin Module</span>
+                <span style="color: var(--safe); font-weight:bold;">80.61% OK</span>
+            </div>
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-user-shield"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Admin E2E:</strong> 48 testova (svi endpoint-i sa RBAC)</div>
+            </div>
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AdminService:</strong> 91.5% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AdminController:</strong> 100% coverage (28 testova) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>RBAC:</strong> Svi endpoint-i zaštićeni</div>
+            </div>
+        </div>
+
+        <!-- PAYMENTS MODULE -->
+        <div class="module-card safe">
+            <div class="card-header">
+                <span class="module-name">Payments Module</span>
+                <span style="color: var(--safe); font-weight:bold;">96.2% OK</span>
+            </div>
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-credit-card"></i> REALNOST (E2E)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Payments E2E:</strong> 17 testova (invoice generation, payment tracking)</div>
+            </div>
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-microchip"></i> LOGIKA (UNIT)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>PaymentsService:</strong> 100% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>PaymentsController:</strong> 96.2% coverage ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Invoice Generation:</strong> Sa penaltyHistory testirano</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- DATA ISOLATION SECTION -->
+    <h2 style="margin-top: 60px;"><i class="fas fa-shield-alt"></i> DATA ISOLATION TESTOVI (19 E2E Testova)</h2>
+    <div class="module-grid">
+        <div class="module-card safe" style="grid-column: 1 / -1;">
+            <div class="card-header">
+                <span class="module-name">Data Isolation Coverage</span>
+                <span style="color: var(--safe); font-weight:bold;">19/19 PROLAZE</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-lock"></i> ENDPOINT POKRIVENOST</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>GET /api/clients/workouts/all</strong> - 6 testova (Client A/B isolation)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>GET /api/workouts/week/:date</strong> - 2 testa (Client A/B isolation)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>GET /api/workouts/today</strong> - 2 testa (Client A/B isolation)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>GET /api/workouts/:id</strong> - 2 testa (Client A vidi svoj, Client B dobija 403) <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>PATCH /api/workouts/:id</strong> - 2 testa (Client A ažurira svoj, Client B dobija 403) <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>GET /api/checkins/:id</strong> - 3 testa (Client A vidi svoj, Client B dobija 403, Trainer A ne vidi Trainer B client check-in) <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>GET /api/plans/:id</strong> - 2 testa (Trainer A vidi svoj, Trainer B dobija 403) <span class="badge badge-new">NEW</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. FRONTEND MODULES (FLUTTER) -->
+    <h2 style="margin-top: 60px;"><i class="fas fa-mobile-alt"></i> FRONTEND TESTOVI (234 testova: 234 implementirana, 100% success rate)</h2>
+    <div class="module-grid">
+
+        <!-- WORKOUT RUNNER -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Workout Runner</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-hand-pointer"></i> INTEGRATION (Simulacija Klika)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> Ceo flow: Start -> Unos -> Finish</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> UI se ne raspada pri unosu podataka</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT & WIDGET TESTOVI</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>WorkoutController (6 testova):</strong> refreshWorkouts logika (optimistic update, full reload, error handling, matching logic, adds workout if not found) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>StateService:</strong> `finishWorkout` menja state u local storage-u</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>RepsPicker:</strong> Widget prikazuje dobre brojeve</div>
+            </div>
+        </div>
+
+        <!-- AUTH FRONTEND -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Auth Frontend</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title" style="color: var(--warning)"><i class="fas fa-exclamation-triangle"></i> INTEGRATION (Rizik)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> Login flow radi</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Data Isolation:</strong> User A/B isolation test <span class="badge badge-new">NEW</span></div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-exclamation-triangle" style="color: orange"></i></span> Offline Data Isolation (Zavisi od brisanja baze)</div>
+            </div>
+
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (12 komada)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AuthController:</strong> `login()` metoda poziva repo</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>State:</strong> `build()` vraća User objekat ako je ulogovan</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Error Handling:</strong> Vraća error state ako API pukne</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Data Isolation:</strong> Verifikacija userId u API pozivima</div>
+            </div>
+        </div>
+
+        <!-- WORKOUT REPOSITORY -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">WorkoutRepository</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (8 komada)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>migrateDayOfWeek:</strong> 4 testa (postojeći, fetch, null, fail)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>migratePlanId:</strong> 4 testa (postojeći, fetch, null, fail)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>COUNT COMPARISON:</strong> Server vs Isar log comparison (4 testa: more logs, same count, error handling, data reuse) ✅</div>
+            </div>
+        </div>
+
+        <!-- PLAN REPOSITORY -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">PlanRepository</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (3 komada)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>getCurrentPlan:</strong> Vraća null kada nema planova</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>getPlanById:</strong> Vraća null kada plan ne postoji</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>getAllPlans:</strong> Vraća praznu listu kada nema planova</div>
+            </div>
+        </div>
+
+        <!-- PLAN MAPPER -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">PlanMapper</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (2 komada)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>toEntity:</strong> Konvertuje DTO u Plan entity</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Null Handling:</strong> Rukuje null vrednostima</div>
+            </div>
+        </div>
+
+        <!-- REMOTE DATA SOURCE -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">RemoteDataSource</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (4 testa)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>updateWorkoutLog:</strong> Throws 403 Forbidden with specific message when workout does not belong to user ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>updateWorkoutLog:</strong> Throws 403 Forbidden with fallback message when server message is missing ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>markAsMissed:</strong> Throws 403 Forbidden with specific message when workout does not belong to user ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>markAsMissed:</strong> Throws 403 Forbidden with fallback message when server message is missing ✅</div>
+            </div>
+        </div>
+
+        <!-- REMOTE DATA SOURCE ERROR HANDLING -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">RemoteDataSource Error Handling</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (12 testova)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Network Timeout:</strong> Handling network timeout scenarija ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Partial Response:</strong> Handling delimičnih odgovora ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Concurrent Requests:</strong> Handling simultanih zahteva ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Backend Errors:</strong> Handling backend error scenarija ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Edge Cases:</strong> Malformed data, empty responses, itd. ✅</div>
+            </div>
+        </div>
+
+        <!-- CHECKIN CONTROLLER -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">CheckInController</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (20 testova) - AŽURIRANO</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Class Exists:</strong> CheckInController klasa postoji ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>build() - Initial State:</strong> 3 testa (empty list, list with check-ins, error handling) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>deleteCheckIn():</strong> 4 testa (delete and refresh, invalid ID, delete fails, refresh fails) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>shouldRequireCheckIn():</strong> 12 testova (null user, TRAINER, ADMIN, already checked in, no workouts, rest days, completed workouts, incomplete workouts, mix scenarios, error handling) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-info-circle" style="color: #4CAF50;"></i></span> <strong>Status Ažuriranja:</strong> Prošireno sa 1 na 20 testova kroz FAZA 3 (Basic Testovi poboljšanje) ✅</div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS CONTROLLER -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Analytics Controller (CLIENT)</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (17 testova)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AnalyticsController:</strong> Class exists ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>ClientAnalytics:</strong> Class exists ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Initial State:</strong> Testovi proveravaju initial state loading ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>getClientAnalytics:</strong> CLIENT role analytics flow ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>refreshClients:</strong> Client list refresh logika ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Error Handling:</strong> Edge case scenarije pokriveni ✅</div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS CONTROLLER TRAINER -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Analytics Controller (TRAINER)</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (5 testova)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>build():</strong> Fetches trainer clients on initialization ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>getClientAnalytics():</strong> Uses clientId (ClientProfile._id) for TRAINER ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>getClientAnalytics():</strong> Returns ClientAnalytics with all metrics ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Data Isolation:</strong> build() returns only trainer's clients ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Data Isolation:</strong> getClientAnalytics() verifies client belongs to trainer ✅</div>
+            </div>
+        </div>
+
+        <!-- SYNC MANAGER (Basic Test) -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">SyncManager (Orchestrator)</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> ARHITEKTURA I TESTOVI</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Class Exists:</strong> SyncManager klasa postoji ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-info-circle" style="color: #4CAF50;"></i></span> <strong>Uloga SyncManager-a:</strong> Orchestrator koji koordinira kompletan sync proces (Media-First → Push → Pull) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-info-circle" style="color: #4CAF50;"></i></span> <strong>Funkcionalnost:</strong> Media-First sync (check-in photos), Push changes (local → remote), Pull changes (remote → local), Conflict resolution (Server Wins), Retry mechanism (exponential backoff), Recovery logic (missing planId/dayOfWeek) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-info-circle" style="color: #4CAF50;"></i></span> <strong>Test Pokrivenost:</strong> Basic test u `sync_manager_test.dart` (1 test - class exists). Kompleksni testovi u `sync_manager_service_test.dart` (15 testova, 10/10 merodavnost) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-info-circle" style="color: #4CAF50;"></i></span> <strong>Zašto Basic Test:</strong> SyncManager je orchestrator - kompleksna logika je testirana kroz SyncManagerService testove koji testiraju integraciju sa LocalDataSource i mock RemoteDataSource ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Vizija Alignment:</strong> Offline-First arhitektura - SyncManager obezbeđuje da se sve izmene sinhronizuju sa backend-om kada je internet dostupan ✅</div>
+            </div>
+        </div>
+
+        <!-- SYNC MANAGER SERVICE -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">SyncManagerService</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (15 testova) - 10/10 MERODAVNOST</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Sync Flow:</strong> pull changes -> merge -> push changes ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Conflict Resolution:</strong> Server wins strategy ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Network Failure:</strong> Handling network failures ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Push/Pull Changes:</strong> Dirty workouts/check-ins/plans handling ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Lock Mechanism:</strong> isSyncing=true protection ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Recovery Logic:</strong> Missing planId handling ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Edge Cases:</strong> Empty response, large batch, malformed data ✅</div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS SERVICE TRAINER -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">AnalyticsService (TRAINER)</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (13 testova)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Trainer Analytics Flow:</strong> Backend endpoints (3 testa) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Client Analytics Flow:</strong> Offline calculation (3 testa) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Data Isolation:</strong> Trainer clients, client ownership (2 testa) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Error Handling:</strong> Network errors, backend errors, missing data (5 testova) ✅</div>
+            </div>
+        </div>
+
+        <!-- WORKOUT STATE SERVICE ERROR HANDLING -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">WorkoutStateService Error Handling</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (5 testova)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Retry Logika:</strong> Testira retry mehanizam nakon API fail-a ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>403 Handling:</strong> Testira da 403 greške ne pokušavaju retry ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Max Retries:</strong> Testira maksimalan broj retry pokušaja ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Partial Response:</strong> Testira handling delimičnih odgovora ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>Missing Fields:</strong> Testira handling nedostajućih polja u response-u ✅</div>
+            </div>
+        </div>
+
+        <!-- MOCK DATA FACTORY -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">MockDataFactory</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (18 testova)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>createBackendWorkoutLogResponse:</strong> 5 testova (valid ISO 8601 dates, required fields, null handling, custom values) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>createBackendCheckInResponse:</strong> 5 testova ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>createBackendPlanResponse:</strong> 4 testa ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>createBackendClientProfileResponse:</strong> 4 testa ✅</div>
+            </div>
+        </div>
+
+        <!-- WIDGETS -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Widgets</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-unit">
+                <div class="layer-title title-unit"><i class="fas fa-code"></i> UNIT TESTOVI (17 komada)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>RepsPicker:</strong> 4 testa (prikaz, klik, initial value, multiple clicks)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>CustomNumpad:</strong> 1 test (rendering)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>AdherenceChart:</strong> 3 testa (data, loading, empty)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>StrengthProgressionChart:</strong> 3 testa (data, loading, empty)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>FinishWorkoutButton:</strong> 3 testa (prikaz, finish, give up)</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-unit"></i></span> <strong>CurrentPlanCard:</strong> 2 testa (null, available)</div>
+            </div>
+        </div>
+
+        <!-- AUTH DATA ISOLATION -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Auth Data Isolation</span>
+                <span style="color: var(--safe); font-weight:bold;">100% OK</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-shield-alt"></i> INTEGRATION TEST</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>User A/B Isolation:</strong> User A logs in → sees only User A data. Logout → User B logs in → sees only User B data ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Data Verification:</strong> Workout logs belong only to logged-in user ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>Backend Filtering:</strong> Backend filters data by userId from JWT token ✅</div>
+            </div>
+        </div>
+
+        <!-- INTEGRATION TESTS STATUS -->
+        <div class="module-card safe" style="border-top-color: var(--frontend-bg);">
+            <div class="card-header">
+                <span class="module-name">Integration Tests Status</span>
+                <span style="color: var(--safe); font-weight:bold;">13/13 IMPLEMENTIRANO</span>
+            </div>
+            
+            <div class="layer-section layer-e2e">
+                <div class="layer-title title-e2e"><i class="fas fa-hand-pointer"></i> INTEGRATION TESTOVI</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>checkin_flow_test.dart:</strong> 7 testova IMPLEMENTIRANO (navigation, history view, camera failure, empty state, creation flow, deletion flow, upload failure handling) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>analytics_flow_test.dart:</strong> 4 testa IMPLEMENTIRANO (trainer-only access, page load, no clients handling, tabs navigation) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>workout_runner_flow_test.dart:</strong> 1 test IMPLEMENTIRANO (complete workout flow) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-check check-e2e"></i></span> <strong>auth_data_isolation_test.dart:</strong> 1 test IMPLEMENTIRANO (User A/B isolation) ✅</div>
+                <div class="scenario-item"><span class="icon-box"><i class="fas fa-info-circle" style="color: #4CAF50;"></i></span> <strong>Napomena:</strong> Svi integration testovi su implementirani. Nema TODO testova. Check-in creation flow testira full flow (camera → upload → save → sync) sa Android device-om. Analytics flow testira trainer role access i client selection. ✅</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- COVERAGE TREND SECTION -->
+    <h2 style="margin-top: 60px;"><i class="fas fa-chart-line"></i> COVERAGE TREND</h2>
+    <div class="trend-section">
+        <h3 style="margin-top: 0; color: var(--text-main);">Backend Coverage Poboljšanja</h3>
+        <div class="trend-item">
+            <span class="trend-label">Statements Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">49.25% → 79.29% (+30.04%) ✅ DOSTIGNUTO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Branches Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">37.89% → 64.5% (+26.61%) ⚠️ BLIZU (nedostaje 0.5%)</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Functions Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">52.32% → 86.06% (+33.74%) ✅ DOSTIGNUTO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Lines Coverage:</span>
+            <span class="trend-value"><span class="trend-improvement">48.59% → 79.05% (+30.46%) ✅ DOSTIGNUTO</span></span>
+        </div>
+        
+        <h3 style="margin-top: 30px; color: var(--text-main);">Frontend Test Success Rate</h3>
+        <div class="trend-item">
+            <span class="trend-label">Test Success Rate:</span>
+            <span class="trend-value"><span class="trend-improvement">234/234 prolaze (100%)</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Ukupno Testova:</span>
+            <span class="trend-value">234 (234 implementirana, 0 TODO)</span>
+        </div>
+        
+        <h3 style="margin-top: 30px; color: var(--text-main);">Moduli sa Najvećim Poboljšanjima</h3>
+        <div class="trend-item">
+            <span class="trend-label">Admin Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">0% → 80.61% (+80.61%) ✅ KOMPLETIRANO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">AI Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">0% → 100% (+100%) ✅ KOMPLETIRANO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Payments Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">0% → 96.2% (+96.2%) ✅ KOMPLETIRANO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Gamification Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">38.33% → 96.96% (+58.63%) ✅ KOMPLETIRANO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Media Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">63.04% → 100% (+36.96%) ✅ KOMPLETIRANO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">CheckIns Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">61.68% → 85.57% (+23.89%) ✅ KOMPLETIRANO</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Workouts Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">64.64% → 74.37% (+9.73%) ⚠️ BLIZU</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Plans Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">45.39% → 74.26% (+28.87%) ⚠️ BLIZU</span></span>
+        </div>
+        <div class="trend-item">
+            <span class="trend-label">Clients Modul:</span>
+            <span class="trend-value"><span class="trend-improvement">56.98% → 70.54% (+13.56%) ⚠️ BLIZU</span></span>
+        </div>
+    </div>
+
+    <!-- SECURITY FIXES SECTION -->
+    <h2 style="margin-top: 60px;"><i class="fas fa-lock"></i> SIGURNOSNE ISPRAVKE</h2>
+    <div class="security-section">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <i class="fas fa-check-circle" style="color: var(--safe); font-size: 1.5em;"></i>
+            <h3 style="margin: 0; color: var(--safe);">SVE SIGURNOSNE RUPE ZATVORENE</h3>
+        </div>
+        
+        <div class="security-item">
+            <span class="icon-box"><i class="fas fa-check check-e2e"></i></span>
+            <div>
+                <strong>GET /api/workouts/:id</strong> - Ownership Check
+                <br><span style="color: var(--text-muted); font-size: 0.9em;">Proverava da li workout pripada ulogovanom korisniku. Baca 403 Forbidden za tuđe treninge.</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+        </div>
+        
+        <div class="security-item">
+            <span class="icon-box"><i class="fas fa-check check-e2e"></i></span>
+            <div>
+                <strong>PATCH /api/workouts/:id</strong> - Ownership Check
+                <br><span style="color: var(--text-muted); font-size: 0.9em;">Proverava da li workout pripada ulogovanom korisniku. Baca 403 Forbidden za tuđe treninge.</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+        </div>
+        
+        <div class="security-item">
+            <span class="icon-box"><i class="fas fa-check check-e2e"></i></span>
+            <div>
+                <strong>GET /api/checkins/:id</strong> - Ownership Check (CLIENT i TRAINER)
+                <br><span style="color: var(--text-muted); font-size: 0.9em;">CLIENT: može pristupiti samo svom check-in-u. TRAINER: može pristupiti check-in-u svog clienta. Baca 403 Forbidden za tuđe check-in-e.</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+        </div>
+        
+        <div class="security-item">
+            <span class="icon-box"><i class="fas fa-check check-e2e"></i></span>
+            <div>
+                <strong>GET /api/plans/:id</strong> - Ownership Check (TRAINER, CLIENT, ADMIN)
+                <br><span style="color: var(--text-muted); font-size: 0.9em;">TRAINER: može pristupiti samo svojim planovima. CLIENT: može pristupiti planovima u planHistory. ADMIN: može pristupiti svim planovima. Baca 403 Forbidden za tuđe planove.</span>
+                <span class="badge badge-new">NEW</span>
+            </div>
+        </div>
+        
+        <div class="security-item">
+            <span class="icon-box"><i class="fas fa-check check-e2e"></i></span>
+            <div>
+                <strong>PATCH /api/checkins/:id/verify</strong> - Ownership Check (TRAINER)
+                <br><span style="color: var(--text-muted); font-size: 0.9em;">Već zaštićeno u servisu - CheckInsService.verifyCheckIn() proverava da li check-in pripada traineru. Testirano u E2E testovima.</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-shield-alt" style="color: var(--safe);"></i>
+                <strong>Test Coverage:</strong>
+            </div>
+            <div style="padding-left: 30px; color: var(--text-muted); font-size: 0.9em;">
+                • <strong>Unit Testovi:</strong> 606 testova (100% success rate) ✅
+                <br>• <strong>E2E Testovi:</strong> 298 testova (100% success rate) ✅
+                <br>• <strong>Ukupno:</strong> 904 testova (606 Unit + 298 E2E) - 100% success rate ✅
+                <br>• <strong>Analytics Testovi:</strong> ✅ Svi analytics testovi prolaze (unit i E2E)
+                <br>• <strong>Globalni Coverage:</strong> 79.29% statements ✅, 64.5% branches ⚠️, 86.06% functions ✅, 79.05% lines ✅
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

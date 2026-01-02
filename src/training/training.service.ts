@@ -271,10 +271,6 @@ export class TrainingService {
       errors: [],
     };
 
-    // Start MongoDB session for transaction support
-    const session = await this.workoutLogModel.db.startSession();
-    session.startTransaction();
-
     // Process workout logs - collect updates for bulk operation
     if (syncBatchDto.newLogs && syncBatchDto.newLogs.length > 0) {
       const bulkOps: any[] = [];
@@ -343,10 +339,10 @@ export class TrainingService {
         }
       }
 
-      // Execute bulk update if there are operations (within transaction)
+      // Execute bulk update if there are operations
       if (bulkOps.length > 0) {
         try {
-          await this.workoutLogModel.bulkWrite(bulkOps, { session });
+          await this.workoutLogModel.bulkWrite(bulkOps);
           result.processedLogs = bulkOps.length;
         } catch (error) {
           // If bulk write fails, fall back to individual updates
@@ -377,7 +373,7 @@ export class TrainingService {
                   completedAt: logDto.completedAt,
                   difficultyRating: logDto.difficultyRating,
                   clientNotes: logDto.clientNotes,
-                });
+                }, clientId);
                 result.processedLogs++;
               }
             } catch (error) {
@@ -440,17 +436,6 @@ export class TrainingService {
           });
         }
       }
-    }
-
-    // Commit transaction if everything succeeded
-    try {
-      await session.commitTransaction();
-    } catch (error) {
-      // Rollback on error
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
     }
 
     return result;

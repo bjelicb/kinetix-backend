@@ -7,6 +7,7 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
 import { TransformInterceptor } from '../src/common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { DateUtils } from '../src/common/utils/date.utils';
 import {
   createTestTrainer,
   createTestClient,
@@ -259,12 +260,13 @@ describe('Trainer Flow E2E (e2e)', () => {
       const { planId } = await createTestPlan(app, trainer.token);
 
       // Use a future Monday as startDate to ensure we get the full week and avoid conflicts
-      const startDate = new Date();
+      let startDate = new Date();
       const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek) % 7 || 7;
       // Add extra week to avoid conflicts with previous test
       startDate.setDate(startDate.getDate() + daysUntilMonday + 7);
-      startDate.setHours(0, 0, 0, 0);
+      // Normalize to start of day using DateUtils for consistency with service
+      startDate = DateUtils.normalizeToStartOfDay(startDate);
 
       const assignData = {
         clientIds: [client.profileId],
@@ -288,8 +290,10 @@ describe('Trainer Flow E2E (e2e)', () => {
         throw new Error('WorkoutLog model not found');
       }
 
+      // Calculate weekEnd and normalize to end of day for proper query range
       const weekEnd = new Date(startDate);
       weekEnd.setDate(weekEnd.getDate() + 7);
+      const weekEndNormalized = DateUtils.normalizeToEndOfDay(weekEnd);
 
       const logs = await workoutLogModel
         .find({
@@ -297,7 +301,7 @@ describe('Trainer Flow E2E (e2e)', () => {
           weeklyPlanId: new Types.ObjectId(planId),
           workoutDate: {
             $gte: startDate,
-            $lt: weekEnd,
+            $lte: weekEndNormalized,
           },
         })
         .exec();

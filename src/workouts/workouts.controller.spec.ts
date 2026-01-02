@@ -103,16 +103,16 @@ describe('WorkoutsController', () => {
       const updatedLog = { ...mockWorkoutLog, ...updateDto };
       workoutsService.updateWorkoutLog.mockResolvedValue(updatedLog as any);
 
-      const result = await controller.updateWorkoutLog(logId, updateDto);
+      const result = await controller.updateWorkoutLog(mockJwtPayload, logId, updateDto);
 
-      expect(workoutsService.updateWorkoutLog).toHaveBeenCalledWith(logId, updateDto);
+      expect(workoutsService.updateWorkoutLog).toHaveBeenCalledWith(logId, updateDto, mockJwtPayload.sub);
       expect(result).toEqual(updatedLog);
     });
 
     it('should throw NotFoundException if log not found', async () => {
       workoutsService.updateWorkoutLog.mockRejectedValue(new NotFoundException('Workout log not found'));
 
-      await expect(controller.updateWorkoutLog(logId, updateDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.updateWorkoutLog(mockJwtPayload, logId, updateDto)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -141,16 +141,16 @@ describe('WorkoutsController', () => {
     it('should return workout log by id', async () => {
       workoutsService.getWorkoutById.mockResolvedValue(mockWorkoutLog as any);
 
-      const result = await controller.getWorkoutById(logId);
+      const result = await controller.getWorkoutById(mockJwtPayload, logId);
 
-      expect(workoutsService.getWorkoutById).toHaveBeenCalledWith(logId);
+      expect(workoutsService.getWorkoutById).toHaveBeenCalledWith(logId, mockJwtPayload.sub);
       expect(result).toEqual(mockWorkoutLog);
     });
 
     it('should throw NotFoundException if log not found', async () => {
       workoutsService.getWorkoutById.mockRejectedValue(new NotFoundException('Workout log not found'));
 
-      await expect(controller.getWorkoutById(logId)).rejects.toThrow(NotFoundException);
+      await expect(controller.getWorkoutById(mockJwtPayload, logId)).rejects.toThrow(NotFoundException);
     });
   });
 

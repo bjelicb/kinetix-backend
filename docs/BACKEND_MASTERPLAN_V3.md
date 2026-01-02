@@ -348,8 +348,16 @@ async switchTrainer(
 
 ### **3.8 Rate Limiting Strategy** 🟡 **NOVO**
 
+**⚠️ STATUS:** ⚠️ **DELIMIČNO IMPLEMENTIRANO**
+- ✅ ThrottlerModule je implementiran u `app.module.ts`
+- ✅ Global ThrottlerGuard je postavljen (APP_GUARD)
+- ⚠️ Limit je 10 req/min (ne 100 kako planira V3)
+- ⚠️ Samo media endpoint ima `@Throttle` decorator
+- ❌ Auth endpoints nemaju `@Throttle` decorator
+- ❌ Sync endpoint nema `@Throttle` decorator
+
 **Zadatak:**
-Dodati rate limiting na kritične endpointe za zaštitu od abuse
+Ažurirati postojeći rate limiting i dodati na sve kritične endpointe
 
 **Zahtevi:**
 - [ ] Global rate limiting: 100 req/min per IP
@@ -368,14 +376,16 @@ Dodati rate limiting na kritične endpointe za zaštitu od abuse
 **Implementacija:**
 
 ```typescript
-// main.ts (Global config - već postoji, ažurirati)
+// main.ts (Global config - VEĆ POSTOJI, TREBA AŽURIRATI)
+// Trenutno: limit: isTest ? 10000 : 10
+// Treba promeniti na: limit: isTest ? 10000 : 100
 ThrottlerModule.forRootAsync({
   imports: [ConfigModule],
   useFactory: (configService: ConfigService) => {
     const isTest = process.env.NODE_ENV === 'test';
     return [{
       ttl: 60000, // 1 minuta
-      limit: isTest ? 10000 : 100,  // Global: 100 req/min (10000 u testu)
+      limit: isTest ? 10000 : 100,  // Global: 100 req/min (10000 u testu) - AŽURIRATI IZ 10
     }];
   },
   inject: [ConfigService],
@@ -442,11 +452,17 @@ Retry-After: 60
 
 ### **3.8 AI Message Automation (Cron Jobs)** 🔴 **KRITIČNO**
 
-**Zadatak:**
-Automatski generisati i slati AI poruke na osnovu event-a
+**⚠️ STATUS:** ⚠️ **SERVICE POSTOJI, CRON JOBS NEDOSTAJU**
+- ✅ AIMessageService postoji u `src/gamification/ai-message.service.ts`
+- ✅ Template-based messaging je implementiran
+- ✅ Service je testiran (96.96% coverage)
+- ❌ Nema cron jobs za automatsko generisanje poruka
+- ❌ Nema `AIMessageAutomationJob`
 
-**Napomena:** AI Message Service već postoji u `src/gamification/ai-message.service.ts`.
-Ova faza dodaje automatske cron job-ove koji generišu poruke na osnovu event-a.
+**Zadatak:**
+Dodati automatske cron job-ove koji generišu poruke na osnovu event-a
+
+**Napomena:** AI Message Service već postoji i radi. Ova faza dodaje automatske cron job-ove koji generišu poruke na osnovu event-a.
 Template-based messaging je implementiran, LLM integracija je planirana za V4.
 
 **Zahtevi:**
@@ -605,11 +621,17 @@ async uploadVideo(
 
 ### **3.10 CORS Security Configuration** 🟡 **NOVO**
 
+**⚠️ STATUS:** ⚠️ **IMPLEMENTIRANO ALI PREVIŠE OTVORENO**
+- ✅ CORS je implementiran u `main.ts`
+- ⚠️ U dev modu dozvoljava SVE localhost i 192.168.0.x (previše otvoreno)
+- ❌ Nema `DEV_MOBILE_IP` iz .env
+- ❌ Nema production whitelist iz .env
+
 **Zadatak:**
-Učvrstiti CORS configuration za produkciju
+Učvrstiti CORS configuration za produkciju i striktniji dev mode
 
 **Problem:**
-Trenutno `main.ts` dozvolj ava SVE localhost adrese i 192.168.0.x opseg u development modu. Previše otvoreno.
+Trenutno `main.ts` dozvoljava SVE localhost adrese i 192.168.0.x opseg u development modu. Previše otvoreno.
 
 **Zahtevi:**
 - [ ] Development: Strict localhost + specific IP from .env
@@ -686,10 +708,10 @@ DEV_MOBILE_IP=http://192.168.0.27:8080
 - [ ] **Input sanitization implementirana**
 - [ ] **Plan renewal feature implementirana**
 - [ ] **Trainer switch handling implementirana (KRITIČNO)**
-- [ ] **Rate Limiting Strategy implementirana (NOVO)**
-- [ ] **AI Message Automation (Cron Jobs) implementirana (KRITIČNO)**
+- [ ] **Rate Limiting Strategy ažurirana (NOVO)** ⚠️ **DELIMIČNO:** ThrottlerModule postoji, treba ažurirati limit (10 → 100) i dodati @Throttle na auth/sync endpoint-e
+- [ ] **AI Message Automation (Cron Jobs) implementirana (KRITIČNO)** ⚠️ **DELIMIČNO:** AIMessageService postoji, treba dodati cron jobs
 - [ ] **Video Upload & Management implementirana**
-- [ ] **CORS Security Configuration učvršćena (NOVO)**
+- [ ] **CORS Security Configuration učvršćena (NOVO)** ⚠️ **DELIMIČNO:** CORS postoji, treba striktnija dev konfiguracija i .env whitelist
 - [ ] Testovi napisani (min 20 testova - povećano)
 
 ---

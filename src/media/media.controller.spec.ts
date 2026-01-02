@@ -79,5 +79,121 @@ describe('MediaController', () => {
       expect(result).toHaveProperty('uploadPreset');
       expect(result).toHaveProperty('folder');
     });
+
+    it('should handle error when MediaService fails', async () => {
+      mediaService.getUploadSignature.mockImplementation(() => {
+        throw new Error('Cloudinary service error');
+      });
+
+      await expect(
+        controller.getUploadSignature(mockClientJwtPayload),
+      ).rejects.toThrow('Cloudinary service error');
+    });
+
+    it('should handle invalid user ID format', async () => {
+      const invalidPayload = {
+        ...mockClientJwtPayload,
+        sub: 'invalid-id',
+      };
+      mediaService.getUploadSignature.mockImplementation(() => {
+        throw new Error('Invalid user ID');
+      });
+
+      await expect(
+        controller.getUploadSignature(invalidPayload),
+      ).rejects.toThrow('Invalid user ID');
+    });
+  });
+
+  describe('getBatchSignatures', () => {
+    it('should return batch Cloudinary upload signatures', async () => {
+      const mockSignatures = [
+        {
+          signature: 'mock_signature_1',
+          timestamp: 1234567890,
+          cloudName: 'test_cloud',
+          apiKey: 'test_api_key',
+          uploadPreset: 'test_preset',
+          folder: 'checkins/client_507f1f77bcf86cd799439012',
+        },
+        {
+          signature: 'mock_signature_2',
+          timestamp: 1234567891,
+          cloudName: 'test_cloud',
+          apiKey: 'test_api_key',
+          uploadPreset: 'test_preset',
+          folder: 'checkins/client_507f1f77bcf86cd799439012',
+        },
+      ];
+      mediaService.getBatchSignatures = jest.fn().mockReturnValue(mockSignatures);
+
+      const result = await controller.getBatchSignatures(mockClientJwtPayload, 2);
+
+      expect(mediaService.getBatchSignatures).toHaveBeenCalledWith(mockClientJwtPayload.sub, 2);
+      expect(result).toEqual(mockSignatures);
+      expect(result).toHaveLength(2);
+    });
+
+    it('should throw BadRequestException if count is less than 1', async () => {
+      await expect(
+        controller.getBatchSignatures(mockClientJwtPayload, 0),
+      ).rejects.toThrow('Count must be between 1 and 10');
+    });
+
+    it('should throw BadRequestException if count is greater than 10', async () => {
+      await expect(
+        controller.getBatchSignatures(mockClientJwtPayload, 11),
+      ).rejects.toThrow('Count must be between 1 and 10');
+    });
+
+    it('should throw BadRequestException if count is missing', async () => {
+      await expect(
+        controller.getBatchSignatures(mockClientJwtPayload, undefined as any),
+      ).rejects.toThrow('Count must be between 1 and 10');
+    });
+
+    it('should handle error when MediaService fails', async () => {
+      mediaService.getBatchSignatures = jest.fn().mockImplementation(() => {
+        throw new Error('Cloudinary service error');
+      });
+
+      await expect(
+        controller.getBatchSignatures(mockClientJwtPayload, 5),
+      ).rejects.toThrow('Cloudinary service error');
+    });
+
+    it('should accept count of 1', async () => {
+      const mockSignatures = [
+        {
+          signature: 'mock_signature_1',
+          timestamp: 1234567890,
+          cloudName: 'test_cloud',
+          apiKey: 'test_api_key',
+          uploadPreset: 'test_preset',
+          folder: 'checkins/client_507f1f77bcf86cd799439012',
+        },
+      ];
+      mediaService.getBatchSignatures = jest.fn().mockReturnValue(mockSignatures);
+
+      const result = await controller.getBatchSignatures(mockClientJwtPayload, 1);
+
+      expect(result).toHaveLength(1);
+    });
+
+    it('should accept count of 10', async () => {
+      const mockSignatures = Array.from({ length: 10 }, (_, i) => ({
+        signature: `mock_signature_${i + 1}`,
+        timestamp: 1234567890 + i,
+        cloudName: 'test_cloud',
+        apiKey: 'test_api_key',
+        uploadPreset: 'test_preset',
+        folder: 'checkins/client_507f1f77bcf86cd799439012',
+      }));
+      mediaService.getBatchSignatures = jest.fn().mockReturnValue(mockSignatures);
+
+      const result = await controller.getBatchSignatures(mockClientJwtPayload, 10);
+
+      expect(result).toHaveLength(10);
+    });
   });
 });

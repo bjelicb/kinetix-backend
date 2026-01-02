@@ -17,6 +17,7 @@ import { CheckInsModule } from './checkins/checkins.module';
 import { TrainingModule } from './training/training.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { AdminModule } from './admin/admin.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -26,9 +27,15 @@ import { AdminModule } from './admin/admin.module';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        // Use test database when running tests
+        const isTest = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
+        const uri = isTest 
+          ? configService.get<string>('MONGODB_TEST_URI') || configService.get<string>('MONGODB_URI')
+          : configService.get<string>('MONGODB_URI');
+        
+        return { uri };
+      },
       inject: [ConfigService],
     }),
     ThrottlerModule.forRootAsync({
@@ -56,6 +63,7 @@ import { AdminModule } from './admin/admin.module';
     TrainingModule,
     GamificationModule,
     AdminModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

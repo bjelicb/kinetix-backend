@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { WorkoutLog, WorkoutLogDocument } from './schemas/workout-log.schema';
@@ -435,6 +435,18 @@ export class WorkoutsService {
       // Update existing log
       existingLog.completedExercises = dto.completedExercises || [];
       existingLog.isCompleted = dto.isCompleted ?? true;
+      
+      // ✅ KRITIČNO: Ako je workout completed, isMissed MORA biti false
+      // Ovo osigurava data consistency - workout ne može biti completed I missed istovremeno
+      if (existingLog.isCompleted) {
+        existingLog.isMissed = false;
+        AppLogger.logOperation('WORKOUT_COMPLETE_RESET_MISSED', {
+          workoutLogId: existingLog._id.toString(),
+          previousIsMissed: existingLog.isMissed,
+          message: 'Reset isMissed to false because workout is completed',
+        }, 'debug');
+      }
+      
       const completedAt = dto.completedAt
         ? new Date(dto.completedAt)
         : new Date();
@@ -506,6 +518,8 @@ export class WorkoutsService {
       workoutStartTime: workoutStartTime.toISOString(),
     }, 'debug');
 
+    const isCompleted = dto.isCompleted ?? true;
+    
     const log = new this.workoutLogModel({
       clientId: new Types.ObjectId(clientProfileId),
       trainerId: new Types.ObjectId(trainerIdString),
@@ -513,7 +527,8 @@ export class WorkoutsService {
       workoutDate: normalizedWorkoutDate, // ✅ Use normalized date
       dayOfWeek: dto.dayOfWeek,
       completedExercises: dto.completedExercises || [],
-      isCompleted: dto.isCompleted ?? true,
+      isCompleted,
+      isMissed: isCompleted ? false : false, // ✅ KRITIČNO: Ako je completed, isMissed MORA biti false
       completedAt,
       workoutStartTime,
       suspiciousCompletion: false, // New logs can't be suspicious (just created)
@@ -603,11 +618,21 @@ export class WorkoutsService {
   async updateWorkoutLog(
     logId: string,
     dto: UpdateWorkoutLogDto,
+    userId: string,
   ): Promise<WorkoutLog> {
     // First, get the existing log to check if isMissed is changing
     const existingLog = await this.workoutLogModel.findById(logId).exec();
     if (!existingLog) {
       throw new NotFoundException('Workout log not found');
+    }
+
+    // ✅ SECURITY: Verify that the workout log belongs to the authenticated user
+    const client = await this.clientsService.getProfile(userId);
+    const clientProfileId = (client as any)._id.toString();
+    const logClientId = existingLog.clientId.toString();
+
+    if (logClientId !== clientProfileId) {
+      throw new ForbiddenException('You do not have permission to update this workout log');
     }
 
     const updateData: any = {};
@@ -618,6 +643,17 @@ export class WorkoutsService {
 
     if (dto.isCompleted !== undefined) {
       updateData.isCompleted = dto.isCompleted;
+      
+      // ✅ KRITIČNO: Ako je workout completed, isMissed MORA biti false
+      // Ovo osigurava data consistency - workout ne može biti completed I missed istovremeno
+      if (dto.isCompleted === true) {
+        updateData.isMissed = false;
+        AppLogger.logOperation('UPDATE_WORKOUT_LOG_RESET_MISSED', {
+          logId,
+          previousIsMissed: existingLog.isMissed,
+          message: 'Reset isMissed to false because workout is being completed',
+        }, 'debug');
+      }
     }
 
     if (dto.completedAt) {
@@ -779,7 +815,7 @@ export class WorkoutsService {
       .exec();
   }
 
-  async getWorkoutById(logId: string): Promise<WorkoutLog> {
+  async getWorkoutById(logId: string, userId: string): Promise<WorkoutLog> {
     const log = await this.workoutLogModel
       .findById(logId)
       .populate('weeklyPlanId', 'name workouts')
@@ -787,6 +823,15 @@ export class WorkoutsService {
 
     if (!log) {
       throw new NotFoundException('Workout log not found');
+    }
+
+    // ✅ SECURITY: Verify that the workout log belongs to the authenticated user
+    const client = await this.clientsService.getProfile(userId);
+    const clientProfileId = (client as any)._id.toString();
+    const logClientId = log.clientId.toString();
+
+    if (logClientId !== clientProfileId) {
+      throw new ForbiddenException('You do not have permission to access this workout log');
     }
 
     return log;
@@ -823,40 +868,47 @@ export class WorkoutsService {
         
         if (!planId) {
           // No plan associated with this log
-          return {
+          // Ensure data consistency: if isCompleted is true, isMissed must be false
+          const enrichedLog = {
             ...log,
             workoutName: 'Workout',
             isRestDay: false,
             planExercises: [],
             planName: 'No Plan',
           };
+          return this.ensureWorkoutLogConsistency(enrichedLog);
         }
         
         try {
           // Fetch plan to get workout details
-          const plan = await this.plansService.getPlanById(planId);
+          // Note: userId is available in getWeekWorkouts method scope
+          const plan = await this.plansService.getPlanById(planId, userId, 'CLIENT');
           const planWorkouts = (plan as any).workouts || [];
           
           // Find matching workout day in plan
           const planWorkout = planWorkouts.find((w: any) => w.dayOfWeek === log.dayOfWeek);
           
-          return {
+          // Ensure data consistency: if isCompleted is true, isMissed must be false
+          const enrichedLog = {
             ...log,
             workoutName: planWorkout?.name || 'Workout',
             isRestDay: planWorkout?.isRestDay || false,
             planExercises: planWorkout?.exercises || [],
             planName: plan.name,
           };
+          return this.ensureWorkoutLogConsistency(enrichedLog);
         } catch (error) {
           console.error(`[WorkoutsService] Error fetching plan ${planId}:`, error);
           // Plan might be deleted, return minimal data
-          return {
+          // Ensure data consistency: if isCompleted is true, isMissed must be false
+          const enrichedLog = {
             ...log,
             workoutName: 'Workout',
             isRestDay: false,
             planExercises: [],
             planName: 'Deleted Plan',
           };
+          return this.ensureWorkoutLogConsistency(enrichedLog);
         }
       })
     );
@@ -877,6 +929,34 @@ export class WorkoutsService {
       .sort({ workoutDate: -1 })
       .lean()
       .exec();
+  }
+
+  /**
+   * Helper function to ensure data consistency: if isCompleted is true, isMissed must be false
+   * This guarantees consistent data even if database contains inconsistent state
+   */
+  private ensureWorkoutLogConsistency(log: any): any {
+    // Log every call for debugging
+    AppLogger.logOperation('WORKOUT_LOG_CONSISTENCY_CHECK', {
+      logId: log._id?.toString(),
+      workoutDate: log.workoutDate,
+      isCompleted: log.isCompleted,
+      isMissed: log.isMissed,
+      message: `Checking consistency: isCompleted=${log.isCompleted}, isMissed=${log.isMissed}`,
+    }, 'debug');
+    
+    if (log.isCompleted === true && log.isMissed === true) {
+      AppLogger.logOperation('WORKOUT_LOG_CONSISTENCY_FIX', {
+        logId: log._id?.toString(),
+        workoutDate: log.workoutDate,
+        message: 'Fixed inconsistent state: isCompleted=true but isMissed=true, setting isMissed=false',
+      }, 'warn');
+      return {
+        ...log,
+        isMissed: false,
+      };
+    }
+    return log;
   }
 
   async getWorkoutLogsByClient(clientProfileId: string | Types.ObjectId): Promise<WorkoutLog[]> {
@@ -920,7 +1000,32 @@ export class WorkoutsService {
     
     try {
       // Fetch plan to get workout details
-      const plan = await this.plansService.getPlanById(planId);
+      // Get userId from client profile using clientId from log
+      const clientId = (log.clientId as any)?._id?.toString() || log.clientId?.toString() || log.clientId;
+      if (!clientId) {
+        // If no clientId, we can't verify ownership - skip enrichment
+        return {
+          ...log.toObject ? log.toObject() : log,
+          workoutName: 'Workout',
+          isRestDay: false,
+          planExercises: [],
+        };
+      }
+      
+      // Get client profile to get userId
+      const clientProfile = await this.clientsService.getProfileById(clientId);
+      if (!clientProfile || !clientProfile.userId) {
+        // If no client profile or userId, skip enrichment
+        return {
+          ...log.toObject ? log.toObject() : log,
+          workoutName: 'Workout',
+          isRestDay: false,
+          planExercises: [],
+        };
+      }
+      
+      const clientUserId = (clientProfile.userId as any)?._id?.toString() || clientProfile.userId?.toString() || clientProfile.userId;
+      const plan = await this.plansService.getPlanById(planId, clientUserId, 'CLIENT');
       const planWorkouts = (plan as any).workouts || [];
       
       // Find matching workout day in plan
@@ -974,17 +1079,48 @@ export class WorkoutsService {
             logId: log._id?.toString(),
             workoutDate: log.workoutDate,
           }, 'debug');
-          return {
+          // Ensure data consistency: if isCompleted is true, isMissed must be false
+          const enrichedLog = {
             ...log,
             workoutName: 'Workout',
             isRestDay: false,
             planExercises: [],
           };
+          return this.ensureWorkoutLogConsistency(enrichedLog);
         }
         
         try {
           // Fetch plan to get workout details
-          const plan = await this.plansService.getPlanById(planId);
+          // Get userId from client profile using clientId from log
+          const clientId = (log.clientId as any)?._id?.toString() || log.clientId?.toString() || log.clientId;
+          if (!clientId) {
+            // If no clientId, skip enrichment
+            // Ensure data consistency: if isCompleted is true, isMissed must be false
+            const enrichedLog = {
+              ...log,
+              workoutName: 'Workout',
+              isRestDay: false,
+              planExercises: [],
+            };
+            return this.ensureWorkoutLogConsistency(enrichedLog);
+          }
+          
+          // Get client profile to get userId
+          const clientProfile = await this.clientsService.getProfileById(clientId);
+          if (!clientProfile || !clientProfile.userId) {
+            // If no client profile or userId, skip enrichment
+            // Ensure data consistency: if isCompleted is true, isMissed must be false
+            const enrichedLog = {
+              ...log,
+              workoutName: 'Workout',
+              isRestDay: false,
+              planExercises: [],
+            };
+            return this.ensureWorkoutLogConsistency(enrichedLog);
+          }
+          
+          const clientUserId = (clientProfile.userId as any)?._id?.toString() || clientProfile.userId?.toString() || clientProfile.userId;
+          const plan = await this.plansService.getPlanById(planId, clientUserId, 'CLIENT');
           const planWorkouts = (plan as any).workouts || [];
           
           // Find matching workout day in plan
@@ -1000,24 +1136,28 @@ export class WorkoutsService {
             exercisesCount: planWorkout?.exercises?.length || 0,
           }, 'debug');
           
-          return {
+          // Ensure data consistency: if isCompleted is true, isMissed must be false
+          const enrichedLog = {
             ...log,
             workoutName: planWorkout?.name || 'Workout',
             isRestDay: planWorkout?.isRestDay || false,
             planExercises: planWorkout?.exercises || [],
           };
+          return this.ensureWorkoutLogConsistency(enrichedLog);
         } catch (error) {
           AppLogger.logError('GET_ALL_WORKOUT_LOGS_ENRICHED_PLAN_ERROR', {
             logId: log._id?.toString(),
             planId,
           }, error as Error);
           // Plan might be deleted, return minimal data
-          return {
+          // Ensure data consistency: if isCompleted is true, isMissed must be false
+          const enrichedLog = {
             ...log,
             workoutName: 'Workout',
             isRestDay: false,
             planExercises: [],
           };
+          return this.ensureWorkoutLogConsistency(enrichedLog);
         }
       })
     );
@@ -1223,6 +1363,257 @@ export class WorkoutsService {
       AppLogger.logError('WORKOUT_DELETE_UNCOMPLETED', { clientProfileId, planId }, error);
       throw error;
     }
+  }
+
+  /**
+   * Get analytics data for a specific client (Trainer view)
+   * Calculates: total workouts, completed workouts, overall adherence, weekly adherence, strength progression
+   * 
+   * @param clientProfileId Client profile ID
+   * @returns Analytics data object
+   */
+  async getClientAnalytics(clientProfileId: string): Promise<{
+    totalWorkouts: number;
+    completedWorkouts: number;
+    overallAdherence: number;
+    weeklyAdherence: number[];
+    strengthProgression: Record<string, Array<{ x: number; y: number }>>;
+  }> {
+    AppLogger.logStart('CLIENT_ANALYTICS_GET', { clientProfileId });
+
+    try {
+      // Get all workout logs for client
+      AppLogger.logOperation('CLIENT_ANALYTICS_FETCH_WORKOUTS', { clientProfileId }, 'debug');
+      const workoutLogs = await this.getAllWorkoutLogsEnriched(clientProfileId);
+      AppLogger.logOperation('CLIENT_ANALYTICS_WORKOUTS_FETCHED', {
+        clientProfileId,
+        totalWorkouts: workoutLogs.length,
+      }, 'debug');
+
+      // Calculate basic metrics
+      const totalWorkouts = workoutLogs.length;
+      const completedWorkouts = workoutLogs.filter((log: any) => log.isCompleted).length;
+      const overallAdherence = totalWorkouts > 0 
+        ? Math.round((completedWorkouts / totalWorkouts) * 100 * 100) / 100 
+        : 0;
+
+      AppLogger.logOperation('CLIENT_ANALYTICS_BASIC_METRICS', {
+        clientProfileId,
+        totalWorkouts,
+        completedWorkouts,
+        overallAdherence,
+      }, 'debug');
+
+      // Calculate weekly adherence (current week: Monday to Sunday)
+      AppLogger.logOperation('CLIENT_ANALYTICS_CALCULATE_WEEKLY', { clientProfileId }, 'debug');
+      const weeklyAdherence = this.calculateWeeklyAdherence(workoutLogs);
+      AppLogger.logOperation('CLIENT_ANALYTICS_WEEKLY_CALCULATED', {
+        clientProfileId,
+        weeklyAdherence,
+      }, 'debug');
+
+      // Calculate strength progression (last 30 days)
+      AppLogger.logOperation('CLIENT_ANALYTICS_CALCULATE_STRENGTH', { clientProfileId, daysBack: 30 }, 'debug');
+      const strengthProgression = this.calculateStrengthProgression(workoutLogs, 30);
+      AppLogger.logOperation('CLIENT_ANALYTICS_STRENGTH_CALCULATED', {
+        clientProfileId,
+        exercisesCount: Object.keys(strengthProgression).length,
+        exercises: Object.keys(strengthProgression),
+      }, 'debug');
+
+      AppLogger.logComplete('CLIENT_ANALYTICS_GET', {
+        clientProfileId,
+        totalWorkouts,
+        completedWorkouts,
+        overallAdherence,
+        weeklyAdherenceLength: weeklyAdherence.length,
+        strengthProgressionExercises: Object.keys(strengthProgression).length,
+      });
+
+      return {
+        totalWorkouts,
+        completedWorkouts,
+        overallAdherence,
+        weeklyAdherence,
+        strengthProgression,
+      };
+    } catch (error) {
+      AppLogger.logError('CLIENT_ANALYTICS_GET', { clientProfileId }, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate weekly adherence for last 7 days (rolling window)
+   * Returns array of 7 numbers representing adherence percentage for each day
+   * Day 0 = 6 days ago, Day 6 = today
+   */
+  private calculateWeeklyAdherence(workoutLogs: any[]): number[] {
+    const now = new Date();
+    // Calculate start date (6 days ago, so we have 7 days total: today + 6 previous days)
+    const startDate = new Date(now);
+    startDate.setDate(now.getDate() - 6);
+    startDate.setHours(0, 0, 0, 0);
+
+    AppLogger.logOperation('WEEKLY_ADHERENCE_CALC_START', {
+      currentDate: now.toISOString(),
+      startDate: startDate.toISOString(),
+      calculationType: 'rolling_7_days',
+    }, 'debug');
+
+    const weeklyAdherence: number[] = [];
+    
+    // Calculate adherence for each of the last 7 days
+    for (let day = 0; day < 7; day++) {
+      const dayStart = new Date(startDate);
+      dayStart.setDate(startDate.getDate() + day);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayStart.getDate() + 1);
+
+      // Filter workouts for this day
+      const dayWorkouts = workoutLogs.filter((log: any) => {
+        const workoutDate = new Date(log.workoutDate);
+        return workoutDate >= dayStart && workoutDate < dayEnd;
+      });
+
+      if (dayWorkouts.length === 0) {
+        weeklyAdherence.push(0);
+        AppLogger.logOperation('WEEKLY_ADHERENCE_DAY', {
+          day,
+          dayStart: dayStart.toISOString(),
+          dayEnd: dayEnd.toISOString(),
+          workouts: 0,
+          adherence: 0,
+        }, 'debug');
+      } else {
+        const completed = dayWorkouts.filter((log: any) => log.isCompleted).length;
+        const adherence = Math.round((completed / dayWorkouts.length) * 100 * 100) / 100;
+        weeklyAdherence.push(adherence);
+        AppLogger.logOperation('WEEKLY_ADHERENCE_DAY', {
+          day,
+          dayStart: dayStart.toISOString(),
+          dayEnd: dayEnd.toISOString(),
+          workouts: dayWorkouts.length,
+          completed,
+          adherence,
+        }, 'debug');
+      }
+    }
+
+    AppLogger.logOperation('WEEKLY_ADHERENCE_CALC_COMPLETE', {
+      weeklyAdherence,
+    }, 'debug');
+
+    return weeklyAdherence;
+  }
+
+  /**
+   * Calculate strength progression for completed workouts
+   * Groups by exercise name and tracks max weight per day over the last N days
+   * 
+   * @param workoutLogs All workout logs for the client
+   * @param daysBack Number of days to look back (default: 30)
+   * @returns Map of exercise name to array of {x: dayIndex, y: maxWeight} points
+   */
+  private calculateStrengthProgression(
+    workoutLogs: any[],
+    daysBack: number = 30,
+  ): Record<string, Array<{ x: number; y: number }>> {
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setDate(now.getDate() - daysBack);
+    startDate.setHours(0, 0, 0, 0);
+
+    AppLogger.logOperation('STRENGTH_PROGRESSION_CALC_START', {
+      startDate: startDate.toISOString(),
+      endDate: now.toISOString(),
+      daysBack,
+      totalWorkouts: workoutLogs.length,
+    }, 'debug');
+
+    // Filter completed workouts in date range
+    const recentWorkouts = workoutLogs.filter((log: any) => {
+      if (!log.isCompleted) return false;
+      const workoutDate = new Date(log.workoutDate);
+      return workoutDate >= startDate;
+    });
+
+    AppLogger.logOperation('STRENGTH_PROGRESSION_FILTERED', {
+      recentWorkouts: recentWorkouts.length,
+      totalWorkouts: workoutLogs.length,
+    }, 'debug');
+
+    // Group by exercise name and extract max weight per day
+    const exerciseData: Record<string, Map<number, number>> = {}; // exercise -> dayIndex -> maxWeight
+
+    for (const workout of recentWorkouts) {
+      const workoutDate = new Date(workout.workoutDate);
+      const daysSinceStart = Math.floor(
+        (workoutDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      // Get completed exercises for this workout
+      const completedExercises = workout.completedExercises || [];
+
+      AppLogger.logOperation('STRENGTH_PROGRESSION_WORKOUT', {
+        workoutDate: workoutDate.toISOString(),
+        daysSinceStart,
+        exercisesCount: completedExercises.length,
+      }, 'debug');
+
+      for (const exercise of completedExercises) {
+        const exerciseName = exercise.exerciseName;
+        if (!exerciseName) continue;
+
+        if (!exerciseData[exerciseName]) {
+          exerciseData[exerciseName] = new Map<number, number>();
+        }
+
+        // Find max weight for this exercise in this workout
+        // weightUsed is the weight used for the exercise
+        const weightUsed = exercise.weightUsed || 0;
+
+        if (weightUsed > 0) {
+          const currentMax = exerciseData[exerciseName].get(daysSinceStart) || 0;
+          if (weightUsed > currentMax) {
+            exerciseData[exerciseName].set(daysSinceStart, weightUsed);
+            AppLogger.logOperation('STRENGTH_PROGRESSION_EXERCISE_UPDATE', {
+              exerciseName,
+              daysSinceStart,
+              weightUsed,
+              previousMax: currentMax,
+            }, 'debug');
+          }
+        }
+      }
+    }
+
+    // Convert to format expected by chart: { exerciseName: [{x: dayIndex, y: maxWeight}, ...] }
+    const result: Record<string, Array<{ x: number; y: number }>> = {};
+
+    for (const [exerciseName, dayData] of Object.entries(exerciseData)) {
+      const spots = Array.from(dayData.entries())
+        .map(([dayIndex, maxWeight]) => ({
+          x: dayIndex,
+          y: maxWeight,
+        }))
+        .sort((a, b) => a.x - b.x);
+
+      if (spots.length > 0) {
+        result[exerciseName] = spots;
+        AppLogger.logOperation('STRENGTH_PROGRESSION_EXERCISE_COMPLETE', {
+          exerciseName,
+          dataPoints: spots.length,
+        }, 'debug');
+      }
+    }
+
+    AppLogger.logOperation('STRENGTH_PROGRESSION_CALC_COMPLETE', {
+      exercisesCount: Object.keys(result).length,
+      exercises: Object.keys(result),
+    }, 'debug');
+
+    return result;
   }
 }
 

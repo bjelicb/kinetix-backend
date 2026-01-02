@@ -12,6 +12,7 @@ import { AssignClientDto } from './dto/assign-client.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { GamificationService } from '../gamification/gamification.service';
+import { AppLogger } from '../common/utils/logger.utils';
 
 @Injectable()
 export class AdminService {
@@ -26,9 +27,9 @@ export class AdminService {
   ) {}
 
   async getAllUsers() {
-    console.log('[AdminService] getAllUsers called');
+    AppLogger.logStart('ADMIN_GET_ALL_USERS', {});
     const users = await this.userModel.find().exec();
-    console.log(`[AdminService] Found ${users.length} users in database`);
+    AppLogger.logOperation('ADMIN_GET_ALL_USERS_FOUND', { count: users.length }, 'debug');
 
     const usersWithTrainerInfo = await Promise.all(
       users.map(async (user) => {
@@ -124,7 +125,7 @@ export class AdminService {
       }),
     );
 
-    console.log(`[AdminService] Returning ${usersWithTrainerInfo.length} users with trainer info`);
+    AppLogger.logComplete('ADMIN_GET_ALL_USERS', { count: usersWithTrainerInfo.length });
     return {
       success: true,
       data: usersWithTrainerInfo,
@@ -132,11 +133,11 @@ export class AdminService {
   }
 
   async getStats() {
-    console.log('[AdminService] getStats called');
+    AppLogger.logStart('ADMIN_GET_STATS', {});
     const totalUsers = await this.userModel.countDocuments().exec();
     const totalTrainers = await this.userModel.countDocuments({ role: 'TRAINER' }).exec();
     const totalClients = await this.userModel.countDocuments({ role: 'CLIENT' }).exec();
-    console.log(`[AdminService] Stats - Users: ${totalUsers}, Trainers: ${totalTrainers}, Clients: ${totalClients}`);
+    AppLogger.logOperation('ADMIN_GET_STATS_COUNTS', { totalUsers, totalTrainers, totalClients }, 'debug');
 
     // Get today's check-ins count
     const today = new Date();
@@ -177,7 +178,18 @@ export class AdminService {
       verificationStatus: 'PENDING',
     }).exec();
 
-    console.log(`[AdminService] Today's check-ins: ${todayCheckIns}`);
+    AppLogger.logComplete('ADMIN_GET_STATS', { 
+      totalUsers, 
+      totalTrainers, 
+      totalClients, 
+      todayCheckIns, 
+      activeTrainers, 
+      suspendedTrainers, 
+      clientsInPenalty, 
+      totalPlans, 
+      totalWorkoutsCompleted, 
+      pendingCheckIns 
+    });
     return {
       success: true,
       data: {
@@ -196,16 +208,19 @@ export class AdminService {
   }
 
   async assignClientToTrainer(dto: AssignClientDto) {
-    console.log(`[AdminService] assignClientToTrainer called - clientId: ${dto.clientId}, trainerId: ${dto.trainerId || 'null (unassign)'}`);
+    AppLogger.logStart('ADMIN_ASSIGN_CLIENT_TO_TRAINER', { 
+      clientId: dto.clientId, 
+      trainerId: dto.trainerId || 'null (unassign)' 
+    });
     
     // Verify client user exists and is a CLIENT
     const clientUser = await this.userModel.findById(dto.clientId).exec();
     if (!clientUser) {
-      console.log(`[AdminService] Client user not found: ${dto.clientId}`);
+      AppLogger.logWarning('ADMIN_ASSIGN_CLIENT_CLIENT_NOT_FOUND', { clientId: dto.clientId });
       throw new NotFoundException('Client user not found');
     }
     if (clientUser.role !== 'CLIENT') {
-      console.log(`[AdminService] User is not a CLIENT: ${clientUser.role}`);
+      AppLogger.logWarning('ADMIN_ASSIGN_CLIENT_INVALID_ROLE', { clientId: dto.clientId, role: clientUser.role });
       throw new BadRequestException('User is not a CLIENT');
     }
 
@@ -227,13 +242,15 @@ export class AdminService {
             (id) => !id.equals(clientProfile!._id)
           );
           await oldTrainerProfile.save();
-          console.log(`[AdminService] Removed client ${clientProfile._id} from old trainer's clientIds`);
+          AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_REMOVED_FROM_TRAINER', { 
+            clientProfileId: clientProfile._id.toString() 
+          }, 'debug');
         }
         
         // Remove trainerId from client profile
         clientProfile.trainerId = null as any;
         await clientProfile.save();
-        console.log(`[AdminService] Unassigned client ${dto.clientId} from trainer`);
+        AppLogger.logComplete('ADMIN_ASSIGN_CLIENT_UNASSIGN', { clientId: dto.clientId });
       }
       
       return {
@@ -249,11 +266,11 @@ export class AdminService {
     // Verify trainer user exists and is a TRAINER
     const trainerUser = await this.userModel.findById(dto.trainerId).exec();
     if (!trainerUser) {
-      console.log(`[AdminService] Trainer user not found: ${dto.trainerId}`);
+      AppLogger.logWarning('ADMIN_ASSIGN_CLIENT_TRAINER_USER_NOT_FOUND', { trainerId: dto.trainerId });
       throw new NotFoundException('Trainer user not found');
     }
     if (trainerUser.role !== 'TRAINER') {
-      console.log(`[AdminService] User is not a TRAINER: ${trainerUser.role}`);
+      AppLogger.logWarning('ADMIN_ASSIGN_CLIENT_INVALID_TRAINER_ROLE', { trainerId: dto.trainerId, role: trainerUser.role });
       throw new BadRequestException('User is not a TRAINER');
     }
 
@@ -263,11 +280,13 @@ export class AdminService {
       .exec();
 
     if (!trainerProfile) {
-      console.log(`[AdminService] Trainer profile not found for userId: ${dto.trainerId}`);
+      AppLogger.logWarning('ADMIN_ASSIGN_CLIENT_TRAINER_PROFILE_NOT_FOUND', { trainerId: dto.trainerId });
       throw new NotFoundException('Trainer profile not found');
     }
 
-    console.log(`[AdminService] Found trainer profile: ${trainerProfile._id}`);
+    AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_TRAINER_PROFILE_FOUND', { 
+      trainerProfileId: trainerProfile._id.toString() 
+    }, 'debug');
 
     // If client profile exists and has a different trainer, remove from old trainer
     if (clientProfile && clientProfile.trainerId) {
@@ -280,37 +299,53 @@ export class AdminService {
           (id) => !id.equals(clientProfile!._id)
         );
         await oldTrainerProfile.save();
-        console.log(`[AdminService] Removed client from old trainer's clientIds`);
+        AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_REMOVED_FROM_OLD_TRAINER', {}, 'debug');
       }
     }
 
     if (clientProfile) {
       // Update existing client profile
-      console.log(`[AdminService] Updating existing client profile: ${clientProfile._id}`);
+      AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_UPDATING_PROFILE', { 
+        clientProfileId: clientProfile._id.toString() 
+      }, 'debug');
       clientProfile.trainerId = trainerProfile._id; // Use trainer profile ID, not user ID
       await clientProfile.save();
-      console.log(`[AdminService] Client profile updated with trainerId: ${trainerProfile._id}`);
+      AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_PROFILE_UPDATED', { 
+        clientProfileId: clientProfile._id.toString(), 
+        trainerProfileId: trainerProfile._id.toString() 
+      }, 'debug');
     } else {
       // Create new client profile
-      console.log(`[AdminService] Creating new client profile for userId: ${dto.clientId}`);
+      AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_CREATING_PROFILE', { 
+        clientId: dto.clientId 
+      }, 'debug');
       clientProfile = new this.clientModel({
         userId: new Types.ObjectId(dto.clientId),
         trainerId: trainerProfile._id, // Use trainer profile ID, not user ID
       });
       await clientProfile.save();
-      console.log(`[AdminService] Client profile created: ${clientProfile._id}`);
+      AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_PROFILE_CREATED', { 
+        clientProfileId: clientProfile._id.toString() 
+      }, 'debug');
     }
 
     // Update trainer's clientIds array
     if (!trainerProfile.clientIds.includes(clientProfile._id)) {
       trainerProfile.clientIds.push(clientProfile._id);
       await trainerProfile.save();
-      console.log(`[AdminService] Added client ${clientProfile._id} to trainer's clientIds`);
+      AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_ADDED_TO_TRAINER', { 
+        clientProfileId: clientProfile._id.toString() 
+      }, 'debug');
     } else {
-      console.log(`[AdminService] Client ${clientProfile._id} already in trainer's clientIds`);
+      AppLogger.logOperation('ADMIN_ASSIGN_CLIENT_ALREADY_IN_TRAINER', { 
+        clientProfileId: clientProfile._id.toString() 
+      }, 'debug');
     }
 
-    console.log(`[AdminService] Successfully assigned client ${dto.clientId} to trainer ${dto.trainerId}`);
+    AppLogger.logComplete('ADMIN_ASSIGN_CLIENT_TO_TRAINER', { 
+      clientId: dto.clientId, 
+      trainerId: dto.trainerId 
+    });
     return {
       success: true,
       data: {
@@ -589,14 +624,19 @@ export class AdminService {
   }
 
   async updateWorkoutStatus(workoutId: string, body: { isCompleted?: boolean; isMissed?: boolean }) {
-    console.log(`[AdminService] updateWorkoutStatus START - workoutId: ${workoutId}, body:`, body);
+    AppLogger.logStart('ADMIN_UPDATE_WORKOUT_STATUS', { workoutId, body });
     const workout = await this.workoutLogModel.findById(workoutId).exec();
     if (!workout) {
+      AppLogger.logWarning('ADMIN_UPDATE_WORKOUT_STATUS_NOT_FOUND', { workoutId });
       throw new NotFoundException('Workout not found');
     }
 
     const wasMissed = workout.isMissed;
-    console.log(`[AdminService] updateWorkoutStatus - Current state: isCompleted=${workout.isCompleted}, isMissed=${wasMissed}`);
+    AppLogger.logOperation('ADMIN_UPDATE_WORKOUT_STATUS_CURRENT_STATE', { 
+      workoutId, 
+      isCompleted: workout.isCompleted, 
+      isMissed: wasMissed 
+    }, 'debug');
 
     if (body.isCompleted !== undefined) {
       workout.isCompleted = body.isCompleted;
@@ -612,7 +652,10 @@ export class AdminService {
         
         // If marking as missed and it wasn't already missed, add penalty
         if (body.isMissed === true && wasMissed === false) {
-          console.log(`[AdminService] updateWorkoutStatus - Workout ${workoutId} is being marked as missed, adding penalty`);
+          AppLogger.logOperation('ADMIN_UPDATE_WORKOUT_STATUS_ADDING_PENALTY', { 
+            workoutId, 
+            clientId: workout.clientId.toString() 
+          }, 'info');
           try {
             await this.gamificationService.addPenaltyToBalance(
               workout.clientId.toString(),
@@ -620,9 +663,16 @@ export class AdminService {
               'Missed workout penalty',
               workout.weeklyPlanId,
             );
-            console.log(`[AdminService] updateWorkoutStatus - Successfully added 1€ penalty for missed workout ${workoutId}`);
+            AppLogger.logOperation('ADMIN_UPDATE_WORKOUT_STATUS_PENALTY_ADDED', { 
+              workoutId, 
+              clientId: workout.clientId.toString(),
+              amount: 1 
+            }, 'info');
           } catch (error) {
-            console.error(`[AdminService] updateWorkoutStatus - Error adding penalty for missed workout ${workoutId}:`, error);
+            AppLogger.logError('ADMIN_UPDATE_WORKOUT_STATUS_PENALTY_ERROR', { 
+              workoutId, 
+              clientId: workout.clientId.toString() 
+            }, error as Error);
             // Don't throw - workout update should succeed even if penalty fails
           }
         }
@@ -631,7 +681,11 @@ export class AdminService {
 
     await workout.save();
 
-    console.log(`[AdminService] updateWorkoutStatus SUCCESS - workoutId: ${workoutId}, isCompleted: ${workout.isCompleted}, isMissed: ${workout.isMissed}`);
+    AppLogger.logComplete('ADMIN_UPDATE_WORKOUT_STATUS', { 
+      workoutId, 
+      isCompleted: workout.isCompleted, 
+      isMissed: workout.isMissed 
+    });
 
     return {
       success: true,

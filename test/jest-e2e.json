@@ -14,5 +14,6 @@
       }
     }
   },
-  "testTimeout": 30000
+  "testTimeout": 30000,
+  "setupFilesAfterEnv": ["<rootDir>/setup.ts"]
 }
