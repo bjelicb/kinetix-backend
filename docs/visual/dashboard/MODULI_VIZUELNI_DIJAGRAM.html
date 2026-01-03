@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetix - Vizuelni Dijagram Modula</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(20, 20, 30, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+        }
+
+        h1 {
+            color: #6366f1;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+            border-bottom: 3px solid rgba(99, 102, 241, 0.3);
+            padding-bottom: 20px;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .stat-card h3 {
+            color: #8b5cf6;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #10b981;
+            margin: 10px 0;
+        }
+
+        .modules-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .platform-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .platform-section.backend {
+            border-left: 5px solid #ef4444;
+        }
+
+        .platform-section.mobile {
+            border-left: 5px solid #06b6d4;
+        }
+
+        .platform-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .platform-header h2 {
+            color: #6366f1;
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .platform-progress {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .platform-progress.backend {
+            color: #ef4444;
+        }
+
+        .platform-progress.mobile {
+            color: #06b6d4;
+        }
+
+        .module-card {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(100, 100, 200, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .module-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .module-status {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .module-status.complete {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .module-status.partial {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 2px solid #f59e0b;
+        }
+
+        .module-status.in-progress {
+            background: rgba(99, 102, 241, 0.2);
+            color: #6366f1;
+            border: 2px solid #6366f1;
+        }
+
+        .module-status.todo {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 2px solid #ef4444;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: rgba(50, 50, 70, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+            position: relative;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+            border-radius: 15px;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a0a0a;
+            font-weight: bold;
+            font-size: 0.9em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-bar.partial {
+            background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .progress-bar.in-progress {
+            background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+        }
+
+        .progress-bar.todo {
+            background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+        }
+
+        .progress-percentage {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #e0e0e0;
+            font-weight: bold;
+            font-size: 0.9em;
+            z-index: 10;
+        }
+
+        .mermaid-container {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .mermaid-container h2 {
+            color: #6366f1;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .legend {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-color.complete {
+            background: #10b981;
+        }
+
+        .legend-color.partial {
+            background: #f59e0b;
+        }
+
+        .legend-color.in-progress {
+            background: #6366f1;
+        }
+
+        .legend-color.todo {
+            background: #ef4444;
+        }
+
+        @media (max-width: 1200px) {
+            .modules-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+
+            .platform-header h2 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Kinetix - Vizuelni Dijagram Modula</h1>
+
+        <!-- Statistike -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>Backend Moduli</h3>
+                <div class="value">14</div>
+            </div>
+            <div class="stat-card">
+                <h3>Mobile Moduli</h3>
+                <div class="value">5</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ukupna Pokrivenost</h3>
+                <div class="value">72%</div>
+            </div>
+            <div class="stat-card">
+                <h3>Kompletirano</h3>
+                <div class="value">10</div>
+            </div>
+            <div class="stat-card">
+                <h3>U Razvoju</h3>
+                <div class="value">6</div>
+            </div>
+            <div class="stat-card">
+                <h3>Nedostaje</h3>
+                <div class="value">3</div>
+            </div>
+        </div>
+
+        <!-- Legenda -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color complete"></div>
+                <span>✅ Kompletirano (80-100%)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color partial"></div>
+                <span>⚠️ Delimično (50-79%)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color in-progress"></div>
+                <span>🔄 U Razvoju (20-49%)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color todo"></div>
+                <span>❌ Nedostaje (0-19%)</span>
+            </div>
+        </div>
+
+        <!-- Moduli -->
+        <div class="modules-container">
+            <!-- BACKEND MODULI -->
+            <div class="platform-section backend">
+                <div class="platform-header">
+                    <h2>🔴 Backend (NestJS)</h2>
+                    <div class="platform-progress backend">68%</div>
+                </div>
+
+                <!-- Auth Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🔐 Auth</div>
+                        <div class="module-status complete">✅ 95%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 95%;">
+                            <span class="progress-percentage">95%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">👥 Users</div>
+                        <div class="module-status complete">✅ 90%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 90%;">
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clients Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">👤 Clients</div>
+                        <div class="module-status complete">✅ 85%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 85%;">
+                            <span class="progress-percentage">85%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trainers Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">💪 Trainers</div>
+                        <div class="module-status complete">✅ 80%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 80%;">
+                            <span class="progress-percentage">80%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plans Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">📋 Plans</div>
+                        <div class="module-status complete">✅ 90%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 90%;">
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workouts Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🏋️ Workouts</div>
+                        <div class="module-status complete">✅ 95%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 95%;">
+                            <span class="progress-percentage">95%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checkins Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">📸 Checkins</div>
+                        <div class="module-status complete">✅ 85%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 85%;">
+                            <span class="progress-percentage">85%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gamification Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🎮 Gamification</div>
+                        <div class="module-status complete">✅ 90%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 90%;">
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🤖 AI</div>
+                        <div class="module-status partial">⚠️ 60%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar partial" style="width: 60%;">
+                            <span class="progress-percentage">60%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">👑 Admin</div>
+                        <div class="module-status complete">✅ 100%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 100%;">
+                            <span class="progress-percentage">100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">📊 Training</div>
+                        <div class="module-status partial">⚠️ 70%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar partial" style="width: 70%;">
+                            <span class="progress-percentage">70%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">📷 Media</div>
+                        <div class="module-status in-progress">🔄 40%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar in-progress" style="width: 40%;">
+                            <span class="progress-percentage">40%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">💳 Payments</div>
+                        <div class="module-status todo">❌ 10%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar todo" style="width: 10%;">
+                            <span class="progress-percentage">10%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Common Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🔧 Common</div>
+                        <div class="module-status partial">⚠️ 65%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar partial" style="width: 65%;">
+                            <span class="progress-percentage">65%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOBILE MODULI -->
+            <div class="platform-section mobile">
+                <div class="platform-header">
+                    <h2>🔵 Mobile (Flutter)</h2>
+                    <div class="platform-progress mobile">78%</div>
+                </div>
+
+                <!-- Core Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">⚙️ Core</div>
+                        <div class="module-status complete">✅ 95%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 95%;">
+                            <span class="progress-percentage">95%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">💾 Data</div>
+                        <div class="module-status complete">✅ 90%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 90%;">
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🏛️ Domain</div>
+                        <div class="module-status complete">✅ 85%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 85%;">
+                            <span class="progress-percentage">85%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presentation Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🎨 Presentation</div>
+                        <div class="module-status partial">⚠️ 70%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar partial" style="width: 70%;">
+                            <span class="progress-percentage">70%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Services Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-name">🔌 Services</div>
+                        <div class="module-status partial">⚠️ 75%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar partial" style="width: 75%;">
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mermaid Dijagram -->
+        <div class="mermaid-container">
+            <h2>📊 Arhitektura Modula - Mermaid Dijagram</h2>
+            <div class="mermaid">
+graph TB
+    subgraph Backend["🔴 Backend (NestJS) - 68%"]
+        Auth["🔐 Auth<br/>95%"]
+        Users["👥 Users<br/>90%"]
+        Clients["👤 Clients<br/>85%"]
+        Trainers["💪 Trainers<br/>80%"]
+        Plans["📋 Plans<br/>90%"]
+        Workouts["🏋️ Workouts<br/>95%"]
+        Checkins["📸 Checkins<br/>85%"]
+        Gamification["🎮 Gamification<br/>90%"]
+        AI["🤖 AI<br/>60%"]
+        Admin["👑 Admin<br/>100%"]
+        Training["📊 Training<br/>70%"]
+        Media["📷 Media<br/>40%"]
+        Payments["💳 Payments<br/>10%"]
+        Common["🔧 Common<br/>65%"]
+    end
+
+    subgraph Mobile["🔵 Mobile (Flutter) - 78%"]
+        Core["⚙️ Core<br/>95%"]
+        Data["💾 Data<br/>90%"]
+        Domain["🏛️ Domain<br/>85%"]
+        Presentation["🎨 Presentation<br/>70%"]
+        Services["🔌 Services<br/>75%"]
+    end
+
+    Auth --> Users
+    Users --> Clients
+    Users --> Trainers
+    Trainers --> Clients
+    Plans --> Clients
+    Plans --> Trainers
+    Workouts --> Clients
+    Checkins --> Clients
+    Gamification --> Clients
+    AI --> Gamification
+    Admin --> Users
+    Admin --> Trainers
+    Admin --> Plans
+    Training --> Clients
+    Media --> Checkins
+    Payments --> Clients
+    Common --> Auth
+    Common --> Users
+
+    Data --> Core
+    Domain --> Data
+    Presentation --> Domain
+    Presentation --> Services
+    Services --> Data
+    Services --> Core
+
+    style Auth fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Users fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Clients fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Trainers fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Plans fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Workouts fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Checkins fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Gamification fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Admin fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style AI fill:#f59e0b,stroke:#0a0a0a,stroke-width:3px
+    style Training fill:#f59e0b,stroke:#0a0a0a,stroke-width:3px
+    style Common fill:#f59e0b,stroke:#0a0a0a,stroke-width:3px
+    style Media fill:#6366f1,stroke:#0a0a0a,stroke-width:3px
+    style Payments fill:#ef4444,stroke:#0a0a0a,stroke-width:3px
+
+    style Core fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Data fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Domain fill:#10b981,stroke:#0a0a0a,stroke-width:3px
+    style Presentation fill:#f59e0b,stroke:#0a0a0a,stroke-width:3px
+    style Services fill:#f59e0b,stroke:#0a0a0a,stroke-width:3px
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#0a0a0a',
+                primaryTextColor: '#e0e0e0',
+                primaryBorderColor: '#6366f1',
+                lineColor: '#6366f1',
+                secondaryColor: '#1a1a2e',
+                tertiaryColor: '#2a2a3e',
+                background: '#0a0a0a',
+                mainBkg: '#1a1a2e',
+                secondBkg: '#2a2a3e',
+                textColor: '#e0e0e0',
+                border1: '#6366f1',
+                border2: '#10b981',
+                noteBkgColor: '#2a2a3e',
+                noteTextColor: '#e0e0e0',
+                noteBorderColor: '#6366f1',
+                actorBorder: '#6366f1',
+                actorBkg: '#1a1a2e',
+                actorTextColor: '#e0e0e0',
+                actorLineColor: '#6366f1',
+                signalColor: '#10b981',
+                signalTextColor: '#e0e0e0',
+                labelBoxBkgColor: '#1a1a2e',
+                labelBoxBorderColor: '#6366f1',
+                labelTextColor: '#e0e0e0',
+                loopTextColor: '#e0e0e0',
+                activationBorderColor: '#6366f1',
+                activationBkgColor: '#2a2a3e',
+                sequenceNumberColor: '#0a0a0a',
+                sectionBkgColor: '#1a1a2e',
+                altSectionBkgColor: '#2a2a3e',
+                sectionBorderColor: '#6366f1',
+                excludeBkgColor: '#1a1a2e',
+                excludeBorderColor: '#ef4444',
+                critBorderColor: '#ef4444',
+                critBkgColor: '#2a2a3e',
+                doneBkgColor: '#10b981',
+                doneBorderColor: '#10b981',
+                activeBkgColor: '#6366f1',
+                activeBorderColor: '#6366f1',
+                taskBkgColor: '#1a1a2e',
+                taskTextColor: '#e0e0e0',
+                taskTextLightColor: '#888',
+                taskTextOutsideColor: '#e0e0e0',
+                taskTextClickableColor: '#818cf8',
+                activeTaskBorderColor: '#6366f1',
+                activeTaskBkgColor: '#2a2a3e',
+                gridColor: '#6366f1',
+                doneTaskBkgColor: '#10b981',
+                doneTaskBorderColor: '#10b981',
+                critTaskBkgColor: '#ef4444',
+                critTaskBorderColor: '#ef4444',
+                todayLineColor: '#6366f1'
+            },
+            flowchart: {
+                nodeSpacing: 50,
+                rankSpacing: 80,
+                curve: 'basis',
+                padding: 20
+            }
+        });
+    </script>
+</body>
+</html>

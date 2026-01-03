@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetix Dashboard - Roadmap ka Produkciji</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(20, 20, 30, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid rgba(99, 102, 241, 0.3);
+        }
+
+        h1 {
+            color: #6366f1;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: #818cf8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .progress-card {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .progress-card h3 {
+            color: #8b5cf6;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .progress-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .progress-card.priority-1 .value {
+            color: #ef4444;
+        }
+
+        .progress-card.priority-2 .value {
+            color: #f59e0b;
+        }
+
+        .progress-card.priority-3 .value {
+            color: #6366f1;
+        }
+
+        .progress-card.priority-4 .value {
+            color: #888;
+        }
+
+        .progress-card.overall .value {
+            color: #10b981;
+        }
+
+        .tabs-container {
+            margin: 40px 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid rgba(100, 100, 200, 0.2);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            background: rgba(30, 30, 45, 0.6);
+            border: none;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            font-weight: 500;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .tab:hover {
+            background: rgba(30, 30, 45, 0.8);
+            color: #e0e0e0;
+        }
+
+        .tab.active {
+            background: rgba(99, 102, 241, 0.3);
+            color: #6366f1;
+            border-bottom: 2px solid #6366f1;
+        }
+
+        .tab.priority-1.active {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border-bottom-color: #ef4444;
+        }
+
+        .tab.priority-2.active {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            border-bottom-color: #f59e0b;
+        }
+
+        .tab.priority-3.active {
+            background: rgba(99, 102, 241, 0.3);
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+
+        .tab.priority-4.active {
+            background: rgba(136, 136, 136, 0.3);
+            color: #888;
+            border-bottom-color: #888;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .priority-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid;
+        }
+
+        .priority-section.priority-1 {
+            border-left-color: #ef4444;
+        }
+
+        .priority-section.priority-2 {
+            border-left-color: #f59e0b;
+        }
+
+        .priority-section.priority-3 {
+            border-left-color: #6366f1;
+        }
+
+        .priority-section.priority-4 {
+            border-left-color: #888;
+        }
+
+        .priority-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .priority-header h2 {
+            color: #6366f1;
+            font-size: 2em;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .priority-header.priority-1 h2 {
+            color: #ef4444;
+        }
+
+        .priority-header.priority-2 h2 {
+            color: #f59e0b;
+        }
+
+        .priority-header.priority-3 h2 {
+            color: #6366f1;
+        }
+
+        .priority-header.priority-4 h2 {
+            color: #888;
+        }
+
+        .progress-bar-container {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #a0a0a0;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(100, 100, 200, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .progress-bar-fill.priority-1 {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .progress-bar-fill.priority-2 {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .progress-bar-fill.priority-3 {
+            background: linear-gradient(90deg, #6366f1, #818cf8);
+        }
+
+        .progress-bar-fill.priority-4 {
+            background: linear-gradient(90deg, #888, #aaa);
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task-item {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .task-item.priority-1 {
+            border-left-color: #ef4444;
+        }
+
+        .task-item.priority-2 {
+            border-left-color: #f59e0b;
+        }
+
+        .task-item.priority-3 {
+            border-left-color: #6366f1;
+        }
+
+        .task-item.priority-4 {
+            border-left-color: #888;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #6366f1;
+        }
+
+        .task-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e0e0e0;
+            flex: 1;
+        }
+
+        .task-status {
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .task-status.crit {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .task-status.active {
+            background: rgba(6, 182, 212, 0.2);
+            color: #06b6d4;
+            border: 1px solid #06b6d4;
+        }
+
+        .task-status.todo {
+            background: rgba(136, 136, 136, 0.2);
+            color: #888;
+            border: 1px solid #888;
+        }
+
+        .task-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(100, 100, 200, 0.1);
+            font-size: 0.95em;
+            color: #a0a0a0;
+        }
+
+        .task-details strong {
+            color: #e0e0e0;
+        }
+
+        .task-reference {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(100, 100, 200, 0.1);
+        }
+
+        .task-reference a {
+            color: #6366f1;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .task-reference a:hover {
+            color: #818cf8;
+            text-decoration: underline;
+        }
+
+        .timeline-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .timeline-section h2 {
+            color: #6366f1;
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .mermaid-container {
+            width: 100%;
+            margin: 30px 0;
+            padding: 30px;
+            background: rgba(10, 10, 20, 0.95);
+            border-radius: 15px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+        }
+
+        .mermaid {
+            width: 100%;
+            min-width: 100%;
+            font-size: 14px;
+        }
+
+        .blockers-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            border-left: 5px solid #ef4444;
+        }
+
+        .blockers-section h2 {
+            color: #ef4444;
+            font-size: 2em;
+            margin-bottom: 25px;
+        }
+
+        .blocker-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .blocker-item {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .blocker-item.priority-2 {
+            border-left-color: #f59e0b;
+        }
+
+        .references-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .references-section h2 {
+            color: #6366f1;
+            font-size: 2em;
+            margin-bottom: 25px;
+        }
+
+        .reference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .reference-item {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .reference-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .reference-item a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .reference-item a:hover {
+            color: #818cf8;
+            text-decoration: underline;
+        }
+
+        .reference-item p {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .search-filter-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            border-radius: 8px;
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .filter-btn:hover {
+            background: rgba(99, 102, 241, 0.3);
+            color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background: rgba(99, 102, 241, 0.5);
+            border-color: #6366f1;
+            color: #e0e0e0;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #a0a0a0;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+
+            .search-filter-section {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#0a0a0a',
+                primaryTextColor: '#e0e0e0',
+                primaryBorderColor: '#6366f1',
+                lineColor: '#6366f1',
+                secondaryColor: '#1a1a2e',
+                tertiaryColor: '#2a2a3e',
+                background: '#0a0a0a',
+                mainBkg: '#1a1a2e',
+                secondBkg: '#2a2a3e',
+                textColor: '#e0e0e0',
+                border1: '#6366f1',
+                border2: '#10b981',
+                noteBkgColor: '#2a2a3e',
+                noteTextColor: '#e0e0e0',
+                noteBorderColor: '#6366f1'
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <a href="DASHBOARD_ANALIZA_IZVESTAJ.html" class="back-link">← Nazad na Dashboard Analiza</a>
+            <h1>🗺️ Kinetix Dashboard - Roadmap ka Produkciji</h1>
+            
+            <div class="progress-overview">
+                <div class="progress-card overall">
+                    <h3>Ukupna Pokrivenost</h3>
+                    <div class="value">~25%</div>
+                    <div style="color: #a78bfa; font-size: 0.9em;">Do Produkcije</div>
+                </div>
+                <div class="progress-card priority-1">
+                    <h3>🔴 Prioritet 1</h3>
+                    <div class="value">2</div>
+                    <div style="color: #a78bfa; font-size: 0.9em;">Zadaci (1-2 dana)</div>
+                </div>
+                <div class="progress-card priority-2">
+                    <h3>🟡 Prioritet 2</h3>
+                    <div class="value">4</div>
+                    <div style="color: #a78bfa; font-size: 0.9em;">Zadaci (3-5 dana)</div>
+                </div>
+                <div class="progress-card priority-3">
+                    <h3>🔵 Prioritet 3</h3>
+                    <div class="value">8</div>
+                    <div style="color: #a78bfa; font-size: 0.9em;">Zadaci (1-2 nedelje)</div>
+                </div>
+                <div class="progress-card priority-4">
+                    <h3>⚪ Prioritet 4</h3>
+                    <div class="value">12</div>
+                    <div style="color: #a78bfa; font-size: 0.9em;">Zadaci (2-4 nedelje)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="search-filter-section">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Pretraži zadatke...">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">Sve</button>
+                <button class="filter-btn" data-filter="active">Aktivni</button>
+                <button class="filter-btn" data-filter="completed">Završeni</button>
+                <button class="filter-btn" data-filter="blocked">Blokirani</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab priority-1 active" data-tab="priority-1">🔴 Prioritet 1 - Hitno</button>
+                <button class="tab priority-2" data-tab="priority-2">🟡 Prioritet 2 - Visoki</button>
+                <button class="tab priority-3" data-tab="priority-3">🔵 Prioritet 3 - Srednji</button>
+                <button class="tab priority-4" data-tab="priority-4">⚪ Prioritet 4 - Produkcija</button>
+            </div>
+
+            <!-- Prioritet 1 Content -->
+            <div class="tab-content active" id="priority-1">
+                <div class="priority-section priority-1">
+                    <div class="priority-header priority-1">
+                        <h2>🔴 Prioritet 1 - Hitno (1-2 dana)</h2>
+                        <div style="color: #fca5a5; font-size: 1.1em;">Tim: 1 Senior Mobile Engineer</div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-label">
+                            <span>Progress</span>
+                            <span id="progress-p1">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill priority-1" id="progress-bar-p1" style="width: 0%;">0%</div>
+                        </div>
+                    </div>
+
+                    <ul class="task-list">
+                        <li class="task-item priority-1" data-task="p1-1" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p1-1">
+                                <div class="task-title">Mobile: Ukloniti TodaysMissionWidget za trenere</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Fajl:</strong> lib/pages/dashboard/dashboard_page.dart (linija ~286)<br>
+                                <strong>Akcija:</strong> Dodati <code>if (!isTrainer)</code> uslov<br>
+                                <strong>Uticaj:</strong> UX poboljšanje - trener ne vidi nepotrebne informacije
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Trener Dashboard
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-1" data-task="p1-2" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p1-2">
+                                <div class="task-title">Mobile: Filtrirati workout loading za trenere</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Fajl:</strong> lib/controllers/workout_controller.dart<br>
+                                <strong>Metoda:</strong> build()<br>
+                                <strong>Akcija:</strong> Filtrirati pre poziva API-ja - dodati proveru role<br>
+                                <strong>Uticaj:</strong> Kritično - trenutno dobija error state umesto praznog array-a
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#workout-loading" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Workout Loading Analiza
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prioritet 2 Content -->
+            <div class="tab-content" id="priority-2">
+                <div class="priority-section priority-2">
+                    <div class="priority-header priority-2">
+                        <h2>🟡 Prioritet 2 - Visoki (3-5 dana)</h2>
+                        <div style="color: #fbbf24; font-size: 1.1em;">Tim: 1 Senior Mobile + opciono 1 Backend</div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-label">
+                            <span>Progress</span>
+                            <span id="progress-p2">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill priority-2" id="progress-bar-p2" style="width: 0%;">0%</div>
+                        </div>
+                    </div>
+
+                    <ul class="task-list">
+                        <li class="task-item priority-2" data-task="p2-1" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-1">
+                                <div class="task-title">Mobile: Zameniti mock podatke - ClientAlertsCard</div>
+                                <span class="task-status active">AKTIVNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>API:</strong> GET /api/trainers/alerts (Backend V3)<br>
+                                <strong>Uticaj:</strong> UX poboljšanje - trener vidi realne podatke umesto mock podataka
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Trener Dashboard
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-2" data-task="p2-2" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-2">
+                                <div class="task-title">Mobile: Zameniti mock podatke - AppointmentsCard</div>
+                                <span class="task-status active">AKTIVNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>API:</strong> GET /api/trainers/appointments (Backend V3)<br>
+                                <strong>Uticaj:</strong> UX poboljšanje - trener vidi realne termine umesto mock podataka
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Trener Dashboard
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-2" data-task="p2-3" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-3">
+                                <div class="task-title">Mobile: Zameniti hardcoded nutrition vrednosti</div>
+                                <span class="task-status active">AKTIVNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Komponenta:</strong> NutritionSummaryCard<br>
+                                <strong>Akcija:</strong> Učitati sa API-ja ili iz user settings-a<br>
+                                <strong>Uticaj:</strong> UX poboljšanje - klijent vidi realne nutrition podatke
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#klijent-dashboard" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Klijent Dashboard
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-2" data-task="p2-4" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-4">
+                                <div class="task-title">Mobile: Implementirati placeholder funkcionalnosti</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Komponente:</strong> AppointmentsCard (Call/Message), ClientAlertsCard (Navigacija)<br>
+                                <strong>Akcija:</strong> Telefon integracija, SMS ili in-app messaging, navigacija na client profile<br>
+                                <strong>Uticaj:</strong> Funkcionalnost poboljšanje - trener može direktno da pozove/pošalje poruku klijentu
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#akcioni-plan" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Akcioni Plan
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prioritet 3 Content -->
+            <div class="tab-content" id="priority-3">
+                <div class="priority-section priority-3">
+                    <div class="priority-header priority-3">
+                        <h2>🔵 Prioritet 3 - Srednji (1-2 nedelje) - Backend V3</h2>
+                        <div style="color: #818cf8; font-size: 1.1em;">Tim: 1-2 Senior Backend Engineer-a</div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-label">
+                            <span>Progress</span>
+                            <span id="progress-p3">30%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill priority-3" id="progress-bar-p3" style="width: 30%;">30%</div>
+                        </div>
+                    </div>
+
+                    <ul class="task-list">
+                        <li class="task-item priority-3" data-task="p3-1" data-status="active">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-1">
+                                <div class="task-title">Backend: Rate Limiting Strategy (ažurirati)</div>
+                                <span class="task-status active">AKTIVNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Status:</strong> Struktura postoji, treba ažurirati limit i dodati decorators
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-2" data-status="active">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-2">
+                                <div class="task-title">Backend: CORS Security Configuration</div>
+                                <span class="task-status active">AKTIVNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Status:</strong> Struktura postoji, treba striktnija dev konfiguracija
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-3" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-3">
+                                <div class="task-title">Backend: Check-ins Management Endpoints</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-4" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-4">
+                                <div class="task-title">Backend: Analytics Endpoints</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-5" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-5">
+                                <div class="task-title">Backend: Plan Expiration Notifications (Cron Job)</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-6" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-6">
+                                <div class="task-title">Backend: Trainer Switch Handling</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Uticaj:</strong> Data integrity - kritično za produkciju
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-7" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-7">
+                                <div class="task-title">Backend: AI Message Automation (Cron Jobs)</div>
+                                <span class="task-status crit">KRITIČNO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Uticaj:</strong> "Tough Love" vizija - kritično za produkciju
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-3" data-task="p3-8" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p3-8">
+                                <div class="task-title">Backend: Video Upload & Management</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Master Plan Status
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prioritet 4 Content -->
+            <div class="tab-content" id="priority-4">
+                <div class="priority-section priority-4">
+                    <div class="priority-header priority-4">
+                        <h2>⚪ Prioritet 4 - Produkcija (2-4 nedelje) - Backend/Mobile V4</h2>
+                        <div style="color: #aaa; font-size: 1.1em;">Tim: 1 Senior Backend + 1 Senior Mobile (PARALELNO)</div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-label">
+                            <span>Progress</span>
+                            <span id="progress-p4">10%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill priority-4" id="progress-bar-p4" style="width: 10%;">10%</div>
+                        </div>
+                    </div>
+
+                    <ul class="task-list">
+                        <li class="task-item priority-4" data-task="p4-1" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-1">
+                                <div class="task-title">Backend: Stripe Payment Integration</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Uticaj:</strong> Monetizacija - kritično za produkciju
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-2" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-2">
+                                <div class="task-title">Backend: Push Notifications (FCM)</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Uticaj:</strong> Engagement - kritično za produkciju
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-3" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-3">
+                                <div class="task-title">Backend: Monitoring & Logging (Winston/Pino, Sentry)</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Uticaj:</strong> Readiness - kritično za produkciju
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-4" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-4">
+                                <div class="task-title">Backend: Security Enhancements (DDoS, Helmet.js)</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-5" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-5">
+                                <div class="task-title">Mobile: App Icons, Splash Screens</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-6" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-6">
+                                <div class="task-title">Mobile: Error Tracking (Sentry, Crashlytics)</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-7" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-7">
+                                <div class="task-title">Mobile: Analytics Integration (Firebase)</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-8" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-8">
+                                <div class="task-title">Mobile: Push Notifications (FCM)</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-9" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-9">
+                                <div class="task-title">Mobile: Performance Optimization</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-10" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-10">
+                                <div class="task-title">Mobile: Security Hardening</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-11" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-11">
+                                <div class="task-title">Mobile: Accessibility</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-4" data-task="p4-12" data-status="todo">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p4-12">
+                                <div class="task-title">Mobile: Branding Polish</div>
+                                <span class="task-status todo">TODO</span>
+                            </div>
+                            <div class="task-reference">
+                                <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">
+                                    📄 Vidi detalje u Dashboard Analiza - Produkcija Roadmap
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="no-results" id="noResults">
+            <p>🔍 Nema rezultata za vašu pretragu.</p>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="timeline-section">
+            <h2>📅 Timeline Vizualizacija</h2>
+            <div class="mermaid-container">
+                <div class="mermaid">
+gantt
+    title Kinetix Platform - Kompletan Roadmap ka Produkciji (Trenutno: ~25% Kompletirano)
+    dateFormat YYYY-MM-DD
+    axisFormat %Y-%m-%d
+
+    section KOMPLETIRANO V1-V2
+    Backend Auth RBAC Core APIs :done, backend-v1, 2024-01-01, 2024-03-31
+    Backend Workout System Check-ins :done, backend-v2, 2024-04-01, 2024-06-30
+    Backend Gamification AI Messages :done, backend-v2-gam, 2024-05-01, 2024-06-30
+    Mobile Offline-First Arhitektura Isar :done, mobile-v1, 2024-01-01, 2024-03-31
+    Mobile Dashboard Client Trainer Admin :done, mobile-v2-dash, 2024-04-01, 2024-06-30
+    Mobile Workout Runner Check-in Flow :done, mobile-v2-workout, 2024-04-01, 2024-06-30
+    Mobile Error Handling Empty States :done, mobile-v2-ux, 2024-05-01, 2024-06-30
+
+    section KRITICNO Prioritet 1
+    Mobile Ukloniti Todays Mission za Trenere :crit, mobile-v3-today, 2024-07-01, 2024-07-02
+    Mobile Filtrirati Workout Loading za Trenere :crit, mobile-v3-workout, 2024-07-01, 2024-07-02
+
+    section VISOKI Prioritet 2
+    Mobile Zameniti Mock Podatke ClientAlerts :mobile-v3-mock-alerts, 2024-07-03, 2024-07-05
+    Mobile Zameniti Mock Podatke Appointments :mobile-v3-mock-app, 2024-07-03, 2024-07-05
+    Mobile Zameniti Hardcoded Nutrition :mobile-v3-nutrition, 2024-07-03, 2024-07-08
+    Mobile Placeholder Funkcionalnosti :mobile-v3-placeholder, 2024-07-05, 2024-07-10
+
+    section SREDNJI Prioritet 3 Backend V3
+    Backend Rate Limiting Azuriranje :active, backend-v3-rate, 2024-07-01, 2024-07-03
+    Backend CORS Security Configuration :active, backend-v3-cors, 2024-07-01, 2024-07-03
+    Backend Check-ins Management Endpoints :crit, backend-v3-checkins, 2024-07-01, 2024-07-08
+    Backend Analytics Endpoints :crit, backend-v3-analytics, 2024-07-01, 2024-07-08
+    Backend Plan Expiration Notifications :crit, backend-v3-expire, 2024-07-05, 2024-07-10
+    Backend Trainer Switch Handling KRITICNO :crit, backend-v3-switch, 2024-07-05, 2024-07-12
+    Backend AI Message Automation KRITICNO :crit, backend-v3-ai, 2024-07-08, 2024-07-15
+    Backend Video Upload Management :backend-v3-video, 2024-07-12, 2024-07-18
+
+    section PRODUKCIJA Prioritet 4 V4
+    Backend Stripe Payment Integration :backend-v4-stripe, 2024-07-20, 2024-08-03
+    Backend Push Notifications FCM :backend-v4-push, 2024-07-25, 2024-08-08
+    Backend Monitoring Logging Winston Pino :backend-v4-monitor, 2024-07-25, 2024-08-08
+    Backend Error Tracking Sentry :backend-v4-sentry, 2024-07-28, 2024-08-05
+    Backend Security Enhancements DDoS Helmet :backend-v4-security, 2024-08-01, 2024-08-08
+    Mobile App Icons Splash Screens :mobile-v4-icons, 2024-07-25, 2024-08-01
+    Mobile Error Tracking Sentry Crashlytics :mobile-v4-error, 2024-07-25, 2024-08-03
+    Mobile Analytics Integration Firebase :mobile-v4-analytics, 2024-07-28, 2024-08-05
+    Mobile Push Notifications FCM :mobile-v4-push, 2024-08-01, 2024-08-08
+    Mobile Performance Optimization :mobile-v4-perf, 2024-08-05, 2024-08-12
+    Mobile Security Hardening :mobile-v4-security, 2024-08-05, 2024-08-12
+    Mobile Accessibility :mobile-v4-access, 2024-08-10, 2024-08-18
+    Mobile Branding Polish :mobile-v4-brand, 2024-08-10, 2024-08-18
+
+    section TESTIRANJE DEPLOY
+    Integration Testovi Backend Mobile :test-integration, 2024-08-15, 2024-08-22
+    E2E Testovi :test-e2e, 2024-08-20, 2024-08-27
+    Performance Testing :test-perf, 2024-08-25, 2024-09-01
+    Security Audit :test-security, 2024-08-25, 2024-09-01
+    Beta Testing Internal :test-beta, 2024-09-01, 2024-09-12
+    Production Deploy :milestone, deploy, 2024-09-15, 0d
+                </div>
+            </div>
+        </div>
+
+        <!-- Blockers Section -->
+        <div class="blockers-section">
+            <h2>🚧 Blokeri za Produkciju</h2>
+            <ul class="blocker-list">
+                <li class="blocker-item priority-1">
+                    <strong>🔴 Mobile V3:</strong> Today's Mission za trenere (UX problem) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-1">
+                    <strong>🔴 Mobile V3:</strong> Workout loading za trenere (error state) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#workout-loading" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-3">
+                    <strong>🔴 Backend V3:</strong> Trainer Switch Handling (data integrity) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-3">
+                    <strong>🔴 Backend V3:</strong> AI Message Automation ("Tough Love" vizija) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-3">
+                    <strong>🔴 Backend V3:</strong> Check-ins Management & Analytics (admin dashboard) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-2">
+                    <strong>🟡 Backend/Mobile V4:</strong> Stripe Payment (monetizacija) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-2">
+                    <strong>🟡 Backend/Mobile V4:</strong> Push Notifications (engagement) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+                <li class="blocker-item priority-2">
+                    <strong>🟡 Backend/Mobile V4:</strong> Monitoring & Error Tracking (readiness) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- References Section -->
+        <div class="references-section">
+            <h2>📚 Reference - Dashboard Analiza</h2>
+            <div class="reference-grid">
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#akcioni-plan" target="_blank">🚀 Akcioni Plan</a>
+                    <p>Detaljni akcioni plan sa svim prioritetima i zadacima</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">📋 Master Plan Status</a>
+                    <p>Status Backend V3 i Mobile V3 master planova</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">🗺️ Produkcija Roadmap</a>
+                    <p>Kompletan roadmap ka produkciji sa Gantt dijagramom</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#klijent-dashboard" target="_blank">👤 Klijent Dashboard</a>
+                    <p>Detaljna analiza klijent dashboard komponenti</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank">💪 Trener Dashboard</a>
+                    <p>Detaljna analiza trener dashboard komponenti</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#admin-dashboard" target="_blank">👑 Admin Dashboard</a>
+                    <p>Detaljna analiza admin dashboard komponenti</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#workout-loading" target="_blank">⏳ Workout Loading</a>
+                    <p>Analiza workout loading problema za trenere</p>
+                </div>
+                <div class="reference-item">
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#executive-summary" target="_blank">📊 Executive Summary</a>
+                    <p>Pregled trenutnog stanja dashboarda</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let completedTasks = JSON.parse(localStorage.getItem('roadmapCompletedTasks') || '[]');
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load completed tasks
+            completedTasks.forEach(taskId => {
+                const checkbox = document.querySelector(`.task-checkbox[data-task="${taskId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    const taskItem = checkbox.closest('.task-item');
+                    if (taskItem) {
+                        taskItem.classList.add('completed');
+                    }
+                }
+            });
+
+            // Update progress bars
+            updateProgressBars();
+
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+
+            // Checkbox handlers
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const taskId = this.getAttribute('data-task');
+                    const taskItem = this.closest('.task-item');
+                    
+                    if (this.checked) {
+                        if (!completedTasks.includes(taskId)) {
+                            completedTasks.push(taskId);
+                        }
+                        taskItem.classList.add('completed');
+                    } else {
+                        completedTasks = completedTasks.filter(id => id !== taskId);
+                        taskItem.classList.remove('completed');
+                    }
+                    
+                    localStorage.setItem('roadmapCompletedTasks', JSON.stringify(completedTasks));
+                    updateProgressBars();
+                    applyFilters();
+                });
+            });
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    setFilter(filter);
+                });
+            });
+
+            // Search input
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                currentSearch = this.value.toLowerCase().trim();
+                applyFilters();
+            });
+
+            // URL hash navigation
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                if (hash.startsWith('priority-')) {
+                    switchTab(hash);
+                }
+            }
+        });
+
+        function switchTab(tabId) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                }
+            });
+
+            // Update URL
+            window.location.hash = tabId;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const tasks = document.querySelectorAll('.task-item');
+            let visibleCount = 0;
+            
+            tasks.forEach(task => {
+                const taskId = task.getAttribute('data-task');
+                const status = task.getAttribute('data-status');
+                const title = task.querySelector('.task-title').textContent.toLowerCase();
+                const isCompleted = completedTasks.includes(taskId);
+                
+                let matchesFilter = true;
+                if (currentFilter === 'active') {
+                    matchesFilter = !isCompleted && status !== 'todo';
+                } else if (currentFilter === 'completed') {
+                    matchesFilter = isCompleted;
+                } else if (currentFilter === 'blocked') {
+                    matchesFilter = status === 'crit';
+                }
+                
+                let matchesSearch = !currentSearch || title.includes(currentSearch);
+                
+                if (matchesFilter && matchesSearch) {
+                    task.style.display = '';
+                    visibleCount++;
+                } else {
+                    task.style.display = 'none';
+                }
+            });
+
+            // Show/hide no results
+            const noResults = document.getElementById('noResults');
+            if (visibleCount === 0 && (currentFilter !== 'all' || currentSearch)) {
+                noResults.classList.add('show');
+            } else {
+                noResults.classList.remove('show');
+            }
+        }
+
+        function updateProgressBars() {
+            const priorities = ['p1', 'p2', 'p3', 'p4'];
+            
+            priorities.forEach(priority => {
+                const tasks = document.querySelectorAll(`.tab-content#priority-${priority.slice(1)} .task-item`);
+                const total = tasks.length;
+                const completed = Array.from(tasks).filter(task => {
+                    const taskId = task.getAttribute('data-task');
+                    return completedTasks.includes(taskId);
+                }).length;
+                
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+                
+                const progressBar = document.getElementById(`progress-bar-${priority}`);
+                const progressText = document.getElementById(`progress-${priority}`);
+                
+                if (progressBar && progressText) {
+                    progressBar.style.width = `${percentage}%`;
+                    progressBar.textContent = `${percentage}%`;
+                    progressText.textContent = `${percentage}%`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

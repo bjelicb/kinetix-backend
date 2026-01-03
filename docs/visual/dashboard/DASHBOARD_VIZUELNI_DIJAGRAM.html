@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinetix Dashboard - Vizuelni Dijagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            padding-top: 120px; /* Space for sticky nav */
+        }
+
+        /* Sticky Navigation Bar */
+        .sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 30, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+            padding: 15px 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            background: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .nav-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            background: rgba(30, 30, 45, 0.8);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            border-radius: 6px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+        }
+
+        .filter-btn:hover {
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .filter-btn.active {
+            background: rgba(99, 102, 241, 0.5);
+            border-color: #6366f1;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 200px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 35px 8px 12px;
+            background: rgba(30, 30, 45, 0.8);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.9em;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 0 5px;
+        }
+
+        .search-clear:hover {
+            color: #e0e0e0;
+        }
+
+        .progress-overview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            color: #8b5cf6;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: rgba(20, 20, 30, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(100, 100, 200, 0.2);
+        }
+
+        h1 {
+            color: #6366f1;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+            border-bottom: 3px solid rgba(99, 102, 241, 0.3);
+            padding-bottom: 20px;
+        }
+
+        .stats-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .stat-box h3 {
+            color: #8b5cf6;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .stat-box .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #10b981;
+            margin: 10px 0;
+        }
+
+        .stat-box .label {
+            color: #a78bfa;
+            font-size: 0.9em;
+        }
+
+        .legend {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(100, 100, 200, 0.2);
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .legend-color.complete {
+            background: #10b981;
+        }
+
+        .legend-color.partial {
+            background: #f59e0b;
+        }
+
+        .legend-color.missing {
+            background: #ef4444;
+        }
+
+        .dashboards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-section {
+            background: rgba(30, 30, 45, 0.6);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(100, 100, 200, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .dashboard-section.client {
+            border-left: 5px solid #06b6d4;
+        }
+
+        .dashboard-section.trainer {
+            border-left: 5px solid #8b5cf6;
+        }
+
+        .dashboard-section.admin {
+            border-left: 5px solid #f59e0b;
+        }
+
+        /* Collapsible Dashboard Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(100, 100, 200, 0.2);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dashboard-header h2 {
+            color: #6366f1;
+            font-size: 2em;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+            color: #8b5cf6;
+        }
+
+        .dashboard-section.collapsed .dashboard-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .dashboard-content {
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            max-height: 10000px;
+            opacity: 1;
+        }
+
+        .dashboard-section.collapsed .dashboard-content {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+        }
+
+        /* Circular Progress Bar */
+        .progress-circle {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .progress-circle svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle .bg {
+            fill: none;
+            stroke: rgba(100, 100, 200, 0.2);
+            stroke-width: 8;
+        }
+
+        .progress-circle .progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-circle.client .progress {
+            stroke: #06b6d4;
+        }
+
+        .progress-circle.trainer .progress {
+            stroke: #8b5cf6;
+        }
+
+        .progress-circle.admin .progress {
+            stroke: #f59e0b;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .progress-text.client {
+            color: #06b6d4;
+        }
+
+        .progress-text.trainer {
+            color: #8b5cf6;
+        }
+
+        .progress-text.admin {
+            color: #f59e0b;
+        }
+
+        .component-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .component-card {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(100, 100, 200, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .component-card.hidden {
+            display: none;
+        }
+
+        .component-card.filtered-out {
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
+
+        .component-card:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateX(5px) scale(1.02);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .component-card.complete {
+            border-left: 5px solid #10b981;
+        }
+
+        .component-card.partial {
+            border-left: 5px solid #f59e0b;
+        }
+
+        .component-card.missing {
+            border-left: 5px solid #ef4444;
+        }
+
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .component-name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .component-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #e0e0e0;
+        }
+
+        .component-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .component-badge.complete {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .component-badge.partial {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .component-badge.missing {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .component-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #a78bfa;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(99, 102, 241, 0.4);
+            color: #e0e0e0;
+        }
+
+        .component-status {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .component-status.complete {
+            color: #10b981;
+        }
+
+        .component-status.partial {
+            color: #f59e0b;
+        }
+
+        .component-status.missing {
+            color: #ef4444;
+        }
+
+        .component-description {
+            color: #a0a0a0;
+            font-size: 0.95em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .component-issues {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(100, 100, 200, 0.1);
+            font-size: 0.9em;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0;
+        }
+
+        .component-issues.expanded {
+            max-height: 500px;
+            padding-top: 10px;
+        }
+
+        .component-issues.partial {
+            color: #f59e0b;
+        }
+
+        .component-issues.missing {
+            color: #ef4444;
+        }
+
+        .component-issues code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .footer-section {
+            background: rgba(30, 30, 45, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 1px solid rgba(100, 100, 200, 0.2);
+        }
+
+        .footer-section h2 {
+            color: #6366f1;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+            padding-bottom: 15px;
+        }
+
+        /* Tabs for Blockers */
+        .tabs-container {
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid rgba(100, 100, 200, 0.2);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: rgba(30, 30, 45, 0.6);
+            border: none;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            font-weight: 500;
+            position: relative;
+            bottom: -2px;
+        }
+
+        .tab:hover {
+            background: rgba(30, 30, 45, 0.8);
+            color: #e0e0e0;
+        }
+
+        .tab.active {
+            background: rgba(99, 102, 241, 0.3);
+            color: #6366f1;
+            border-bottom: 2px solid #6366f1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .blocker-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .blocker-list li {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ef4444;
+            color: #e0e0a0;
+            transition: all 0.3s ease;
+        }
+
+        .blocker-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .blocker-list li.priority-1 {
+            border-left-color: #ef4444;
+        }
+
+        .blocker-list li.priority-2 {
+            border-left-color: #f59e0b;
+        }
+
+        .blocker-list li.priority-3 {
+            border-left-color: #06b6d4;
+        }
+
+        .blocker-list li.priority-4 {
+            border-left-color: #8b5cf6;
+        }
+
+        .blocker-list li strong {
+            color: #ef4444;
+        }
+
+        .estimate-box {
+            background: rgba(20, 20, 30, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .estimate-box h3 {
+            color: #8b5cf6;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .estimate-box p {
+            color: #a0a0a0;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .estimate-box .highlight {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #a0a0a0;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboards-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 180px;
+            }
+
+            .sticky-nav {
+                padding: 10px 15px;
+            }
+
+            .nav-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .nav-filters {
+                justify-content: center;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .stats-header {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header h2 {
+                font-size: 1.5em;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Navigation Bar -->
+    <nav class="sticky-nav">
+        <div class="nav-content">
+            <div class="nav-links">
+                <a href="#client-dashboard" class="nav-link" data-dashboard="client">👤 Client</a>
+                <a href="#trainer-dashboard" class="nav-link" data-dashboard="trainer">💪 Trainer</a>
+                <a href="#admin-dashboard" class="nav-link" data-dashboard="admin">👑 Admin</a>
+                <a href="#blockers" class="nav-link">🚧 Blokeri</a>
+            </div>
+            <div class="nav-filters">
+                <button class="filter-btn active" data-filter="all">Sve</button>
+                <button class="filter-btn" data-filter="complete">✅ Kompletno</button>
+                <button class="filter-btn" data-filter="partial">⚠️ Delimično</button>
+                <button class="filter-btn" data-filter="missing">❌ Nedostaje</button>
+            </div>
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Pretraži komponente...">
+                <button class="search-clear" id="searchClear" style="display: none;">×</button>
+            </div>
+            <div class="progress-overview">
+                <span>Ukupno: <strong>78%</strong></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>🎯 Kinetix Dashboard - Vizuelni Pregled</h1>
+
+        <!-- Statistike -->
+        <div class="stats-header">
+            <div class="stat-box">
+                <h3>Ukupna Pokrivenost</h3>
+                <div class="value">78%</div>
+                <div class="label">Dashboard Funkcionalnosti</div>
+            </div>
+            <div class="stat-box">
+                <h3>Procena Vremena</h3>
+                <div class="value">2-3</div>
+                <div class="label">Nedelje do Produkcije</div>
+            </div>
+            <div class="stat-box">
+                <h3>Procena Tim-a</h3>
+                <div class="value">1-2</div>
+                <div class="label">Developera</div>
+            </div>
+            <div class="stat-box">
+                <h3>Komponente</h3>
+                <div class="value">22</div>
+                <div class="label">Ukupno Widget-a</div>
+            </div>
+        </div>
+
+        <!-- Legenda -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color complete"></div>
+                <span>✅ Kompletirano (100%)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color partial"></div>
+                <span>⚠️ Delimično (Mock/Hardcoded)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color missing"></div>
+                <span>❌ Nedostaje ili Problem</span>
+            </div>
+        </div>
+
+        <!-- Dashboard Sekcije -->
+        <div class="dashboards-container">
+            <!-- CLIENT DASHBOARD -->
+            <div class="dashboard-section client" id="client-dashboard" data-dashboard-type="client">
+                <div class="dashboard-header" onclick="toggleDashboard('client-dashboard')">
+                    <h2>
+                        <span class="dashboard-toggle">▼</span>
+                        👤 Client Dashboard
+                    </h2>
+                    <div class="progress-circle client">
+                        <svg width="80" height="80">
+                            <circle class="bg" cx="40" cy="40" r="36"></circle>
+                            <circle class="progress" cx="40" cy="40" r="36" 
+                                    stroke-dasharray="226" 
+                                    stroke-dashoffset="34"></circle>
+                        </svg>
+                        <div class="progress-text client">85%</div>
+                    </div>
+                </div>
+                <div class="dashboard-content">
+                    <div class="component-list">
+                        <div class="component-card complete" data-status="complete" data-name="DashboardHeader">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">DashboardHeader</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('DashboardHeader')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Pozdravna poruka sa imenom korisnika i avatar-om. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="CurrentPlanCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">CurrentPlanCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('CurrentPlanCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Trenutni aktivni plan sa detaljima (plan name, trainer, start/end dates). Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="BalanceCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">BalanceCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('BalanceCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Running Tab (balance i monthlyBalance) sa "Pay Now" dugmetom ako je monthlyBalance > 0. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="WeighInCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">WeighInCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('WeighInCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Poslednji weigh-in sa opcijom za novi weigh-in. Posebno istaknuto ako nema weigh-in-a.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="AIMessagesPreviewCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">AIMessagesPreviewCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('AIMessagesPreviewCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Preview poslednje 3 AI poruke od trenera sa unread badge-om. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card partial" data-status="partial" data-name="NutritionSummaryCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">NutritionSummaryCard</div>
+                                    <span class="component-badge partial">Partial</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('NutritionSummaryCard')">📋</button>
+                                    <div class="component-status partial">⚠️</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Nutrition summary sa makronutrijentima (calories, protein, carbs, fats).
+                            </div>
+                            <div class="component-issues partial">
+                                <strong>Problem:</strong> Hardcoded vrednosti (calories: 1850, protein: 120, carbs: 220, fats: 65). Treba učitati sa API-ja ili iz user settings-a.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="TodaysMissionWidget">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">TodaysMissionWidget</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('TodaysMissionWidget')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Današnji workout ili empty state sa "Schedule Workout" dugmetom. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="Info Card">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">Info Card</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('Info Card')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Dinamički status plana (No Plan Assigned, Future Plan - Unlock, Previous Plan, Keep Going!). Učitava se sa API-ja.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRAINER DASHBOARD -->
+            <div class="dashboard-section trainer" id="trainer-dashboard" data-dashboard-type="trainer">
+                <div class="dashboard-header" onclick="toggleDashboard('trainer-dashboard')">
+                    <h2>
+                        <span class="dashboard-toggle">▼</span>
+                        💪 Trainer Dashboard
+                    </h2>
+                    <div class="progress-circle trainer">
+                        <svg width="80" height="80">
+                            <circle class="bg" cx="40" cy="40" r="36"></circle>
+                            <circle class="progress" cx="40" cy="40" r="36" 
+                                    stroke-dasharray="226" 
+                                    stroke-dashoffset="90"></circle>
+                        </svg>
+                        <div class="progress-text trainer">60%</div>
+                    </div>
+                </div>
+                <div class="dashboard-content">
+                    <div class="component-list">
+                        <div class="component-card complete" data-status="complete" data-name="DashboardHeader">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">DashboardHeader</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('DashboardHeader')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Pozdravna poruka sa imenom trenera i avatar-om. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card missing" data-status="missing" data-name="TodaysMissionWidget">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">TodaysMissionWidget</div>
+                                    <span class="component-badge missing">Missing</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('TodaysMissionWidget')">📋</button>
+                                    <div class="component-status missing">❌</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Današnji workout widget (NE BI TREBALO da se prikazuje za trenere).
+                            </div>
+                            <div class="component-issues missing">
+                                <strong>Problem:</strong> Prikazuje se za trenere u dashboard_page.dart (linija 286). Treba dodati uslov: <code>if (!isTrainer)</code>.
+                            </div>
+                        </div>
+
+                        <div class="component-card partial" data-status="partial" data-name="ClientAlertsCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">ClientAlertsCard</div>
+                                    <span class="component-badge partial">Partial</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('ClientAlertsCard')">📋</button>
+                                    <div class="component-status partial">⚠️</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Alerti za klijente (plan expiration, missed workouts, itd.).
+                            </div>
+                            <div class="component-issues partial">
+                                <strong>Problem:</strong> Mock podaci (John Doe, Jane Smith, Mike Johnson). Treba učitati sa API-ja (Backend V3: <code>GET /api/trainers/alerts</code>). Navigacija na <code>/client/:id</code> je placeholder.
+                            </div>
+                        </div>
+
+                        <div class="component-card partial" data-status="partial" data-name="AppointmentsCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">AppointmentsCard</div>
+                                    <span class="component-badge partial">Partial</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('AppointmentsCard')">📋</button>
+                                    <div class="component-status partial">⚠️</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Termini za danas sa Call i Message dugmadima.
+                            </div>
+                            <div class="component-issues partial">
+                                <strong>Problem:</strong> Mock podaci (John Doe 10:00, Jane Smith 14:30, Mike Johnson 16:00). Call i Message dugmad ne rade (TODO komentari). Navigacija na <code>/client/:id</code> je placeholder. Treba učitati sa API-ja (Backend V3: <code>GET /api/trainers/appointments</code>).
+                            </div>
+                        </div>
+
+                        <div class="component-card missing" data-status="missing" data-name="Workout Loading">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">Workout Loading</div>
+                                    <span class="component-badge missing">Missing</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('Workout Loading')">📋</button>
+                                    <div class="component-status missing">❌</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                WorkoutController pokušava da učitava workoutove za trenere.
+                            </div>
+                            <div class="component-issues missing">
+                                <strong>Problem:</strong> Backend vraća 403 Forbidden, ali frontend ne proverava role PRE poziva API-ja. Treba filtrirati u <code>WorkoutController.build()</code> pre poziva API-ja.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN DASHBOARD -->
+            <div class="dashboard-section admin" id="admin-dashboard" data-dashboard-type="admin">
+                <div class="dashboard-header" onclick="toggleDashboard('admin-dashboard')">
+                    <h2>
+                        <span class="dashboard-toggle">▼</span>
+                        👑 Admin Dashboard
+                    </h2>
+                    <div class="progress-circle admin">
+                        <svg width="80" height="80">
+                            <circle class="bg" cx="40" cy="40" r="36"></circle>
+                            <circle class="progress" cx="40" cy="40" r="36" 
+                                    stroke-dasharray="226" 
+                                    stroke-dashoffset="0"></circle>
+                        </svg>
+                        <div class="progress-text admin">100%</div>
+                    </div>
+                </div>
+                <div class="dashboard-content">
+                    <div class="component-list">
+                        <div class="component-card complete" data-status="complete" data-name="AdminHeader">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">AdminHeader</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('AdminHeader')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Admin header sa refresh opcijom. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="SystemStatsCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">SystemStatsCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('SystemStatsCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Sistem statistike (users, trainers, clients, plans, workouts). Učitava se sa API-ja (<code>GET /api/admin/stats</code>).
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="UserManagementCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">UserManagementCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('UserManagementCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Upravljanje korisnicima (create, edit, delete, suspend). Učitava se sa API-ja (<code>GET /api/admin/users</code>).
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="TrainerManagementCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">TrainerManagementCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('TrainerManagementCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Upravljanje trenerima i dodeljivanje klijenata. Učitava se sa API-ja.
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="PlanManagementCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">PlanManagementCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('PlanManagementCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Upravljanje planovima (create, edit, delete, assign). Učitava se sa API-ja (<code>GET /api/admin/plans</code>).
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="WorkoutManagementCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">WorkoutManagementCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('WorkoutManagementCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Upravljanje workout logovima (view, edit, delete, stats). Učitava se sa API-ja (<code>GET /api/admin/workouts/all</code>).
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="AIMessagesManagementCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">AIMessagesManagementCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('AIMessagesManagementCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Upravljanje AI porukama (create, view, filter). Učitava se sa API-ja (<code>GET /api/admin/ai-messages</code>).
+                            </div>
+                        </div>
+
+                        <div class="component-card complete" data-status="complete" data-name="DatabaseOverviewCard">
+                            <div class="component-header">
+                                <div class="component-name-wrapper">
+                                    <div class="component-name">DatabaseOverviewCard</div>
+                                    <span class="component-badge complete">Complete</span>
+                                </div>
+                                <div class="component-actions">
+                                    <button class="copy-btn" onclick="copyComponentName('DatabaseOverviewCard')">📋</button>
+                                    <div class="component-status complete">✅</div>
+                                </div>
+                            </div>
+                            <div class="component-description">
+                                Pregled baze podataka. Učitava se sa API-ja.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="no-results" id="noResults">
+            <p>🔍 Nema rezultata za vašu pretragu.</p>
+        </div>
+
+        <!-- Footer - Blokeri i Procene -->
+        <div class="footer-section" id="blockers">
+            <h2>🚧 Blokeri za Produkciju</h2>
+            
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="priority-1">Prioritet 1 (Hitno)</button>
+                    <button class="tab" data-tab="priority-2">Prioritet 2 (Visoki)</button>
+                    <button class="tab" data-tab="priority-3">Prioritet 3 (Srednji)</button>
+                    <button class="tab" data-tab="priority-4">Prioritet 4 (Produkcija)</button>
+                </div>
+
+                <div class="tab-content active" id="priority-1">
+                    <ul class="blocker-list">
+                        <li class="priority-1">
+                            <strong>1. TodaysMissionWidget za trenere:</strong> Treba ukloniti prikaz za trenere (dodati <code>if (!isTrainer)</code>).
+                        </li>
+                        <li class="priority-1">
+                            <strong>2. Workout loading za trenere:</strong> Treba filtrirati u <code>WorkoutController.build()</code> pre poziva API-ja.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content" id="priority-2">
+                    <ul class="blocker-list">
+                        <li class="priority-2">
+                            <strong>3. ClientAlertsCard mock podaci:</strong> Treba učitati sa API-ja (Backend V3: <code>GET /api/trainers/alerts</code>).
+                        </li>
+                        <li class="priority-2">
+                            <strong>4. AppointmentsCard mock podaci:</strong> Treba učitati sa API-ja (Backend V3: <code>GET /api/trainers/appointments</code>).
+                        </li>
+                        <li class="priority-2">
+                            <strong>5. NutritionSummaryCard hardcoded vrednosti:</strong> Treba učitati sa API-ja ili iz user settings-a.
+                        </li>
+                        <li class="priority-2">
+                            <strong>6. AppointmentsCard Call/Message funkcionalnosti:</strong> Treba implementirati telefon integraciju i messaging.
+                        </li>
+                        <li class="priority-2">
+                            <strong>7. ClientAlertsCard i AppointmentsCard navigacija:</strong> Treba proveriti da li route <code>/client/:id</code> postoji ili koristiti postojeći analytics page.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content" id="priority-3">
+                    <ul class="blocker-list">
+                        <li class="priority-3">
+                            <strong>Backend V3 - 1-2 nedelje:</strong> Check-ins Management endpoints, Analytics endpoints, Plan expiration notifications, Trainer switch handling, AI Message Automation, Rate Limiting Strategy, CORS Security Configuration, Video Upload & Management.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content" id="priority-4">
+                    <ul class="blocker-list">
+                        <li class="priority-4">
+                            <strong>Backend/Mobile V4 - 2-4 nedelje:</strong> Stripe Payment Integration, Push Notifications (FCM), Monitoring & Logging, Security Enhancements, App icons, Splash screens, Error tracking, Analytics integration.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="estimate-box">
+                <h3>📊 Procena Vremena i Tim-a</h3>
+                <p>
+                    <strong>Ukupna Procena:</strong> <span class="highlight">2-3 nedelje</span> sa <span class="highlight">1-2 developera</span>
+                </p>
+                <p>
+                    <strong>Prioritet 1 (Hitno - 1-2 dana):</strong> Ukloniti TodaysMissionWidget za trenere, filtrirati workout loading za trenere.
+                </p>
+                <p>
+                    <strong>Prioritet 2 (Visoki - 3-5 dana):</strong> Zameniti mock podatke na trenerskom dashboardu (ClientAlertsCard, AppointmentsCard), zameniti hardcoded nutrition vrednosti, implementirati placeholder funkcionalnosti.
+                </p>
+                <p>
+                    <strong>Prioritet 3 (Srednji - Backend V3 - 1-2 nedelje):</strong> Check-ins Management endpoints, Analytics endpoints, Plan expiration notifications, Trainer switch handling, AI Message Automation, Rate Limiting Strategy, CORS Security Configuration, Video Upload & Management.
+                </p>
+                <p>
+                    <strong>Prioritet 4 (Produkcija - Backend/Mobile V4 - 2-4 nedelje):</strong> Stripe Payment Integration, Push Notifications (FCM), Monitoring & Logging, Security Enhancements, App icons, Splash screens, Error tracking, Analytics integration.
+                </p>
+                <p>
+                    <strong>Profesionalnost:</strong> Dashboard je <span class="highlight">profesionalno napravljen</span> sa čistom arhitekturom, offline-first pristupom, i proper error handling-om. Većina funkcionalnosti je kompletirana i production-ready. Preostali zadaci su uglavnom API integracije i manje funkcionalnosti.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let collapsedDashboards = JSON.parse(localStorage.getItem('collapsedDashboards') || '[]');
+
+        // Initialize collapsed state
+        document.addEventListener('DOMContentLoaded', function() {
+            collapsedDashboards.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) {
+                    section.classList.add('collapsed');
+                }
+            });
+
+            // Initialize component cards click handlers
+            const componentCards = document.querySelectorAll('.component-card');
+            componentCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't toggle if clicking on copy button
+                    if (e.target.closest('.copy-btn')) return;
+                    
+                    const issues = this.querySelector('.component-issues');
+                    if (issues) {
+                        issues.classList.toggle('expanded');
+                    }
+                });
+            });
+
+            // Initialize tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    switchTab(tabId);
+                });
+            });
+
+            // Initialize filters
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    setFilter(filter);
+                });
+            });
+
+            // Initialize search
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            
+            searchInput.addEventListener('input', function() {
+                currentSearch = this.value.toLowerCase().trim();
+                searchClear.style.display = currentSearch ? 'block' : 'none';
+                applyFilters();
+            });
+
+            searchClear.addEventListener('click', function() {
+                searchInput.value = '';
+                currentSearch = '';
+                this.style.display = 'none';
+                applyFilters();
+            });
+
+            // Initialize navigation links
+            const navLinks = document.querySelectorAll('.nav-link[data-dashboard]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const dashboard = this.getAttribute('data-dashboard');
+                    filterByDashboard(dashboard);
+                });
+            });
+
+            // URL hash navigation
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const element = document.getElementById(hash);
+                if (element) {
+                    setTimeout(() => {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            }
+        });
+
+        // Toggle dashboard collapse
+        function toggleDashboard(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                section.classList.toggle('collapsed');
+                
+                // Save state
+                const index = collapsedDashboards.indexOf(id);
+                if (index > -1) {
+                    collapsedDashboards.splice(index, 1);
+                } else {
+                    collapsedDashboards.push(id);
+                }
+                localStorage.setItem('collapsedDashboards', JSON.stringify(collapsedDashboards));
+            }
+        }
+
+        // Filter by status
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            applyFilters();
+        }
+
+        // Filter by dashboard
+        function filterByDashboard(dashboard) {
+            const sections = document.querySelectorAll('.dashboard-section');
+            sections.forEach(section => {
+                const type = section.getAttribute('data-dashboard-type');
+                if (dashboard === 'all' || type === dashboard) {
+                    section.style.display = '';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+            
+            // Scroll to dashboard
+            const element = document.getElementById(dashboard + '-dashboard');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Apply filters and search
+        function applyFilters() {
+            const cards = document.querySelectorAll('.component-card');
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const status = card.getAttribute('data-status');
+                const name = card.getAttribute('data-name').toLowerCase();
+                
+                let matchesFilter = currentFilter === 'all' || status === currentFilter;
+                let matchesSearch = !currentSearch || name.includes(currentSearch);
+                
+                if (matchesFilter && matchesSearch) {
+                    card.classList.remove('hidden', 'filtered-out');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Show/hide no results message
+            const noResults = document.getElementById('noResults');
+            if (visibleCount === 0 && (currentFilter !== 'all' || currentSearch)) {
+                noResults.classList.add('show');
+            } else {
+                noResults.classList.remove('show');
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tabId) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                }
+            });
+        }
+
+        // Copy component name
+        function copyComponentName(name) {
+            navigator.clipboard.writeText(name).then(() => {
+                // Visual feedback
+                const btn = event.target.closest('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✓';
+                btn.style.color = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.color = '';
+                }, 1000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href !== '#') {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
