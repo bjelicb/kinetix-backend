@@ -135,6 +135,16 @@ export class TrainersController {
     return this.trainersService.upgradeSubscription(user.sub, dto);
   }
 
+  @Get('alerts')
+  @Roles('TRAINER')
+  @ApiOperation({ summary: 'Get trainer alerts (missed workouts, requests, etc)' })
+  @ApiResponse({ status: 200, description: 'Alerts retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Trainer role required' })
+  async getAlerts(@CurrentUser() user: JwtPayload) {
+    return this.trainersService.getAlerts(user.sub);
+  }
+
   @Get('pending-week-requests')
   @Roles('TRAINER')
   @ApiOperation({ summary: 'Get clients who requested next week' })
@@ -145,5 +155,14 @@ export class TrainersController {
     return this.trainersService.getPendingWeekRequests(user.sub);
   }
 
+  @Get('appointments')
+  @Roles('TRAINER')
+  @ApiOperation({ summary: 'Get trainer appointments' })
+  @ApiResponse({ status: 200, description: 'Appointments retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Trainer role required' })
+  async getAppointments(@CurrentUser() user: JwtPayload) {
+    return this.trainersService.getAppointments(user.sub);
+  }
 }
 

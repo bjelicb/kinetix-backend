@@ -11,6 +11,7 @@ export class TrainerProfile {
     type: Types.ObjectId,
     ref: 'User',
     required: true,
+    unique: true,
   })
   userId: Types.ObjectId;
 
@@ -89,7 +90,6 @@ export class TrainerProfile {
 export const TrainerProfileSchema = SchemaFactory.createForClass(TrainerProfile);
 
 // Indexes
-TrainerProfileSchema.index({ userId: 1 }, { unique: true });
 TrainerProfileSchema.index({ isActive: 1 });
 TrainerProfileSchema.index({ subscriptionExpiresAt: 1 });
 

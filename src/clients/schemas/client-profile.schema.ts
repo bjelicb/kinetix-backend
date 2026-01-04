@@ -25,6 +25,7 @@ export class ClientProfile {
     type: Types.ObjectId,
     ref: 'User',
     required: true,
+    unique: true,
   })
   userId: Types.ObjectId;
 
@@ -56,6 +57,23 @@ export class ClientProfile {
     enum: ActivityLevel,
   })
   activityLevel?: ActivityLevel;
+
+  @Prop({
+    type: {
+      calories: { type: Number, default: 2000 },
+      protein: { type: Number, default: 150 },
+      carbs: { type: Number, default: 250 },
+      fats: { type: Number, default: 70 },
+    },
+    default: { calories: 2000, protein: 150, carbs: 250, fats: 70 },
+    _id: false,
+  })
+  macroTargets: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+  };
 
   // Current Plan Assignment (kept for backward compatibility)
   @Prop({
@@ -146,7 +164,6 @@ export class ClientProfile {
 export const ClientProfileSchema = SchemaFactory.createForClass(ClientProfile);
 
 // Indexes
-ClientProfileSchema.index({ userId: 1 }, { unique: true });
 ClientProfileSchema.index({ trainerId: 1 });
 ClientProfileSchema.index({ trainerId: 1, currentPlanId: 1 }); // Compound index for trainer client queries
 ClientProfileSchema.index({ currentPlanId: 1 });

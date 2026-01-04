@@ -4,12 +4,37 @@ import {
   IsNumber,
   IsEnum,
   IsMongoId,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   FitnessGoal,
   ActivityLevel,
 } from '../schemas/client-profile.schema';
+
+
+class MacroTargetsDto {
+  @ApiPropertyOptional({ example: 2000 })
+  @IsNumber()
+  @IsOptional()
+  calories?: number;
+
+  @ApiPropertyOptional({ example: 150 })
+  @IsNumber()
+  @IsOptional()
+  protein?: number;
+
+  @ApiPropertyOptional({ example: 250 })
+  @IsNumber()
+  @IsOptional()
+  carbs?: number;
+
+  @ApiPropertyOptional({ example: 70 })
+  @IsNumber()
+  @IsOptional()
+  fats?: number;
+}
 
 export class CreateClientDto {
   @ApiPropertyOptional({ example: '507f1f77bcf86cd799439011', description: 'Trainer ID' })
@@ -41,6 +66,12 @@ export class CreateClientDto {
   @IsEnum(ActivityLevel)
   @IsOptional()
   activityLevel?: ActivityLevel;
+
+  @ApiPropertyOptional({ type: MacroTargetsDto, description: 'Nutritional targets' })
+  @ValidateNested()
+  @Type(() => MacroTargetsDto)
+  @IsOptional()
+  macroTargets?: MacroTargetsDto;
 
   @ApiPropertyOptional({ example: 'No known medical conditions', description: 'Medical conditions' })
   @IsString()

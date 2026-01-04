@@ -14,9 +14,9 @@ import { DateUtils } from '../common/utils/date.utils';
 export class ClientsService {
   constructor(
     @InjectModel(ClientProfile.name)
-    private clientModel: Model<ClientProfileDocument>,
+    private readonly clientModel: Model<ClientProfileDocument>,
     @Inject(forwardRef(() => PlansService))
-    private plansService: PlansService,
+    private readonly plansService: PlansService,
   ) {}
 
   async createProfile(

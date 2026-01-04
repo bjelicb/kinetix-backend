@@ -33,94 +33,88 @@ export class AdminService {
 
     const usersWithTrainerInfo = await Promise.all(
       users.map(async (user) => {
-        const userObj = user.toObject();
         let trainerId: string | null = null;
         let trainerName: string | null = null;
+        let clientProfileId: string | null = null;
 
         // If user is a CLIENT, find their trainer and get clientProfileId
-        let clientProfileId: string | null = null;
         if (user.role === 'CLIENT') {
           const clientProfile = await this.clientModel
             .findOne({ userId: user._id })
             .exec();
 
-          // Store clientProfileId if profile exists
           if (clientProfile) {
             clientProfileId = clientProfile._id.toString();
-          }
 
-          if (clientProfile && clientProfile.trainerId) {
-            // Get trainer profile ID (could be ObjectId or string)
-            let trainerProfileId = (clientProfile.trainerId as any)?._id 
-              ? (clientProfile.trainerId as any)._id 
-              : clientProfile.trainerId;
-            
-            let trainerProfileFound = false;
-            
-            // Try to find trainer profile by ID first
-            try {
-              let trainerProfileIdObj: Types.ObjectId;
-              if (trainerProfileId instanceof Types.ObjectId) {
-                trainerProfileIdObj = trainerProfileId;
-              } else if (typeof trainerProfileId === 'string') {
-                trainerProfileIdObj = new Types.ObjectId(trainerProfileId);
-              } else {
-                trainerProfileIdObj = trainerProfileId;
-              }
+            if (clientProfile.trainerId) {
+              const trainerProfileId = (clientProfile.trainerId as any)?._id 
+                ? (clientProfile.trainerId as any)._id 
+                : clientProfile.trainerId;
               
-              const trainerProfile = await this.trainerModel
-                .findById(trainerProfileIdObj)
-                .populate('userId', 'firstName lastName')
-                .exec();
-
-              if (trainerProfile && trainerProfile.userId) {
-                const trainerUser = trainerProfile.userId as any;
-                trainerName = `${trainerUser.firstName} ${trainerUser.lastName}`.trim();
-                trainerId = trainerUser._id.toString(); // Use User ID, not TrainerProfile ID
-                trainerProfileFound = true;
-              }
-            } catch (e) {
-              // If lookup by TrainerProfile ID fails, try by User ID
-              // (in case trainerId was incorrectly stored as User ID)
-            }
-            
-            // Fallback: if trainerProfile not found by ID, try to find by userId
-            // (in case trainerId was incorrectly stored as User ID)
-            if (!trainerProfileFound) {
+              let trainerProfileFound = false;
+              
               try {
-                const trainerUser = await this.userModel.findById(trainerProfileId).exec();
-                if (trainerUser && trainerUser.role === 'TRAINER') {
+                const trainerProfile = await this.trainerModel
+                  .findById(trainerProfileId)
+                  .populate('userId', 'firstName lastName')
+                  .exec();
+
+                if (trainerProfile && trainerProfile.userId) {
+                  const trainerUser = trainerProfile.userId as any;
                   trainerName = `${trainerUser.firstName} ${trainerUser.lastName}`.trim();
-                  trainerId = trainerUser._id.toString(); // Use User ID
+                  trainerId = trainerUser._id.toString();
+                  trainerProfileFound = true;
                 }
-              } catch (e) {
-                // If all lookups fail, trainerName remains null
+              } catch (e) {}
+              
+              if (!trainerProfileFound) {
+                try {
+                  const trainerUser = await this.userModel.findById(trainerProfileId).exec();
+                  if (trainerUser && trainerUser.role === 'TRAINER') {
+                    trainerName = `${trainerUser.firstName} ${trainerUser.lastName}`.trim();
+                    trainerId = trainerUser._id.toString();
+                  }
+                } catch (e) {}
               }
             }
           }
         }
 
-        // Get isActive status - for trainers, check trainer profile
-        let isActive = true; // Default to active
+        // Handle isActive and subscription info
+        let isActive = true;
+        let subscriptionStatus: string | null = null;
+        let subscriptionExpiresAt: Date | null = null;
+
         if (user.role === 'TRAINER') {
           const trainerProfile = await this.trainerModel
             .findOne({ userId: user._id })
             .exec();
+
           if (trainerProfile) {
-            isActive = trainerProfile.isActive ?? true;
+            isActive = trainerProfile.isActive;
+            subscriptionStatus = trainerProfile.subscriptionStatus;
+            subscriptionExpiresAt = trainerProfile.subscriptionExpiresAt;
+            
+            AppLogger.logOperation('ADMIN_GET_ALL_USERS_TRAINER_PROFILE', {
+              userId: user._id.toString(),
+              subscriptionExpiresAt: trainerProfile.subscriptionExpiresAt,
+              subscriptionStatus: trainerProfile.subscriptionStatus,
+            }, 'debug');
           }
         }
 
         return {
-          _id: userObj._id.toString(),
-          email: userObj.email,
-          firstName: userObj.firstName,
-          lastName: userObj.lastName,
-          role: userObj.role,
-          trainerId: trainerId,
-          trainerName: trainerName,
-          clientProfileId: clientProfileId, // Add clientProfileId for CLIENT users
-          isActive: isActive,
+          _id: user._id.toString(),
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isActive,
+          trainerId,
+          trainerName,
+          clientProfileId,
+          subscriptionStatus,
+          subscriptionExpiresAt,
         };
       }),
     );
@@ -552,6 +546,33 @@ export class AdminService {
       throw new NotFoundException('User not found after update');
     }
 
+    // If user is a trainer and subscriptionExpiresAt is provided, update TrainerProfile
+    if (updatedUser.role === 'TRAINER' && dto.subscriptionExpiresAt) {
+      AppLogger.logOperation('ADMIN_UPDATE_USER_TRAINER_SUB', {
+        userId,
+        subscriptionExpiresAt: dto.subscriptionExpiresAt,
+      }, 'info');
+      
+      const trainerProfile = await this.trainerModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .exec();
+
+      if (trainerProfile) {
+        trainerProfile.subscriptionExpiresAt = new Date(dto.subscriptionExpiresAt);
+        // Also ensure status is ACTIVE if we are setting an expiry date
+        trainerProfile.subscriptionStatus = SubscriptionStatus.ACTIVE;
+        trainerProfile.isActive = true;
+        await trainerProfile.save();
+        
+        AppLogger.logOperation('ADMIN_UPDATE_USER_TRAINER_SUB_SUCCESS', {
+          userId,
+          newExpiry: trainerProfile.subscriptionExpiresAt,
+        }, 'info');
+      } else {
+        AppLogger.logOperation('ADMIN_UPDATE_USER_TRAINER_PROFILE_NOT_FOUND', { userId }, 'warn');
+      }
+    }
+
     return {
       success: true,
       data: {
@@ -610,6 +631,11 @@ export class AdminService {
       if (trainerProfile) {
         trainerProfile.isActive = dto.isActive;
         trainerProfile.subscriptionStatus = dto.isActive ? SubscriptionStatus.ACTIVE : SubscriptionStatus.SUSPENDED;
+        
+        if (dto.subscriptionExpiresAt) {
+          trainerProfile.subscriptionExpiresAt = new Date(dto.subscriptionExpiresAt);
+        }
+        
         await trainerProfile.save();
       }
     }

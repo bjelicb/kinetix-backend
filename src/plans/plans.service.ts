@@ -35,12 +35,13 @@ export class PlansService {
     @InjectModel(WorkoutLog.name)
     private workoutLogModel: Model<WorkoutLogDocument>,
     @Inject(forwardRef(() => ClientsService))
-    private clientsService: ClientsService,
+    private readonly clientsService: ClientsService,
     @Inject(forwardRef(() => WorkoutsService))
-    private workoutsService: WorkoutsService,
-    private trainersService: TrainersService,
+    private readonly workoutsService: WorkoutsService,
+    @Inject(forwardRef(() => TrainersService))
+    private readonly trainersService: TrainersService,
     @Inject(forwardRef(() => GamificationService))
-    private gamificationService: GamificationService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   /**

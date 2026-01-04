@@ -14,6 +14,8 @@ import { UpdateTrainerDto } from './dto/update-trainer.dto';
 import { SubscriptionUpdateDto } from './dto/subscription-update.dto';
 import { AssignClientDto } from './dto/assign-client.dto';
 import { UpgradeSubscriptionDto, SubscriptionTier } from './dto/upgrade-subscription.dto';
+import { PenaltyRecord, PenaltyRecordDocument } from '../gamification/schemas/penalty-record.schema';
+import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
 import { SubscriptionStatus } from '../common/enums/subscription-status.enum';
 import { AppLogger } from '../common/utils/logger.utils';
 
@@ -24,6 +26,10 @@ export class TrainersService {
     private trainerModel: Model<TrainerProfileDocument>,
     @InjectModel(ClientProfile.name)
     private clientModel: Model<ClientProfileDocument>,
+    @InjectModel(PenaltyRecord.name)
+    private penaltyRecordModel: Model<PenaltyRecordDocument>,
+    @InjectModel(Appointment.name)
+    private appointmentModel: Model<AppointmentDocument>,
   ) {}
 
   async createProfile(
@@ -355,6 +361,105 @@ export class TrainersService {
     }
 
     return clientProfile;
+  }
+
+  /**
+   * Get all active alerts for a trainer
+   * Combines pending requests, recent penalties, and status changes
+   */
+  async getAlerts(userId: string): Promise<any[]> {
+    console.log(`[TrainersService] getAlerts START - userId: ${userId}`);
+    const trainerProfile = await this.getProfile(userId);
+    const trainerProfileId = (trainerProfile as any)._id;
+    console.log(`[TrainersService] trainerProfileId: ${trainerProfileId}`);
+
+    const alerts: any[] = [];
+
+    // 1. Get Pending Week Requests
+    const pendingRequests = await this.clientModel
+      .find({
+        trainerId: trainerProfileId,
+        nextWeekRequested: true,
+      })
+      .populate('userId', 'firstName lastName')
+      .lean()
+      .exec();
+
+    console.log(`[TrainersService] pendingRequests found: ${pendingRequests.length}`);
+
+    pendingRequests.forEach((client: any) => {
+      alerts.push({
+        id: client._id.toString(),
+        clientName: `${client.userId?.firstName || ''} ${client.userId?.lastName || ''}`.trim(),
+        message: 'Requested next week plan',
+        type: 'pending_request',
+        timestamp: client.updatedAt || new Date(),
+      });
+    });
+
+    // 2. Get Recent Penalties (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const recentPenalties = await this.penaltyRecordModel
+      .find({
+        trainerId: trainerProfileId,
+        createdAt: { $gte: sevenDaysAgo },
+      })
+      .populate({
+        path: 'clientId',
+        populate: { path: 'userId', select: 'firstName lastName' }
+      })
+      .lean()
+      .exec();
+
+    recentPenalties.forEach((penalty: any) => {
+      let message = '';
+      let type = '';
+
+      if (penalty.penaltyType === 'PENALTY_MODE') {
+        message = `Missed ${penalty.totalMissedWorkouts} workouts. Penalty applied.`;
+        type = 'missed_workout';
+      } else if (penalty.penaltyType === 'WARNING') {
+        message = `Low adherence warning (${penalty.totalMissedWorkouts} missed)`;
+        type = 'low_adherence';
+      }
+
+      if (message) {
+        alerts.push({
+          id: penalty.clientId?._id?.toString() || penalty._id.toString(),
+          clientName: `${penalty.clientId?.userId?.firstName || ''} ${penalty.clientId?.userId?.lastName || ''}`.trim(),
+          message,
+          type,
+          timestamp: penalty.createdAt,
+        });
+      }
+    });
+
+    // Sort by timestamp descending
+    return alerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  async getAppointments(userId: string): Promise<any[]> {
+    const trainerProfile = await this.getProfile(userId);
+    const trainerProfileId = (trainerProfile as any)._id;
+
+    // Get appointments from today onwards
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    return this.appointmentModel
+      .find({
+        trainerId: trainerProfileId,
+        time: { $gte: todayStart },
+      })
+      .populate({
+        path: 'clientId',
+        populate: { path: 'userId', select: 'firstName lastName avatar' },
+      })
+      .sort({ time: 1 })
+      .lean()
+      .exec();
   }
 }
 

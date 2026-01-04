@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="sr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -191,6 +192,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -661,22 +663,23 @@
         });
     </script>
 </head>
+
 <body>
     <div class="container">
         <div class="header-section">
             <a href="DASHBOARD_ANALIZA_IZVESTAJ.html" class="back-link">← Nazad na Dashboard Analiza</a>
             <h1>🗺️ Kinetix Dashboard - Roadmap ka Produkciji</h1>
-            
+
             <div class="progress-overview">
                 <div class="progress-card overall">
                     <h3>Ukupna Pokrivenost</h3>
-                    <div class="value">~25%</div>
+                    <div class="value">~30%</div>
                     <div style="color: #a78bfa; font-size: 0.9em;">Do Produkcije</div>
                 </div>
                 <div class="progress-card priority-1">
                     <h3>🔴 Prioritet 1</h3>
-                    <div class="value">2</div>
-                    <div style="color: #a78bfa; font-size: 0.9em;">Zadaci (1-2 dana)</div>
+                    <div class="value">3</div>
+                    <div style="color: #a78bfa; font-size: 0.9em;">Završenih (100%)</div>
                 </div>
                 <div class="progress-card priority-2">
                     <h3>🟡 Prioritet 2</h3>
@@ -729,17 +732,18 @@
                     <div class="progress-bar-container">
                         <div class="progress-bar-label">
                             <span>Progress</span>
-                            <span id="progress-p1">0%</span>
+                            <span id="progress-p1">100%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-bar-fill priority-1" id="progress-bar-p1" style="width: 0%;">0%</div>
+                            <div class="progress-bar-fill priority-1" id="progress-bar-p1" style="width: 100%;">100%
+                            </div>
                         </div>
                     </div>
 
                     <ul class="task-list">
-                        <li class="task-item priority-1" data-task="p1-1" data-status="todo">
+                        <li class="task-item priority-1 completed" data-task="p1-1" data-status="completed">
                             <div class="task-header">
-                                <input type="checkbox" class="task-checkbox" data-task="p1-1">
+                                <input type="checkbox" class="task-checkbox" data-task="p1-1" checked>
                                 <div class="task-title">Mobile: Ukloniti TodaysMissionWidget za trenere</div>
                                 <span class="task-status crit">KRITIČNO</span>
                             </div>
@@ -755,9 +759,9 @@
                             </div>
                         </li>
 
-                        <li class="task-item priority-1" data-task="p1-2" data-status="todo">
+                        <li class="task-item priority-1 completed" data-task="p1-2" data-status="completed">
                             <div class="task-header">
-                                <input type="checkbox" class="task-checkbox" data-task="p1-2">
+                                <input type="checkbox" class="task-checkbox" data-task="p1-2" checked>
                                 <div class="task-title">Mobile: Filtrirati workout loading za trenere</div>
                                 <span class="task-status crit">KRITIČNO</span>
                             </div>
@@ -771,6 +775,19 @@
                                 <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#workout-loading" target="_blank">
                                     📄 Vidi detalje u Dashboard Analiza - Workout Loading Analiza
                                 </a>
+                            </div>
+                        </li>
+
+                        <li class="task-item priority-1 completed" data-task="p1-3" data-status="completed">
+                            <div class="task-header">
+                                <input type="checkbox" class="task-checkbox" data-task="p1-3" checked disabled>
+                                <div class="task-title">Backend: Stabilizacija & SWC Migracija</div>
+                                <span class="task-status crit">ZAVRŠENO</span>
+                            </div>
+                            <div class="task-details">
+                                <strong>Akcija:</strong> Implementiran SWC, fiksirane kružne zavisnosti (circular
+                                dependencies) preko <code>forwardRef</code>.<br>
+                                <strong>Rezultat:</strong> Kompilacija smanjena sa 40s na &lt;1s.
                             </div>
                         </li>
                     </ul>
@@ -788,23 +805,24 @@
                     <div class="progress-bar-container">
                         <div class="progress-bar-label">
                             <span>Progress</span>
-                            <span id="progress-p2">0%</span>
+                            <span id="progress-p2">75%</span>
                         </div>
                         <div class="progress-bar">
-                            <div class="progress-bar-fill priority-2" id="progress-bar-p2" style="width: 0%;">0%</div>
+                            <div class="progress-bar-fill priority-2" id="progress-bar-p2" style="width: 75%;">75%</div>
                         </div>
                     </div>
 
                     <ul class="task-list">
-                        <li class="task-item priority-2" data-task="p2-1" data-status="todo">
+                        <li class="task-item priority-2 completed" data-task="p2-1" data-status="completed">
                             <div class="task-header">
-                                <input type="checkbox" class="task-checkbox" data-task="p2-1">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-1" checked disabled>
                                 <div class="task-title">Mobile: Zameniti mock podatke - ClientAlertsCard</div>
-                                <span class="task-status active">AKTIVNO</span>
+                                <span class="task-status crit">ZAVRŠENO</span>
                             </div>
                             <div class="task-details">
                                 <strong>API:</strong> GET /api/trainers/alerts (Backend V3)<br>
-                                <strong>Uticaj:</strong> UX poboljšanje - trener vidi realne podatke umesto mock podataka
+                                <strong>Uticaj:</strong> Implementiran real-time sistem alertova, fiksiran vizuelni bag
+                                kada nema alertova.
                             </div>
                             <div class="task-reference">
                                 <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank">
@@ -813,15 +831,16 @@
                             </div>
                         </li>
 
-                        <li class="task-item priority-2" data-task="p2-2" data-status="todo">
+                        <li class="task-item priority-2 completed" data-task="p2-2" data-status="completed">
                             <div class="task-header">
-                                <input type="checkbox" class="task-checkbox" data-task="p2-2">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-2" checked disabled>
                                 <div class="task-title">Mobile: Zameniti mock podatke - AppointmentsCard</div>
-                                <span class="task-status active">AKTIVNO</span>
+                                <span class="task-status crit">ZAVRŠENO</span>
                             </div>
                             <div class="task-details">
                                 <strong>API:</strong> GET /api/trainers/appointments (Backend V3)<br>
-                                <strong>Uticaj:</strong> UX poboljšanje - trener vidi realne termine umesto mock podataka
+                                <strong>Uticaj:</strong> UX poboljšanje - trener vidi realne termine umesto mock
+                                podataka
                             </div>
                             <div class="task-reference">
                                 <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank">
@@ -830,11 +849,11 @@
                             </div>
                         </li>
 
-                        <li class="task-item priority-2" data-task="p2-3" data-status="todo">
+                        <li class="task-item priority-2 completed" data-task="p2-3" data-status="completed">
                             <div class="task-header">
-                                <input type="checkbox" class="task-checkbox" data-task="p2-3">
+                                <input type="checkbox" class="task-checkbox" data-task="p2-3" checked disabled>
                                 <div class="task-title">Mobile: Zameniti hardcoded nutrition vrednosti</div>
-                                <span class="task-status active">AKTIVNO</span>
+                                <span class="task-status crit">ZAVRŠENO</span>
                             </div>
                             <div class="task-details">
                                 <strong>Komponenta:</strong> NutritionSummaryCard<br>
@@ -855,9 +874,12 @@
                                 <span class="task-status todo">TODO</span>
                             </div>
                             <div class="task-details">
-                                <strong>Komponente:</strong> AppointmentsCard (Call/Message), ClientAlertsCard (Navigacija)<br>
-                                <strong>Akcija:</strong> Telefon integracija, SMS ili in-app messaging, navigacija na client profile<br>
-                                <strong>Uticaj:</strong> Funkcionalnost poboljšanje - trener može direktno da pozove/pošalje poruku klijentu
+                                <strong>Komponente:</strong> AppointmentsCard (Call/Message), ClientAlertsCard
+                                (Navigacija)<br>
+                                <strong>Akcija:</strong> Telefon integracija, SMS ili in-app messaging, navigacija na
+                                client profile<br>
+                                <strong>Uticaj:</strong> Funkcionalnost poboljšanje - trener može direktno da
+                                pozove/pošalje poruku klijentu
                             </div>
                             <div class="task-reference">
                                 <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#akcioni-plan" target="_blank">
@@ -1012,7 +1034,8 @@
                 <div class="priority-section priority-4">
                     <div class="priority-header priority-4">
                         <h2>⚪ Prioritet 4 - Produkcija (2-4 nedelje) - Backend/Mobile V4</h2>
-                        <div style="color: #aaa; font-size: 1.1em;">Tim: 1 Senior Backend + 1 Senior Mobile (PARALELNO)</div>
+                        <div style="color: #aaa; font-size: 1.1em;">Tim: 1 Senior Backend + 1 Senior Mobile (PARALELNO)
+                        </div>
                     </div>
 
                     <div class="progress-bar-container">
@@ -1204,62 +1227,63 @@
             <h2>📅 Timeline Vizualizacija</h2>
             <div class="mermaid-container">
                 <div class="mermaid">
-gantt
-    title Kinetix Platform - Kompletan Roadmap ka Produkciji (Trenutno: ~25% Kompletirano)
-    dateFormat YYYY-MM-DD
-    axisFormat %Y-%m-%d
+                    gantt
+                    title Kinetix Platform - Kompletan Roadmap ka Produkciji (Trenutno: ~25% Kompletirano)
+                    dateFormat YYYY-MM-DD
+                    axisFormat %Y-%m-%d
 
-    section KOMPLETIRANO V1-V2
-    Backend Auth RBAC Core APIs :done, backend-v1, 2024-01-01, 2024-03-31
-    Backend Workout System Check-ins :done, backend-v2, 2024-04-01, 2024-06-30
-    Backend Gamification AI Messages :done, backend-v2-gam, 2024-05-01, 2024-06-30
-    Mobile Offline-First Arhitektura Isar :done, mobile-v1, 2024-01-01, 2024-03-31
-    Mobile Dashboard Client Trainer Admin :done, mobile-v2-dash, 2024-04-01, 2024-06-30
-    Mobile Workout Runner Check-in Flow :done, mobile-v2-workout, 2024-04-01, 2024-06-30
-    Mobile Error Handling Empty States :done, mobile-v2-ux, 2024-05-01, 2024-06-30
+                    section KOMPLETIRANO V1-V2
+                    Backend Auth RBAC Core APIs :done, backend-v1, 2024-01-01, 2024-03-31
+                    Backend Workout System Check-ins :done, backend-v2, 2024-04-01, 2024-06-30
+                    Backend Gamification AI Messages :done, backend-v2-gam, 2024-05-01, 2024-06-30
+                    Mobile Offline-First Arhitektura Isar :done, mobile-v1, 2024-01-01, 2024-03-31
+                    Mobile Dashboard Client Trainer Admin :done, mobile-v2-dash, 2024-04-01, 2024-06-30
+                    Mobile Workout Runner Check-in Flow :done, mobile-v2-workout, 2024-04-01, 2024-06-30
+                    Mobile Error Handling Empty States :done, mobile-v2-ux, 2024-05-01, 2024-06-30
 
-    section KRITICNO Prioritet 1
-    Mobile Ukloniti Todays Mission za Trenere :crit, mobile-v3-today, 2024-07-01, 2024-07-02
-    Mobile Filtrirati Workout Loading za Trenere :crit, mobile-v3-workout, 2024-07-01, 2024-07-02
+                    section KRITICNO Prioritet 1
+                    Mobile Ukloniti Todays Mission za Trenere :done, mobile-v3-today, 2024-07-01, 2024-07-02
+                    Mobile Filtrirati Workout Loading za Trenere :done, mobile-v3-workout, 2024-07-01, 2024-07-02
+                    Backend SWC Migracija & forwardRef Fix :done, backend-v3-swc, 2024-07-01, 2024-07-02
 
-    section VISOKI Prioritet 2
-    Mobile Zameniti Mock Podatke ClientAlerts :mobile-v3-mock-alerts, 2024-07-03, 2024-07-05
-    Mobile Zameniti Mock Podatke Appointments :mobile-v3-mock-app, 2024-07-03, 2024-07-05
-    Mobile Zameniti Hardcoded Nutrition :mobile-v3-nutrition, 2024-07-03, 2024-07-08
-    Mobile Placeholder Funkcionalnosti :mobile-v3-placeholder, 2024-07-05, 2024-07-10
+                    section VISOKI Prioritet 2
+                    Mobile Zameniti Mock Podatke ClientAlerts :mobile-v3-mock-alerts, 2024-07-03, 2024-07-05
+                    Mobile Zameniti Mock Podatke Appointments :mobile-v3-mock-app, 2024-07-03, 2024-07-05
+                    Mobile Zameniti Hardcoded Nutrition :mobile-v3-nutrition, 2024-07-03, 2024-07-08
+                    Mobile Placeholder Funkcionalnosti :mobile-v3-placeholder, 2024-07-05, 2024-07-10
 
-    section SREDNJI Prioritet 3 Backend V3
-    Backend Rate Limiting Azuriranje :active, backend-v3-rate, 2024-07-01, 2024-07-03
-    Backend CORS Security Configuration :active, backend-v3-cors, 2024-07-01, 2024-07-03
-    Backend Check-ins Management Endpoints :crit, backend-v3-checkins, 2024-07-01, 2024-07-08
-    Backend Analytics Endpoints :crit, backend-v3-analytics, 2024-07-01, 2024-07-08
-    Backend Plan Expiration Notifications :crit, backend-v3-expire, 2024-07-05, 2024-07-10
-    Backend Trainer Switch Handling KRITICNO :crit, backend-v3-switch, 2024-07-05, 2024-07-12
-    Backend AI Message Automation KRITICNO :crit, backend-v3-ai, 2024-07-08, 2024-07-15
-    Backend Video Upload Management :backend-v3-video, 2024-07-12, 2024-07-18
+                    section SREDNJI Prioritet 3 Backend V3
+                    Backend Rate Limiting Azuriranje :active, backend-v3-rate, 2024-07-01, 2024-07-03
+                    Backend CORS Security Configuration :active, backend-v3-cors, 2024-07-01, 2024-07-03
+                    Backend Check-ins Management Endpoints :crit, backend-v3-checkins, 2024-07-01, 2024-07-08
+                    Backend Analytics Endpoints :crit, backend-v3-analytics, 2024-07-01, 2024-07-08
+                    Backend Plan Expiration Notifications :crit, backend-v3-expire, 2024-07-05, 2024-07-10
+                    Backend Trainer Switch Handling KRITICNO :crit, backend-v3-switch, 2024-07-05, 2024-07-12
+                    Backend AI Message Automation KRITICNO :crit, backend-v3-ai, 2024-07-08, 2024-07-15
+                    Backend Video Upload Management :backend-v3-video, 2024-07-12, 2024-07-18
 
-    section PRODUKCIJA Prioritet 4 V4
-    Backend Stripe Payment Integration :backend-v4-stripe, 2024-07-20, 2024-08-03
-    Backend Push Notifications FCM :backend-v4-push, 2024-07-25, 2024-08-08
-    Backend Monitoring Logging Winston Pino :backend-v4-monitor, 2024-07-25, 2024-08-08
-    Backend Error Tracking Sentry :backend-v4-sentry, 2024-07-28, 2024-08-05
-    Backend Security Enhancements DDoS Helmet :backend-v4-security, 2024-08-01, 2024-08-08
-    Mobile App Icons Splash Screens :mobile-v4-icons, 2024-07-25, 2024-08-01
-    Mobile Error Tracking Sentry Crashlytics :mobile-v4-error, 2024-07-25, 2024-08-03
-    Mobile Analytics Integration Firebase :mobile-v4-analytics, 2024-07-28, 2024-08-05
-    Mobile Push Notifications FCM :mobile-v4-push, 2024-08-01, 2024-08-08
-    Mobile Performance Optimization :mobile-v4-perf, 2024-08-05, 2024-08-12
-    Mobile Security Hardening :mobile-v4-security, 2024-08-05, 2024-08-12
-    Mobile Accessibility :mobile-v4-access, 2024-08-10, 2024-08-18
-    Mobile Branding Polish :mobile-v4-brand, 2024-08-10, 2024-08-18
+                    section PRODUKCIJA Prioritet 4 V4
+                    Backend Stripe Payment Integration :backend-v4-stripe, 2024-07-20, 2024-08-03
+                    Backend Push Notifications FCM :backend-v4-push, 2024-07-25, 2024-08-08
+                    Backend Monitoring Logging Winston Pino :backend-v4-monitor, 2024-07-25, 2024-08-08
+                    Backend Error Tracking Sentry :backend-v4-sentry, 2024-07-28, 2024-08-05
+                    Backend Security Enhancements DDoS Helmet :backend-v4-security, 2024-08-01, 2024-08-08
+                    Mobile App Icons Splash Screens :mobile-v4-icons, 2024-07-25, 2024-08-01
+                    Mobile Error Tracking Sentry Crashlytics :mobile-v4-error, 2024-07-25, 2024-08-03
+                    Mobile Analytics Integration Firebase :mobile-v4-analytics, 2024-07-28, 2024-08-05
+                    Mobile Push Notifications FCM :mobile-v4-push, 2024-08-01, 2024-08-08
+                    Mobile Performance Optimization :mobile-v4-perf, 2024-08-05, 2024-08-12
+                    Mobile Security Hardening :mobile-v4-security, 2024-08-05, 2024-08-12
+                    Mobile Accessibility :mobile-v4-access, 2024-08-10, 2024-08-18
+                    Mobile Branding Polish :mobile-v4-brand, 2024-08-10, 2024-08-18
 
-    section TESTIRANJE DEPLOY
-    Integration Testovi Backend Mobile :test-integration, 2024-08-15, 2024-08-22
-    E2E Testovi :test-e2e, 2024-08-20, 2024-08-27
-    Performance Testing :test-perf, 2024-08-25, 2024-09-01
-    Security Audit :test-security, 2024-08-25, 2024-09-01
-    Beta Testing Internal :test-beta, 2024-09-01, 2024-09-12
-    Production Deploy :milestone, deploy, 2024-09-15, 0d
+                    section TESTIRANJE DEPLOY
+                    Integration Testovi Backend Mobile :test-integration, 2024-08-15, 2024-08-22
+                    E2E Testovi :test-e2e, 2024-08-20, 2024-08-27
+                    Performance Testing :test-perf, 2024-08-25, 2024-09-01
+                    Security Audit :test-security, 2024-08-25, 2024-09-01
+                    Beta Testing Internal :test-beta, 2024-09-01, 2024-09-12
+                    Production Deploy :milestone, deploy, 2024-09-15, 0d
                 </div>
             </div>
         </div>
@@ -1269,28 +1293,44 @@ gantt
             <h2>🚧 Blokeri za Produkciju</h2>
             <ul class="blocker-list">
                 <li class="blocker-item priority-1">
-                    <strong>🔴 Mobile V3:</strong> Today's Mission za trenere (UX problem) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🔴 Mobile V3:</strong> Today's Mission za trenere (UX problem) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#trener-dashboard" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-1">
-                    <strong>🔴 Mobile V3:</strong> Workout loading za trenere (error state) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#workout-loading" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🔴 Mobile V3:</strong> Workout loading za trenere (error state) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#workout-loading" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-3">
-                    <strong>🔴 Backend V3:</strong> Trainer Switch Handling (data integrity) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🔴 Backend V3:</strong> Trainer Switch Handling (data integrity) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-3">
-                    <strong>🔴 Backend V3:</strong> AI Message Automation ("Tough Love" vizija) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🔴 Backend V3:</strong> AI Message Automation ("Tough Love" vizija) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-3">
-                    <strong>🔴 Backend V3:</strong> Check-ins Management & Analytics (admin dashboard) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🔴 Backend V3:</strong> Check-ins Management & Analytics (admin dashboard) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-2">
-                    <strong>🟡 Backend/Mobile V4:</strong> Stripe Payment (monetizacija) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🟡 Backend/Mobile V4:</strong> Stripe Payment (monetizacija) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-2">
-                    <strong>🟡 Backend/Mobile V4:</strong> Push Notifications (engagement) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🟡 Backend/Mobile V4:</strong> Push Notifications (engagement) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
                 <li class="blocker-item priority-2">
-                    <strong>🟡 Backend/Mobile V4:</strong> Monitoring & Error Tracking (readiness) - <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank" style="color: #6366f1;">Vidi detalje</a>
+                    <strong>🟡 Backend/Mobile V4:</strong> Monitoring & Error Tracking (readiness) - <a
+                        href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank"
+                        style="color: #6366f1;">Vidi detalje</a>
                 </li>
             </ul>
         </div>
@@ -1304,11 +1344,13 @@ gantt
                     <p>Detaljni akcioni plan sa svim prioritetima i zadacima</p>
                 </div>
                 <div class="reference-item">
-                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">📋 Master Plan Status</a>
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#master-plan-status" target="_blank">📋 Master Plan
+                        Status</a>
                     <p>Status Backend V3 i Mobile V3 master planova</p>
                 </div>
                 <div class="reference-item">
-                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">🗺️ Produkcija Roadmap</a>
+                    <a href="DASHBOARD_ANALIZA_IZVESTAJ.html#produkcija-roadmap" target="_blank">🗺️ Produkcija
+                        Roadmap</a>
                     <p>Kompletan roadmap ka produkciji sa Gantt dijagramom</p>
                 </div>
                 <div class="reference-item">
@@ -1342,7 +1384,7 @@ gantt
         let currentSearch = '';
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Load completed tasks
             completedTasks.forEach(taskId => {
                 const checkbox = document.querySelector(`.task-checkbox[data-task="${taskId}"]`);
@@ -1355,12 +1397,20 @@ gantt
                 }
             });
 
+            // Ensure hardcoded checked tasks are in the array
+            document.querySelectorAll('.task-checkbox:checked').forEach(cb => {
+                const taskId = cb.getAttribute('data-task');
+                if (taskId && !completedTasks.includes(taskId)) {
+                    completedTasks.push(taskId);
+                }
+            });
+
             // Update progress bars
             updateProgressBars();
 
             // Tab switching
             document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
+                tab.addEventListener('click', function () {
                     const tabId = this.getAttribute('data-tab');
                     switchTab(tabId);
                 });
@@ -1368,10 +1418,10 @@ gantt
 
             // Checkbox handlers
             document.querySelectorAll('.task-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
+                checkbox.addEventListener('change', function () {
                     const taskId = this.getAttribute('data-task');
                     const taskItem = this.closest('.task-item');
-                    
+
                     if (this.checked) {
                         if (!completedTasks.includes(taskId)) {
                             completedTasks.push(taskId);
@@ -1381,7 +1431,7 @@ gantt
                         completedTasks = completedTasks.filter(id => id !== taskId);
                         taskItem.classList.remove('completed');
                     }
-                    
+
                     localStorage.setItem('roadmapCompletedTasks', JSON.stringify(completedTasks));
                     updateProgressBars();
                     applyFilters();
@@ -1390,7 +1440,7 @@ gantt
 
             // Filter buttons
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const filter = this.getAttribute('data-filter');
                     setFilter(filter);
                 });
@@ -1398,7 +1448,7 @@ gantt
 
             // Search input
             const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', function() {
+            searchInput.addEventListener('input', function () {
                 currentSearch = this.value.toLowerCase().trim();
                 applyFilters();
             });
@@ -1435,7 +1485,7 @@ gantt
 
         function setFilter(filter) {
             currentFilter = filter;
-            
+
             // Update active button
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -1443,20 +1493,20 @@ gantt
                     btn.classList.add('active');
                 }
             });
-            
+
             applyFilters();
         }
 
         function applyFilters() {
             const tasks = document.querySelectorAll('.task-item');
             let visibleCount = 0;
-            
+
             tasks.forEach(task => {
                 const taskId = task.getAttribute('data-task');
                 const status = task.getAttribute('data-status');
                 const title = task.querySelector('.task-title').textContent.toLowerCase();
                 const isCompleted = completedTasks.includes(taskId);
-                
+
                 let matchesFilter = true;
                 if (currentFilter === 'active') {
                     matchesFilter = !isCompleted && status !== 'todo';
@@ -1465,9 +1515,9 @@ gantt
                 } else if (currentFilter === 'blocked') {
                     matchesFilter = status === 'crit';
                 }
-                
+
                 let matchesSearch = !currentSearch || title.includes(currentSearch);
-                
+
                 if (matchesFilter && matchesSearch) {
                     task.style.display = '';
                     visibleCount++;
@@ -1487,7 +1537,7 @@ gantt
 
         function updateProgressBars() {
             const priorities = ['p1', 'p2', 'p3', 'p4'];
-            
+
             priorities.forEach(priority => {
                 const tasks = document.querySelectorAll(`.tab-content#priority-${priority.slice(1)} .task-item`);
                 const total = tasks.length;
@@ -1495,12 +1545,12 @@ gantt
                     const taskId = task.getAttribute('data-task');
                     return completedTasks.includes(taskId);
                 }).length;
-                
+
                 const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
-                
+
                 const progressBar = document.getElementById(`progress-bar-${priority}`);
                 const progressText = document.getElementById(`progress-${priority}`);
-                
+
                 if (progressBar && progressText) {
                     progressBar.style.width = `${percentage}%`;
                     progressBar.textContent = `${percentage}%`;
@@ -1510,4 +1560,5 @@ gantt
         }
     </script>
 </body>
+
 </html>

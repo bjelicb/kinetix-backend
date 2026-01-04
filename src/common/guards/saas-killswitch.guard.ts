@@ -26,6 +26,8 @@ export class SaasKillswitchGuard implements CanActivate {
       return true; // Trainers/Admins bypass
     }
 
+    console.log(`[SaasKillswitchGuard] Checking subscription for client: ${user.sub} (role: ${user.role})`);
+
     try {
       // Rule 2: Get client's trainer
       const client = await this.clientsService.getProfile(user.sub);
@@ -51,15 +53,27 @@ export class SaasKillswitchGuard implements CanActivate {
         throw new UnauthorizedException('Trainer profile not found');
       }
 
+      // 🔍 DEBUG: Log trainer subscription data
+      console.log(`[SaasKillswitchGuard] 🔍 TRAINER DEBUG DATA:`);
+      console.log(`  - Trainer ID: ${trainerId}`);
+      console.log(`  - isActive: ${trainer.isActive}`);
+      console.log(`  - subscriptionStatus: ${trainer.subscriptionStatus}`);
+      console.log(`  - subscriptionExpiresAt: ${trainer.subscriptionExpiresAt}`);
+      console.log(`  - Current Date: ${new Date().toISOString()}`);
+      console.log(`  - Is Expired: ${trainer.subscriptionExpiresAt < new Date()}`);
+
       // Rule 3: CRITICAL CHECK - Trainer subscription status
       if (!trainer.isActive || trainer.subscriptionStatus !== SubscriptionStatus.ACTIVE) {
-        throw new ForbiddenException(
-          "Access denied. Your trainer's subscription is inactive.",
-        );
+        console.log(`[SaasKillswitchGuard] 🔴 FAILED Rule 3: isActive=${trainer.isActive}, subscriptionStatus=${trainer.subscriptionStatus}`);
+        throw new ForbiddenException({
+          message: "Access denied. Your trainer's subscription is inactive.",
+          code: 'TRAINER_INACTIVE', // Explicit code for client detection
+        });
       }
 
       // Rule 4: Check subscription expiration
       if (trainer.subscriptionExpiresAt < new Date()) {
+        console.log(`[SaasKillswitchGuard] 🔴 FAILED Rule 4: subscriptionExpiresAt (${trainer.subscriptionExpiresAt}) < now, AUTO-SUSPENDING!`);
         // Auto-suspend using service methods
         await this.trainersService.updateSubscription(
           (trainer.userId as any).toString(),
@@ -71,9 +85,10 @@ export class SaasKillswitchGuard implements CanActivate {
           isActive: false,
         } as any);
 
-        throw new ForbiddenException(
-          'Access denied. Subscription has expired.',
-        );
+        throw new ForbiddenException({
+          message: 'Access denied. Subscription has expired.',
+          code: 'TRAINER_INACTIVE',
+        });
       }
 
       return true;

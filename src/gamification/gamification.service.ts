@@ -14,9 +14,9 @@ export class GamificationService {
     @InjectModel(PenaltyRecord.name) private penaltyRecordModel: Model<PenaltyRecordDocument>,
     @InjectModel(ClientProfile.name) private clientProfileModel: Model<ClientProfileDocument>,
     @Inject(forwardRef(() => ClientsService))
-    private clientsService: ClientsService,
+    private readonly clientsService: ClientsService,
     @Inject(forwardRef(() => TrainersService))
-    private trainersService: TrainersService,
+    private readonly trainersService: TrainersService,
   ) {}
 
   async getPenaltyStatus(clientId: string): Promise<PenaltyStatusDto> {

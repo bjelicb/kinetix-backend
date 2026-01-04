@@ -18,11 +18,11 @@ export class WorkoutsService {
     @InjectModel(WorkoutLog.name)
     private workoutLogModel: Model<WorkoutLogDocument>,
     @Inject(forwardRef(() => ClientsService))
-    private clientsService: ClientsService,
+    private readonly clientsService: ClientsService,
     @Inject(forwardRef(() => PlansService))
-    private plansService: PlansService,
+    private readonly plansService: PlansService,
     @Inject(forwardRef(() => GamificationService))
-    private gamificationService: GamificationService,
+    private readonly gamificationService: GamificationService,
   ) {}
 
   async generateWeeklyLogs(
